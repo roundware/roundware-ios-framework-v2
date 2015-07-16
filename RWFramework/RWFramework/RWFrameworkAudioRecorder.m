@@ -406,7 +406,7 @@ static OSStatus performRender (void *inRefCon,
     audioController.shouldSaveAudio = YES; // always save audio, don't stop during silence
 #endif
 
-    [audioController increaseVolumeOfSamples:bufferList inNumberFrames:inNumberFrames]; // Output audio is kind of soft after voice processing, so give it some gain.
+    //[audioController increaseVolumeOfSamples:bufferList inNumberFrames:inNumberFrames]; // Output audio is kind of soft after voice processing, so give it some gain.
 
     // Do the actual writing to file.
     if (audioController.shouldSaveAudio) { // Should save audio if the sample isn't just silence.
