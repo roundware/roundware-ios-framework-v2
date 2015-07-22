@@ -43,7 +43,7 @@ public class RWFramework: NSObject {
 
     // Audio - Record (see RWFrameworkAudioRecorder.swift)
     /// RWFrameworkAudioRecorder.swift calls code in RWFrameworkAudioRecorder.m to perform recording when true
-    let useComplexRecordingMechanism = true
+    let useComplexRecordingMechanism = false
     var soundRecorder: AVAudioRecorder? = nil
     var soundPlayer: AVAudioPlayer? = nil
 
