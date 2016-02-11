@@ -118,7 +118,7 @@ class ViewController: UIViewController {
         super.viewDidAppear(animated)
         
         var rwf = RWFramework.sharedInstance
-        println(rwf.debugInfo())
+        print(rwf.debugInfo())
     }
 
     override func didReceiveMemoryWarning() {
@@ -165,7 +165,7 @@ extension ViewController: RWFrameworkProtocol {
 //                    println(d)
                 }
             }) { (error) -> Void in
-                println(error)
+                print(error)
             }
 
 //            // Get specific asset info
@@ -204,8 +204,8 @@ extension ViewController: RWFrameworkProtocol {
     }
 
     func rwImagePickerControllerDidFinishPickingMedia(info: [NSObject : AnyObject], path: String) {
-        println(path)
-        println(info)
+        print(path)
+        print(info)
         var rwf = RWFramework.sharedInstance
         rwf.setImageDescription(path, description: "Hello, This is an image!")
     }

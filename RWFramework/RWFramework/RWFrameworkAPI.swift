@@ -165,7 +165,7 @@ extension RWFramework {
         NSUserDefaults.standardUserDefaults().setObject(listenArray.object, forKey: "tags_listen")
 
         // Save defaults as "current settings" for listen tags if they are not already set
-        for (index: String, dict: JSON) in listenArray {
+        for (index, dict): (String, JSON) in listenArray {
             let code = dict["code"]
             let defaults = dict["defaults"]
             let defaultsKeyName = "tags_listen_\(code)_current"
@@ -180,7 +180,7 @@ extension RWFramework {
         NSUserDefaults.standardUserDefaults().setObject(speakArray.object, forKey: "tags_speak")
 
         // Save defaults as "current settings" for speak tags if they are not already set
-        for (index: String, dict: JSON) in speakArray {
+        for (index, dict): (String, JSON) in speakArray {
             let code = dict["code"]
             let defaults = dict["defaults"]
             let defaultsKeyName = "tags_speak_\(code)_current"

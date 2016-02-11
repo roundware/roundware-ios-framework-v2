@@ -22,10 +22,17 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
 
         let r = arc4random()
         let recorded_file_name = RWFrameworkConfig.getConfigValueAsString("recorded_file_name")
-        let recordedFilePath = NSTemporaryDirectory().stringByAppendingPathComponent("\(r)_\(recorded_file_name)")
+        let recordedFilePath = (NSTemporaryDirectory() as NSString).stringByAppendingPathComponent("\(r)_\(recorded_file_name)")
 
         var error: NSError?
-        let success = NSFileManager.defaultManager().moveItemAtPath(soundFilePath(), toPath: recordedFilePath, error: &error)
+        let success: Bool
+        do {
+            try NSFileManager.defaultManager().moveItemAtPath(soundFilePath(), toPath: recordedFilePath)
+            success = true
+        } catch let error1 as NSError {
+            error = error1
+            success = false
+        }
         if let e = error {
             println("RWFramework - Couldn't move recorded file \(error)")
         } else if success == false {
@@ -57,7 +64,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     /// Return the path to the recorded sound file
     func soundFilePath() -> String {
         let recorded_file_name = RWFrameworkConfig.getConfigValueAsString("recorded_file_name")
-        let soundFilePath = NSTemporaryDirectory().stringByAppendingPathComponent(recorded_file_name)
+        let soundFilePath = (NSTemporaryDirectory() as NSString).stringByAppendingPathComponent(recorded_file_name)
         println(soundFilePath)
         return soundFilePath
     }
@@ -99,7 +106,12 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
                 AVNumberOfChannelsKey: 1,
                 AVEncoderAudioQualityKey: AVAudioQuality.Max.rawValue]
             var error: NSError?
-            soundRecorder = AVAudioRecorder(URL: soundFileURL, settings: recordSettings as! [NSObject : AnyObject], error: &error)
+            do {
+                soundRecorder = try AVAudioRecorder(URL: soundFileURL, settings: recordSettings as! [NSObject : AnyObject])
+            } catch var error1 as NSError {
+                error = error1
+                soundRecorder = nil
+            }
             if let e = error {
                 println("RWFramework - Couldn't create AVAudioRecorder \(error)")
             } else if (soundRecorder != nil) {
@@ -125,7 +137,13 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
 
             let soundFileURL = rwfar.outputURL // caf file
             let outputURL = NSURL(fileURLWithPath: soundFilePath()) // soon to be m4a
-            var bestAttemptToDeletePreviousConversion = NSFileManager.defaultManager().removeItemAtPath(soundFilePath(), error: nil)
+            var bestAttemptToDeletePreviousConversion: Bool
+            do {
+                try NSFileManager.defaultManager().removeItemAtPath(soundFilePath())
+                bestAttemptToDeletePreviousConversion = true
+            } catch _ {
+                bestAttemptToDeletePreviousConversion = false
+            }
 
             let options = ["AVURLAssetPreferPreciseDurationAndTimingKey": true]
             let audioAsset = AVURLAsset(URL: soundFileURL, options: options)
@@ -158,7 +176,12 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
             let rwfar = RWFrameworkAudioRecorder.sharedInstance()
             let soundFileURL = rwfar.outputURL
             var error: NSError?
-            soundPlayer = AVAudioPlayer(contentsOfURL: soundFileURL, error: &error)
+            do {
+                soundPlayer = try AVAudioPlayer(contentsOfURL: soundFileURL)
+            } catch let error1 as NSError {
+                error = error1
+                soundPlayer = nil
+            }
             if let e = error {
                 println("RWFramework - Couldn't create AVAudioPlayer \(error)")
             } else if (soundPlayer != nil) {
@@ -177,7 +200,12 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
 
             let soundFileURL = NSURL(fileURLWithPath: soundFilePath())
             var error: NSError?
-            soundPlayer = AVAudioPlayer(contentsOfURL: soundFileURL, error: &error)
+            do {
+                soundPlayer = try AVAudioPlayer(contentsOfURL: soundFileURL)
+            } catch let error1 as NSError {
+                error = error1
+                soundPlayer = nil
+            }
             if let e = error {
                 println("RWFramework - Couldn't create AVAudioPlayer \(error)")
             } else if (soundPlayer != nil) {
@@ -238,7 +266,14 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
             filePathToDelete = soundFilePath()
         }
         var error: NSError?
-        var b = NSFileManager.defaultManager().removeItemAtPath(filePathToDelete, error: &error)
+        var b: Bool
+        do {
+            try NSFileManager.defaultManager().removeItemAtPath(filePathToDelete)
+            b = true
+        } catch let error1 as NSError {
+            error = error1
+            b = false
+        }
         if let e = error {
             println("RWFramework - Couldn't delete recording \(error)")
         } else if (b == false) {
@@ -248,24 +283,24 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
 
 // MARK: AVAudioRecorderDelegate
 
-    public func audioRecorderDidFinishRecording(recorder: AVAudioRecorder!, successfully flag: Bool) {
+    public func audioRecorderDidFinishRecording(recorder: AVAudioRecorder, successfully flag: Bool) {
         println("audioRecorderDidFinishRecording")
         rwAudioRecorderDidFinishRecording()
     }
 
-    public func audioRecorderEncodeErrorDidOccur(recorder: AVAudioRecorder!, error: NSError!) {
+    public func audioRecorderEncodeErrorDidOccur(recorder: AVAudioRecorder, error: NSError?) {
         println("audioRecorderEncodeErrorDidOccur \(error)")
         alertOK("RWFramework - Audio Encode Error", message: error.localizedDescription)
     }
 
 // MARK: AVAudioPlayerDelegate
 
-    public func audioPlayerDidFinishPlaying(player: AVAudioPlayer!, successfully flag: Bool) {
+    public func audioPlayerDidFinishPlaying(player: AVAudioPlayer, successfully flag: Bool) {
         println("audioPlayerDidFinishPlaying")
         rwAudioPlayerDidFinishPlaying()
     }
     
-    public func audioPlayerDecodeErrorDidOccur(player: AVAudioPlayer!, error: NSError!) {
+    public func audioPlayerDecodeErrorDidOccur(player: AVAudioPlayer, error: NSError?) {
         println("audioPlayerDecodeErrorDidOccur \(error)")
         alertOK("RWFramework - Audio Decode Error", message: error.localizedDescription)
     }

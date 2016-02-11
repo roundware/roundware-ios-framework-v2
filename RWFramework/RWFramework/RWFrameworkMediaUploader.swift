@@ -24,7 +24,7 @@ extension RWFramework {
         if (uploaderUploading == true) { return }
         uploaderUploading = true
 
-        var media = getMediaToProcess()
+        let media = getMediaToProcess()
         if (media != nil) {
             self.uploadMedia(media!)
         } else {
@@ -87,7 +87,14 @@ extension RWFramework {
 
     func deleteMediaFile(media: Media) {
         var error: NSError?
-        var b = NSFileManager.defaultManager().removeItemAtPath(media.string, error: &error)
+        var b: Bool
+        do {
+            try NSFileManager.defaultManager().removeItemAtPath(media.string)
+            b = true
+        } catch let error1 as NSError {
+            error = error1
+            b = false
+        }
         if let e = error {
             println("RWFramework - Couldn't delete media file after successful upload \(error)")
         } else if (b == false) {

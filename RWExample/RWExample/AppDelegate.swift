@@ -24,30 +24,39 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // This can be moved to the appropriate place in the application where it makes sense
         avAudioSession.requestRecordPermission { (granted: Bool) -> Void in
-            println("AppDelegate: record permission granted: \(granted)")
+            print("AppDelegate: record permission granted: \(granted)")
         }
 
         // Play and record for VOIP
-        if !avAudioSession.setCategory(AVAudioSessionCategoryPlayAndRecord, error: &error) {
-            println("AppDelegate: could not set session category")
+        do {
+            try avAudioSession.setCategory(AVAudioSessionCategoryPlayAndRecord)
+        } catch var error1 as NSError {
+            error = error1
+            print("AppDelegate: could not set session category")
             if let e = error {
-                println(e.localizedDescription)
+                print(e.localizedDescription)
             }
         }
 
         // Send audio to the speaker
-        if !avAudioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.Speaker, error:&error) {
-            println("AppDelegate: could not overide output audio port")
+        do {
+            try avAudioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.Speaker)
+        } catch var error1 as NSError {
+            error = error1
+            print("AppDelegate: could not overide output audio port")
             if let e = error {
-                println(e.localizedDescription)
+                print(e.localizedDescription)
             }
         }
 
         // Activiate the AVAudioSession
-        if !avAudioSession.setActive(true, error: &error) {
-            println("AppDelegate: could not make session active")
+        do {
+            try avAudioSession.setActive(true)
+        } catch var error1 as NSError {
+            error = error1
+            print("AppDelegate: could not make session active")
             if let e = error {
-                println(e.localizedDescription)
+                print(e.localizedDescription)
             }
         }
 
