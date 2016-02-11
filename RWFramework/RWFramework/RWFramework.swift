@@ -99,7 +99,8 @@ public class RWFramework: NSObject {
     var uploaderUploading: Bool = false
 
     // Misc
-    var reverse_domain = "roundware.org" // This will be replaced once the config data is loaded
+    var reverse_domain = "org.roundware" // This will be replaced once the config data is loaded
+    //TODO not true?
 
 // MARK: - Main
 
@@ -140,7 +141,7 @@ public class RWFramework: NSObject {
         self.letFrameworkRequestWhenInUseAuthorizationForLocation = letFrameworkRequestWhenInUseAuthorizationForLocation
 
         println("start")
-        apiPostUsers(UIDevice().identifierForVendor.UUIDString, client_type: UIDevice().model)
+        apiPostUsers(UIDevice().identifierForVendor!.UUIDString, client_type: UIDevice().model)
 
         preflightRecording()
     }
@@ -188,7 +189,7 @@ public class RWFramework: NSObject {
 
     /// Returns true if the framework is running on a compatible OS
     func compatibleOS() -> Bool {
-        var iOS8OrLater: Bool = NSProcessInfo().isOperatingSystemAtLeastVersion(NSOperatingSystemVersion(majorVersion: 8, minorVersion: 0, patchVersion: 0))
+        let iOS8OrLater: Bool = NSProcessInfo().isOperatingSystemAtLeastVersion(NSOperatingSystemVersion(majorVersion: 8, minorVersion: 0, patchVersion: 0))
         return iOS8OrLater
     }
 
@@ -211,7 +212,7 @@ public class RWFramework: NSObject {
 
     /// Return the preferred language of the device
     func preferredLanguage() -> String {
-        return NSLocale.preferredLanguages()[0] as! String
+        return NSLocale.preferredLanguages()[0] 
     }
 
     /// Convert a Double to a String but return an empty string if the Double is 0
@@ -221,7 +222,7 @@ public class RWFramework: NSObject {
 
     /// println when debugging
     func println(object: Any) {
-        debugPrintln(object)
+        debugPrint(object)
     }
 
     /// Generic logging method
@@ -241,13 +242,14 @@ public class RWFramework: NSObject {
     /// Return true if we have a network connection
     func hostIsReachable(ip_address: String = "8.8.8.8") -> Bool {
         if let host_name = ip_address.cStringUsingEncoding(NSASCIIStringEncoding) {
-            let reachability  = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, host_name).takeRetainedValue()
-            var flags: SCNetworkReachabilityFlags = 0
-            if SCNetworkReachabilityGetFlags(reachability, &flags) == 0 {
+            let reachability  = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, host_name)
+            var flags: SCNetworkReachabilityFlags = []
+            if !SCNetworkReachabilityGetFlags(reachability!, &flags) {
                 return false
             }
-            let isReachable = (flags & UInt32(kSCNetworkFlagsReachable)) != 0
-            let needsConnection = (flags & UInt32(kSCNetworkFlagsConnectionRequired)) != 0
+
+            let isReachable = flags.contains(.Reachable)
+            let needsConnection = flags.contains(.ConnectionRequired)
             return (isReachable && !needsConnection)
         }
         return false

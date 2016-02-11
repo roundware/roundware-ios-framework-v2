@@ -48,7 +48,7 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 // MARK: - Convenience methods
 
     /// Allow the user to choose a photo from the photo library
-    public func doPhotoLibrary(mediaTypes: [AnyObject] = UIImagePickerController.availableMediaTypesForSourceType(UIImagePickerControllerSourceType.PhotoLibrary)!) {
+    public func doPhotoLibrary(mediaTypes: [String] = UIImagePickerController.availableMediaTypesForSourceType(UIImagePickerControllerSourceType.PhotoLibrary)!) {
         if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.PhotoLibrary) == false { return }
 
         preflightGeoImage()
@@ -70,7 +70,7 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 
         let picker = UIImagePickerController()
         picker.sourceType = UIImagePickerControllerSourceType.Camera
-        picker.mediaTypes = [kUTTypeImage]
+        picker.mediaTypes = [kUTTypeImage as String]
         picker.cameraCaptureMode = UIImagePickerControllerCameraCaptureMode.Photo
         picker.allowsEditing = false
         picker.delegate = self
@@ -86,7 +86,7 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 
         let picker = UIImagePickerController()
         picker.sourceType = UIImagePickerControllerSourceType.Camera
-        picker.mediaTypes = [kUTTypeMovie]
+        picker.mediaTypes = [kUTTypeMovie as String]
         picker.cameraCaptureMode = UIImagePickerControllerCameraCaptureMode.Video
         let movie_max_duration_in_seconds = RWFrameworkConfig.getConfigValueAsNumber("movie_max_duration_in_seconds").doubleValue
         picker.videoMaximumDuration = movie_max_duration_in_seconds != 0 ? movie_max_duration_in_seconds : 30
@@ -99,7 +99,7 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 
 // MARK: - UIImagePickerControllerDelegate
 
-    public func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [NSObject : AnyObject]) {
+    public func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
         let mediaType = info[UIImagePickerControllerMediaType] as! String
         if mediaType == kUTTypeImage as String {
             handleImageMediaType(info)
@@ -169,7 +169,7 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
                         size.width = image_minimum_side;
                         size.height = size.height * factor;
                     }
-                    imageToDisplay = imageWithImage(image!, size)
+                    imageToDisplay = imageWithImage(image!, newSize: size)
                 } else {
                     imageToDisplay = image;
                 }
@@ -182,7 +182,7 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
                     let r = arc4random()
                     let image_file_name = RWFrameworkConfig.getConfigValueAsString("image_file_name")
                     let imageFileName = "\(r)_\(image_file_name)"
-                    let imageFilePath = NSTemporaryDirectory().stringByAppendingPathComponent(imageFileName)
+                    let imageFilePath = (NSTemporaryDirectory() as NSString).stringByAppendingPathComponent(imageFileName)
 
                     let success = imageData.writeToFile(imageFilePath, atomically: false)
                     if success == false {
@@ -209,11 +209,18 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
             let r = arc4random()
             let movie_file_name = RWFrameworkConfig.getConfigValueAsString("movie_file_name")
             let movieFileName = "\(r)_\(movie_file_name)"
-            let movieFilePath = NSTemporaryDirectory().stringByAppendingPathComponent(movieFileName)
+            let movieFilePath = (NSTemporaryDirectory() as NSString).stringByAppendingPathComponent(movieFileName)
 
             var error: NSError?
-            let success = NSFileManager.defaultManager().moveItemAtPath(originalMoviePath!, toPath: movieFilePath, error: &error)
-            if let e = error {
+            let success: Bool
+            do {
+                try NSFileManager.defaultManager().moveItemAtPath(originalMoviePath!, toPath: movieFilePath)
+                success = true
+            } catch let error1 as NSError {
+                error = error1
+                success = false
+            }
+            if let _ = error {
                 println("RWFramework - Couldn't move movie file \(error)")
                 _rwImagePickerControllerDidCancel()
             } else if success == false {

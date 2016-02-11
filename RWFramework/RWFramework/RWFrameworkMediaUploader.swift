@@ -12,7 +12,7 @@ import AVFoundation
 extension RWFramework {
 
     /// Maximum number of times to try re-uploading beore we skip an item
-    var mediaRetryLimit: Int {
+    var mediaRetryLimit: NSNumber {
         get { return 3 }
     }
 
@@ -24,7 +24,7 @@ extension RWFramework {
         if (uploaderUploading == true) { return }
         uploaderUploading = true
 
-        var media = getMediaToProcess()
+        let media = getMediaToProcess()
         if (media != nil) {
             self.uploadMedia(media!)
         } else {
@@ -76,7 +76,7 @@ extension RWFramework {
                 self.removeMedia(media)
             } else {
                 media.mediaStatus = MediaStatus.UploadFailed
-                media.retryCount = NSNumber(integer: media.retryCount.integerValue+1)
+                media.retryCount = media.retryCount.integerValue + 1
             }
             UIApplication.sharedApplication().endBackgroundTask(bti)
             self.uploaderUploading = false
@@ -87,8 +87,15 @@ extension RWFramework {
 
     func deleteMediaFile(media: Media) {
         var error: NSError?
-        var b = NSFileManager.defaultManager().removeItemAtPath(media.string, error: &error)
-        if let e = error {
+        var b: Bool
+        do {
+            try NSFileManager.defaultManager().removeItemAtPath(media.string)
+            b = true
+        } catch let error1 as NSError {
+            error = error1
+            b = false
+        }
+        if let _ = error {
             println("RWFramework - Couldn't delete media file after successful upload \(error)")
         } else if (b == false) {
             println("RWFramework - Couldn't delete media file after successful upload for an unknown reason")

@@ -1,5 +1,5 @@
 # roundware-ios-framework-v2
-Roundware framework, updated for api v2 and re-built in Swift and made open source. See http://roundware.org for more information on configuring the server and other components.
+Roundware framework, updated for api v2 and re-built in Swift and made open source. See <http://roundware.org> for more information on configuring the server and other components.
 
 ## Introduction
 

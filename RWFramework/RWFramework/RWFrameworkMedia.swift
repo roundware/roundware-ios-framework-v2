@@ -87,7 +87,7 @@ extension RWFramework {
             self.longitude = location.coordinate.longitude
         }
 
-        required init(coder aDecoder: NSCoder) {
+        required init?(coder aDecoder: NSCoder) {
             mediaType = MediaType.allValues[aDecoder.decodeIntegerForKey("mediaType")]
             mediaStatus = MediaStatus.allValues[aDecoder.decodeIntegerForKey("mediaStatus")]
             string = aDecoder.decodeObjectForKey("string") as! String
@@ -100,8 +100,8 @@ extension RWFramework {
         }
 
         func encodeWithCoder(aCoder: NSCoder) {
-            aCoder.encodeInteger(find(MediaType.allValues, mediaType)!, forKey: "mediaType")
-            aCoder.encodeInteger(find(MediaStatus.allValues, mediaStatus)!, forKey: "mediaStatus")
+            aCoder.encodeInteger(MediaType.allValues.indexOf(mediaType)!, forKey: "mediaType")
+            aCoder.encodeInteger(MediaStatus.allValues.indexOf(mediaStatus)!, forKey: "mediaStatus")
             aCoder.encodeObject(string, forKey: "string")
             aCoder.encodeObject(desc, forKey: "desc")
             aCoder.encodeObject(latitude, forKey: "latitude")
@@ -163,7 +163,7 @@ extension RWFramework {
 
     /// Purge all media that has failed to upload at least once
     public func purgeUploadFailedMedia() {
-        var newArray = mediaArray.filter() {$0.mediaStatus != MediaStatus.UploadFailed}
+        let newArray = mediaArray.filter() {$0.mediaStatus != MediaStatus.UploadFailed}
         self.mediaArray = newArray
         println("purgeUploadFailedMedia: ITEMS: \(mediaArray.count)")
     }
@@ -218,7 +218,7 @@ extension RWFramework {
 
     /// Remove the specific piece of media from the mediaArray
     func removeMedia(media: Media) {
-        var newArray = mediaArray.filter() {"\($0.description)" != "\(media.description)"}
+        let newArray = mediaArray.filter() {"\($0.description)" != "\(media.description)"}
         self.mediaArray = newArray
         println("removeMedia: \(media) ITEMS: \(mediaArray.count)")
     }
@@ -226,7 +226,7 @@ extension RWFramework {
     /// Remove a MediaType by type and string
     func removeMedia(mediaType: MediaType, string: String) {
         if (!mediaExists(mediaType, string: string)) { return }
-        var newArray = mediaArray.filter() {"\($0.mediaType.rawValue)\($0.string)" != "\(mediaType.rawValue)\(string)"}
+        let newArray = mediaArray.filter() {"\($0.mediaType.rawValue)\($0.string)" != "\(mediaType.rawValue)\(string)"}
         self.mediaArray = newArray
         println("removeMedia: \(mediaType.rawValue) \(string) ITEMS: \(mediaArray.count)")
     }
@@ -234,7 +234,7 @@ extension RWFramework {
     /// Remove a MediaType by type
     func removeMedia(mediaType: MediaType) {
         if (!mediaExists(mediaType)) { return }
-        var newArray = mediaArray.filter() {$0.mediaType.rawValue != mediaType.rawValue}
+        let newArray = mediaArray.filter() {$0.mediaType.rawValue != mediaType.rawValue}
         self.mediaArray = newArray
         println("removeMedia: \(mediaType.rawValue) ITEMS: \(mediaArray.count)")
     }
