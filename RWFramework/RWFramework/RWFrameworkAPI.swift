@@ -114,7 +114,7 @@ extension RWFramework {
         configDisplayStartupMessage()
 
         if letFrameworkRequestWhenInUseAuthorizationForLocation {
-            let madeTheRequest = requestWhenInUseAuthorizationForLocation()
+            _ = requestWhenInUseAuthorizationForLocation()
         }
 
         let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
@@ -165,7 +165,7 @@ extension RWFramework {
         NSUserDefaults.standardUserDefaults().setObject(listenArray.object, forKey: "tags_listen")
 
         // Save defaults as "current settings" for listen tags if they are not already set
-        for (index, dict): (String, JSON) in listenArray {
+        for (_, dict): (String, JSON) in listenArray {
             let code = dict["code"]
             let defaults = dict["defaults"]
             let defaultsKeyName = "tags_listen_\(code)_current"
@@ -180,7 +180,7 @@ extension RWFramework {
         NSUserDefaults.standardUserDefaults().setObject(speakArray.object, forKey: "tags_speak")
 
         // Save defaults as "current settings" for speak tags if they are not already set
-        for (index, dict): (String, JSON) in speakArray {
+        for (_, dict): (String, JSON) in speakArray {
             let code = dict["code"]
             let defaults = dict["defaults"]
             let defaultsKeyName = "tags_speak_\(code)_current"
@@ -275,7 +275,7 @@ extension RWFramework {
     }
 
     func patchStreamsIdSuccess(data: NSData) {
-        let dict = JSON(data: data)
+        _ = JSON(data: data)
 //        println(dict)
         // does nothing for now
     }
@@ -298,7 +298,7 @@ extension RWFramework {
     }
 
     func postStreamsIdHeartbeatSuccess(data: NSData) {
-        let dict = JSON(data: data)
+        _ = JSON(data: data)
 //        println(dict)
         // does nothing for now
     }
@@ -321,7 +321,7 @@ extension RWFramework {
     }
 
     func postStreamsIdNextSuccess(data: NSData) {
-        let dict = JSON(data: data)
+        _ = JSON(data: data)
 //        println(dict)
         // does nothing for now
     }
@@ -344,7 +344,7 @@ extension RWFramework {
     }
 
     func getStreamsIdCurrentSuccess(data: NSData) {
-        let dict = JSON(data: data)
+        _ = JSON(data: data)
 //        println(dict)
         // does nothing for now
     }

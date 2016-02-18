@@ -26,7 +26,7 @@ class ViewController: UIViewController {
     }
 
     @IBAction func listenPlay(sender: UIButton) {
-        var rwf = RWFramework.sharedInstance
+        let rwf = RWFramework.sharedInstance
         rwf.isPlaying ? rwf.stop() : rwf.play()
         listenPlayButton.setTitle(rwf.isPlaying ? "Stop" : "Play", forState: UIControlState.Normal)
     }
@@ -55,7 +55,7 @@ class ViewController: UIViewController {
 
     @IBAction func speakRecord(sender: UIButton) {
         speakProgress.setProgress(0, animated: false)
-        var rwf = RWFramework.sharedInstance
+        let rwf = RWFramework.sharedInstance
         rwf.stop()
         rwf.isRecording() ? rwf.stopRecording() : rwf.startRecording()
         speakRecordButton.setTitle(rwf.isRecording() ? "Stop" : "Record", forState: UIControlState.Normal)
@@ -63,39 +63,39 @@ class ViewController: UIViewController {
 
     @IBAction func speakPlay(sender: UIButton) {
         speakProgress.setProgress(0, animated: false)
-        var rwf = RWFramework.sharedInstance
+        let rwf = RWFramework.sharedInstance
         rwf.stop()
         rwf.isPlayingBack() ? rwf.stopPlayback() : rwf.startPlayback()
         speakPlayButton.setTitle(rwf.isPlayingBack() ? "Stop" : "Play", forState: UIControlState.Normal)
     }
 
     @IBAction func speakSubmit(sender: UIButton) {
-        var rwf = RWFramework.sharedInstance
+        let rwf = RWFramework.sharedInstance
         rwf.addRecording("This is my recording!")
     }
 
     @IBAction func speakImage(sender: UIButton) {
-        var rwf = RWFramework.sharedInstance
+        let rwf = RWFramework.sharedInstance
         rwf.doImage()
     }
 
     @IBAction func speakPhotoLibrary(sender: UIButton) {
-        var rwf = RWFramework.sharedInstance
+        let rwf = RWFramework.sharedInstance
         rwf.doPhotoLibrary([kUTTypeImage as String])
     }
 
     @IBAction func speakMovie(sender: UIButton) {
-        var rwf = RWFramework.sharedInstance
+        let rwf = RWFramework.sharedInstance
         rwf.doMovie()
     }
 
     @IBAction func speakText(sender: UIButton) {
-        var rwf = RWFramework.sharedInstance
+        let rwf = RWFramework.sharedInstance
         rwf.addText("Hello, world!")
     }
 
     @IBAction func speakDelete(sender: UIButton) {
-        var rwf = RWFramework.sharedInstance
+        let rwf = RWFramework.sharedInstance
         rwf.deleteRecording()
     }
 
@@ -109,7 +109,7 @@ class ViewController: UIViewController {
         listenNextButton.enabled = false
         listenCurrentButton.enabled = false
 
-        var rwf = RWFramework.sharedInstance
+        let rwf = RWFramework.sharedInstance
         rwf.addDelegate(self)
         rwf.start(false)
     }
@@ -117,7 +117,7 @@ class ViewController: UIViewController {
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
         
-        var rwf = RWFramework.sharedInstance
+        let rwf = RWFramework.sharedInstance
         print(rwf.debugInfo())
     }
 
@@ -148,7 +148,7 @@ extension ViewController: RWFrameworkProtocol {
 
     func rwGetProjectsIdSuccess(data: NSData?) {
 
-        var rwf = RWFramework.sharedInstance
+        let rwf = RWFramework.sharedInstance
         rwf.requestWhenInUseAuthorizationForLocation()
 
         // You can now access the project data
@@ -161,7 +161,7 @@ extension ViewController: RWFrameworkProtocol {
             let dict: [String:String] = ["project_id": project_id.stringValue]
             rwf.apiGetAssets(dict, success: { (data) -> Void in
                 if (data != nil) {
-                    let d = JSON(data: data!)
+                    _ = JSON(data: data!)
 //                    println(d)
                 }
             }) { (error) -> Void in
@@ -181,7 +181,7 @@ extension ViewController: RWFrameworkProtocol {
     }
 
     func rwGetStreamsIdCurrentSuccess(data: NSData?) {
-        let d = JSON(data: data!)
+        _ = JSON(data: data!)
 //        println(d)
     }
 
@@ -206,7 +206,7 @@ extension ViewController: RWFrameworkProtocol {
     func rwImagePickerControllerDidFinishPickingMedia(info: [NSObject : AnyObject], path: String) {
         print(path)
         print(info)
-        var rwf = RWFramework.sharedInstance
+        let rwf = RWFramework.sharedInstance
         rwf.setImageDescription(path, description: "Hello, This is an image!")
     }
 
@@ -219,13 +219,13 @@ extension ViewController: RWFrameworkProtocol {
     }
 
     func rwAudioRecorderDidFinishRecording() {
-        var rwf = RWFramework.sharedInstance
+        let rwf = RWFramework.sharedInstance
         speakRecordButton.setTitle(rwf.isRecording() ? "Stop" : "Record", forState: UIControlState.Normal)
         speakProgress.setProgress(0, animated: false)
     }
 
     func rwAudioPlayerDidFinishPlaying() {
-        var rwf = RWFramework.sharedInstance
+        let rwf = RWFramework.sharedInstance
         speakPlayButton.setTitle(rwf.isPlayingBack() ? "Stop" : "Play", forState: UIControlState.Normal)
         speakProgress.setProgress(0, animated: false)
     }

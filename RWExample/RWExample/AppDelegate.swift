@@ -19,7 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
 
         // Configure AVAudioSession for the application
-        var avAudioSession = AVAudioSession.sharedInstance()
+        let avAudioSession = AVAudioSession.sharedInstance()
         var error: NSError?
 
         // This can be moved to the appropriate place in the application where it makes sense
@@ -30,7 +30,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Play and record for VOIP
         do {
             try avAudioSession.setCategory(AVAudioSessionCategoryPlayAndRecord)
-        } catch var error1 as NSError {
+        } catch let error1 as NSError {
             error = error1
             print("AppDelegate: could not set session category")
             if let e = error {
@@ -41,7 +41,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Send audio to the speaker
         do {
             try avAudioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.Speaker)
-        } catch var error1 as NSError {
+        } catch let error1 as NSError {
             error = error1
             print("AppDelegate: could not overide output audio port")
             if let e = error {
@@ -52,7 +52,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Activiate the AVAudioSession
         do {
             try avAudioSession.setActive(true)
-        } catch var error1 as NSError {
+        } catch let error1 as NSError {
             error = error1
             print("AppDelegate: could not make session active")
             if let e = error {
@@ -60,7 +60,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
 
-        var rwf = RWFramework.sharedInstance
+        let rwf = RWFramework.sharedInstance
         rwf.addDelegate(self)
 
         return true

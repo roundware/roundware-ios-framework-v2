@@ -203,8 +203,8 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
             }
         }
 
-        var session = NSURLSession.sharedSession()
-        var request = NSMutableURLRequest(URL: url)
+        let session = NSURLSession.sharedSession()
+        let request = NSMutableURLRequest(URL: url)
         request.HTTPMethod = "PATCH"
 
         // Token
@@ -220,7 +220,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
         let fileData: NSData?
         do {
             fileData = try NSData(contentsOfFile: filePath, options: NSDataReadingOptions.DataReadingMappedAlways)
-        } catch var error1 as NSError {
+        } catch let error1 as NSError {
             error = error1
             fileData = nil
         }
@@ -254,11 +254,11 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
                 if httpResponse.statusCode == 200 {
                     completion(data: data, error: nil)
                 } else {
-                    var error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
+                    let error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
                     completion(data: data, error: error)
                 }
             } else {
-                var error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
+                let error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
                 completion(data: nil, error: error)
             }
         })
@@ -269,8 +269,8 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
     func patchDataToURL(url: NSURL, postData: Dictionary<String,String>, completion:(data: NSData?, error: NSError?) -> Void) {
         println("patchDataToURL: " + url.absoluteString + " postData = " + postData.description)
 
-        var session = NSURLSession.sharedSession()
-        var request = NSMutableURLRequest(URL: url)
+        let session = NSURLSession.sharedSession()
+        let request = NSMutableURLRequest(URL: url)
         request.HTTPMethod = "PATCH"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "content-type")
 
@@ -291,11 +291,11 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
                 if httpResponse.statusCode == 200 {
                     completion(data: data, error: nil)
                 } else {
-                    var error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
+                    let error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
                     completion(data: data, error: error)
                 }
             } else {
-                var error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
+                let error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
                 completion(data: nil, error: error)
             }
         })
@@ -306,8 +306,8 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
     func postDataToURL(url: NSURL, postData: Dictionary<String,String>, completion:(data: NSData?, error: NSError?) -> Void) {
         println("postDataToURL: " + url.absoluteString + " postData = " + postData.description)
 
-        var session = NSURLSession.sharedSession()
-        var request = NSMutableURLRequest(URL: url)
+        let session = NSURLSession.sharedSession()
+        let request = NSMutableURLRequest(URL: url)
         request.HTTPMethod = "POST"
 
         let token = RWFrameworkConfig.getConfigValueAsString("token", group: RWFrameworkConfig.ConfigGroup.Client)
@@ -320,6 +320,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
             body += "\(key)=\(value)&"
         }
         request.HTTPBody = body.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
+        
         let loadDataTask = session.dataTaskWithRequest(request, completionHandler: { (data: NSData?, response: NSURLResponse?, error: NSError?) -> Void in
             if let errorResponse = error {
                 completion(data: nil, error: errorResponse)
@@ -327,11 +328,11 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
                 if httpResponse.statusCode == 200 {
                     completion(data: data, error: nil)
                 } else {
-                    var error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
+                    let error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
                     completion(data: data, error: error)
                 }
             } else {
-                var error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
+                let error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
                 completion(data: nil, error: error)
             }
         })
@@ -342,8 +343,8 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
     func getDataFromURL(url: NSURL, completion:(data: NSData?, error: NSError?) -> Void) {
         println("getDataFromURL: " + url.absoluteString)
 
-        var session = NSURLSession.sharedSession()
-        var request = NSMutableURLRequest(URL: url)
+        let session = NSURLSession.sharedSession()
+        let request = NSMutableURLRequest(URL: url)
         request.HTTPMethod = "GET"
 
         let token = RWFrameworkConfig.getConfigValueAsString("token", group: RWFrameworkConfig.ConfigGroup.Client)
@@ -358,11 +359,11 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
                 if httpResponse.statusCode == 200 {
                     completion(data: data, error: nil)
                 } else {
-                    var error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
+                    let error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
                     completion(data: data, error: error)
                 }
             } else {
-                var error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
+                let error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
                 completion(data: nil, error: error)
             }
         })
@@ -375,7 +376,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
     func loadDataFromURL(url: NSURL, completion:(data: NSData?, error: NSError?) -> Void) {
         println("loadDataFromURL: " + url.absoluteString)
 
-        var session = NSURLSession.sharedSession()
+        let session = NSURLSession.sharedSession()
         let loadDataTask = session.dataTaskWithURL(url, completionHandler: { (data: NSData?, response: NSURLResponse?, error: NSError?) -> Void in
             if let errorResponse = error {
                 completion(data: nil, error: errorResponse)
@@ -383,11 +384,11 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
                 if httpResponse.statusCode == 200 {
                     completion(data: data, error: nil)
                 } else {
-                    var error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
+                    let error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
                     completion(data: nil, error: error)
                 }
             } else {
-                var error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
+                let error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
                 completion(data: nil, error: error)
             }
         })
