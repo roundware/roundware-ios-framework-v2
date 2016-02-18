@@ -140,7 +140,7 @@ public class RWFramework: NSObject {
         self.letFrameworkRequestWhenInUseAuthorizationForLocation = letFrameworkRequestWhenInUseAuthorizationForLocation
 
         println("start")
-        apiPostUsers(UIDevice().identifierForVendor.UUIDString, client_type: UIDevice().model)
+        apiPostUsers(UIDevice().identifierForVendor!.UUIDString, client_type: UIDevice().model)
 
         preflightRecording()
     }
@@ -241,13 +241,14 @@ public class RWFramework: NSObject {
     /// Return true if we have a network connection
     func hostIsReachable(ip_address: String = "8.8.8.8") -> Bool {
         if let host_name = ip_address.cStringUsingEncoding(NSASCIIStringEncoding) {
-            let reachability  = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, host_name).takeRetainedValue()
+            let reachability  = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, host_name)
             var flags: SCNetworkReachabilityFlags = []
-            if SCNetworkReachabilityGetFlags(reachability, &flags) == 0 {
+            if !SCNetworkReachabilityGetFlags(reachability!, &flags) {
                 return false
             }
-            let isReachable = (flags & UInt32(kSCNetworkFlagsReachable)) != 0
-            let needsConnection = (flags & UInt32(kSCNetworkFlagsConnectionRequired)) != 0
+
+            let isReachable = flags.contains(.Reachable)
+            let needsConnection = flags.contains(.ConnectionRequired)
             return (isReachable && !needsConnection)
         }
         return false

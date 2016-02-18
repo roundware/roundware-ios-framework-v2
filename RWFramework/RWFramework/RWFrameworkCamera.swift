@@ -48,7 +48,7 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 // MARK: - Convenience methods
 
     /// Allow the user to choose a photo from the photo library
-    public func doPhotoLibrary(mediaTypes: [AnyObject] = UIImagePickerController.availableMediaTypesForSourceType(UIImagePickerControllerSourceType.PhotoLibrary)!) {
+    public func doPhotoLibrary(mediaTypes: [String] = UIImagePickerController.availableMediaTypesForSourceType(UIImagePickerControllerSourceType.PhotoLibrary)!) {
         if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.PhotoLibrary) == false { return }
 
         preflightGeoImage()

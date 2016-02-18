@@ -100,14 +100,16 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
         } else {
             soundRecorder = nil
             let soundFileURL = NSURL(fileURLWithPath: soundFilePath())
-            var recordSettings =
+   
+            let recordSettings : [String : AnyObject] =
                 [AVSampleRateKey: 22050.0,
-                AVFormatIDKey: kAudioFormatMPEG4AAC,
+                AVFormatIDKey: NSNumber(unsignedInt: kAudioFormatMPEG4AAC),
                 AVNumberOfChannelsKey: 1,
                 AVEncoderAudioQualityKey: AVAudioQuality.Max.rawValue]
+
             var error: NSError?
             do {
-                soundRecorder = try AVAudioRecorder(URL: soundFileURL, settings: recordSettings as! [NSObject : AnyObject])
+                soundRecorder = try AVAudioRecorder(URL: soundFileURL, settings: recordSettings as! [String : AnyObject])
             } catch var error1 as NSError {
                 error = error1
                 soundRecorder = nil
@@ -149,10 +151,10 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
             let audioAsset = AVURLAsset(URL: soundFileURL, options: options)
             let exportSession = AVAssetExportSession(asset: audioAsset, presetName: AVAssetExportPresetMediumQuality)
     
-            exportSession.outputURL = outputURL
-            exportSession.outputFileType = AVFileTypeQuickTimeMovie
-            exportSession.exportAsynchronouslyWithCompletionHandler { () -> Void in
-                if (exportSession.status == AVAssetExportSessionStatus.Completed) {
+            exportSession!.outputURL = outputURL
+            exportSession!.outputFileType = AVFileTypeQuickTimeMovie
+            exportSession!.exportAsynchronouslyWithCompletionHandler { () -> Void in
+                if (exportSession!.status == AVAssetExportSessionStatus.Completed) {
                     self.println("file conversion success to \(outputURL)")
                 } else {
                     self.println("file conversion failure from \(soundFileURL)")
@@ -290,7 +292,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
 
     public func audioRecorderEncodeErrorDidOccur(recorder: AVAudioRecorder, error: NSError?) {
         println("audioRecorderEncodeErrorDidOccur \(error)")
-        alertOK("RWFramework - Audio Encode Error", message: error.localizedDescription)
+        alertOK("RWFramework - Audio Encode Error", message: error!.localizedDescription)
     }
 
 // MARK: AVAudioPlayerDelegate
@@ -302,7 +304,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     
     public func audioPlayerDecodeErrorDidOccur(player: AVAudioPlayer, error: NSError?) {
         println("audioPlayerDecodeErrorDidOccur \(error)")
-        alertOK("RWFramework - Audio Decode Error", message: error.localizedDescription)
+        alertOK("RWFramework - Audio Decode Error", message: error!.localizedDescription)
     }
 
 }

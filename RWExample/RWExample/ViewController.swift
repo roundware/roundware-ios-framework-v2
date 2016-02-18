@@ -71,7 +71,7 @@ class ViewController: UIViewController {
 
     @IBAction func speakSubmit(sender: UIButton) {
         var rwf = RWFramework.sharedInstance
-        rwf.addRecording(description: "This is my recording!")
+        rwf.addRecording("This is my recording!")
     }
 
     @IBAction func speakImage(sender: UIButton) {
@@ -81,7 +81,7 @@ class ViewController: UIViewController {
 
     @IBAction func speakPhotoLibrary(sender: UIButton) {
         var rwf = RWFramework.sharedInstance
-        rwf.doPhotoLibrary(mediaTypes: [kUTTypeImage])
+        rwf.doPhotoLibrary([kUTTypeImage as String])
     }
 
     @IBAction func speakMovie(sender: UIButton) {
@@ -111,7 +111,7 @@ class ViewController: UIViewController {
 
         var rwf = RWFramework.sharedInstance
         rwf.addDelegate(self)
-        rwf.start(letFrameworkRequestWhenInUseAuthorizationForLocation: false)
+        rwf.start(false)
     }
 
     override func viewDidAppear(animated: Bool) {
@@ -152,7 +152,7 @@ extension ViewController: RWFrameworkProtocol {
         rwf.requestWhenInUseAuthorizationForLocation()
 
         // You can now access the project data
-        if let projectData = RWFrameworkConfig.getConfigDataFromGroup(group: RWFrameworkConfig.ConfigGroup.Project) as? NSDictionary {
+        if let projectData = RWFrameworkConfig.getConfigDataFromGroup(RWFrameworkConfig.ConfigGroup.Project) as? NSDictionary {
 //            println(projectData)
 
 

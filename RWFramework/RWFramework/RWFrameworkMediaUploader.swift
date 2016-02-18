@@ -12,7 +12,7 @@ import AVFoundation
 extension RWFramework {
 
     /// Maximum number of times to try re-uploading beore we skip an item
-    var mediaRetryLimit: Int {
+    var mediaRetryLimit: NSNumber {
         get { return 3 }
     }
 
@@ -76,7 +76,7 @@ extension RWFramework {
                 self.removeMedia(media)
             } else {
                 media.mediaStatus = MediaStatus.UploadFailed
-                media.retryCount = NSNumber(integer: media.retryCount.integerValue+1)
+                media.retryCount = media.retryCount.integerValue + 1
             }
             UIApplication.sharedApplication().endBackgroundTask(bti)
             self.uploaderUploading = false

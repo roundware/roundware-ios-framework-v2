@@ -194,11 +194,11 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
             get {
                 let pathExtension = (filePath as NSString).pathExtension
                 let UTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, pathExtension, nil)
-                let str = UTTypeCopyPreferredTagWithClass(UTI.takeRetainedValue(), kUTTagClassMIMEType)
+                let str = UTTypeCopyPreferredTagWithClass(UTI!.takeRetainedValue(), kUTTagClassMIMEType)
                 if (str == nil) {
                     return "application/octet-stream"
                 } else {
-                    return str.takeUnretainedValue() as String
+                    return str!.takeUnretainedValue() as String
                 }
             }
         }
