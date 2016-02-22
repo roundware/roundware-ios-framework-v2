@@ -220,7 +220,7 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
                 error = error1
                 success = false
             }
-            if let e = error {
+            if let _ = error {
                 println("RWFramework - Couldn't move movie file \(error)")
                 _rwImagePickerControllerDidCancel()
             } else if success == false {

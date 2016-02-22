@@ -99,7 +99,8 @@ public class RWFramework: NSObject {
     var uploaderUploading: Bool = false
 
     // Misc
-    var reverse_domain = "roundware.org" // This will be replaced once the config data is loaded
+    var reverse_domain = "org.roundware" // This will be replaced once the config data is loaded
+    //TODO not true?
 
 // MARK: - Main
 

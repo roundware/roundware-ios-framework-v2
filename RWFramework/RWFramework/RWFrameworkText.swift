@@ -29,7 +29,7 @@ extension RWFramework {
                 error = error1
                 success = false
         }
-        if let e = error {
+        if let _ = error {
             println("RWFramework - Couldn't write text to file \(error)")
         } else if success == false {
             println("RWFramework - Couldn't write text to file for an unknown reason")

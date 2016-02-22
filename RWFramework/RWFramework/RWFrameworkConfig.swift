@@ -48,7 +48,7 @@ public class RWFrameworkConfig {
     /// Passed JSON data, this function saves that data to NSUserDefaults
     public class func setConfigDataAsArrayOfDictionaries(data: NSData) {
         let array = JSON(data: data) // JSON returned as an Array of Dictionarys
-        for (index, dict): (String, JSON) in array {
+        for (_, dict): (String, JSON) in array {
             for (key, value): (String, JSON) in dict {
                 NSUserDefaults.standardUserDefaults().setObject(value.object, forKey: key)
             }
