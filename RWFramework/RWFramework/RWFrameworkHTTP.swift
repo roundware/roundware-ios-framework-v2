@@ -313,6 +313,8 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
         let token = RWFrameworkConfig.getConfigValueAsString("token", group: RWFrameworkConfig.ConfigGroup.Client)
         if token.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0 {
             request.addValue("token \(token)", forHTTPHeaderField: "Authorization")
+            //TODO should be
+            //session.configuration.HTTPAdditionalHeaders = ["Authorization" : "token \(token)"]
         }
 
         var body = ""
@@ -329,6 +331,9 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
                     completion(data: data, error: nil)
                 } else {
                     let error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
+                    //let's see those error messages
+                    //let dict = JSON(data: data!)
+                    //self.println(dict)
                     completion(data: data, error: error)
                 }
             } else {
