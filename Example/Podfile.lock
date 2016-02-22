@@ -1,0 +1,36 @@
+PODS:
+  - FBSnapshotTestCase (2.0.7):
+    - FBSnapshotTestCase/SwiftSupport (= 2.0.7)
+  - FBSnapshotTestCase/Core (2.0.7)
+  - FBSnapshotTestCase/SwiftSupport (2.0.7):
+    - FBSnapshotTestCase/Core
+  - Nimble (3.0.0)
+  - Nimble-Snapshots (3.0.0):
+    - FBSnapshotTestCase (~> 2.0.7)
+    - Nimble
+    - Quick
+  - Quick (0.8.0)
+  - RWFramework (0.1.0):
+    - SwiftyJSON
+  - SwiftyJSON (2.3.2)
+
+DEPENDENCIES:
+  - FBSnapshotTestCase
+  - Nimble (= 3.0.0)
+  - Nimble-Snapshots
+  - Quick (~> 0.8.0)
+  - RWFramework (from `../`)
+
+EXTERNAL SOURCES:
+  RWFramework:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  FBSnapshotTestCase: 7e85180d0d141a0cf472352edda7e80d7eaeb547
+  Nimble: 4c353d43735b38b545cbb4cb91504588eb5de926
+  Nimble-Snapshots: ab41dd737dcd33a0b0cb005a30465fef70b7207a
+  Quick: 563d0f6ec5f72e394645adb377708639b7dd38ab
+  RWFramework: ae99b0f8d5ebca244ac76f163837daf4453478eb
+  SwiftyJSON: 04ccea08915aa0109039157c7974cf0298da292a
+
+COCOAPODS: 0.39.0
