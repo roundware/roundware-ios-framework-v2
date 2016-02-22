@@ -1,11 +1,11 @@
-# roundware-ios-framework-v2
+# RWFramework
 Roundware framework, updated for api v2 and re-built in Swift and made open source. See <http://roundware.org> for more information on configuring the server and other components.
 
 ## Introduction
 
-This project consists of the Roundware framework (RWFramework) and an example app that implements the framework (RWExample). Open the `RWFrameworkExample.xcworkspace` Xcode workspace to examine and run the project.
+This project consists of the Roundware framework (RWFramework) and an example app that implements the framework. Open the `RWFrameworkExample.xcworkspace` Xcode workspace to examine and run the project.
 
-The code is written in Swift 1.2 and currently requires Xcode 6.3 or later and iOS 8 or later.
+The code is written in Swift 2.0 and currently requires Xcode 7 or later and iOS 9 or later.
 
 You can look throughout the code for all methods marked `public` to see what is available to your application. This document outlines some of the more common use cases. Be sure to read the comments on the methods you plan to use.
 
@@ -15,9 +15,18 @@ A `RWFramework.plist` is required with minimum parameters defined. See the serve
 
 ## Usage
 
-Your application is responsible for configuring the `AVAudioSession` for itself. You can see an example of this in the RWExample app in `AppDelegate.swift`.
+Your application is responsible for configuring the `AVAudioSession` for itself. You can see an example of this in the example app in `AppDelegate.swift`.
 
 Note, however, that `RWFrameworkAudioRecorder.m` was provided and added to the project to facilitate a more advanced way of recording audio that would allow VoiceOver audio to be filtered out of the recorded audio. The `useComplexRecordingMechanism` global flag is used to set whether this mechanism is used. If `useComplexRecordingMechanism` is set to true note that certain aspects of the `AVAudioSession` will be set internally in the framework. See `setupAudioSession` in `RWFrameworkAudioRecorder.m` for details.
+
+### Installation
+
+RWFramework is available through [CocoaPods](http://cocoapods.org). To install
+it, simply add the following line to your Podfile:
+
+```ruby
+pod "RWFramework"
+```
 
 ### Initialization
 
@@ -195,6 +204,12 @@ NOTE: You can have any number of delegates receive these calls simply by adding 
 
 NOTE: All of these methods will be called on the main thread.
 
-NOTE: The RWExample app shows how some of them are used in the `ViewController.swift` file.
+NOTE: The example app shows how some of them are used in the `ViewController.swift` file.
 
 See `RWFrameworkProtocol.swift`
+
+##Authors
+
+## License
+
+RWFramework is available under the MIT license. See the LICENSE file for more info.
