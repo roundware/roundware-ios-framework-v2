@@ -212,7 +212,10 @@ public class RWFramework: NSObject {
 
     /// Return the preferred language of the device
     func preferredLanguage() -> String {
-        return NSLocale.preferredLanguages()[0] 
+        //https://developer.apple.com/library/ios/technotes/tn2418/_index.html
+        let language = NSLocale.preferredLanguages()[0]
+        let languageArr = language.characters.split{$0 == "-"}.map(String.init)
+        return languageArr[0]
     }
 
     /// Convert a Double to a String but return an empty string if the Double is 0
