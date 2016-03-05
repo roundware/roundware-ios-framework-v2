@@ -14,7 +14,7 @@ public class RWFrameworkConfig {
     public enum ConfigGroup : CustomStringConvertible {
         case Client
         case Device
-        case Notifications
+//        case Notifications
         case Session
         case Project
         case Server
@@ -25,7 +25,7 @@ public class RWFrameworkConfig {
             switch self {
                 case .Client: return "client"
                 case .Device: return "device"
-                case .Notifications: return "notifications"
+//                case .Notifications: return "notifications"
                 case .Session: return "session"
                 case .Project: return "project"
                 case .Server: return "server"

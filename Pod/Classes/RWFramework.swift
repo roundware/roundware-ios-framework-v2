@@ -12,7 +12,6 @@ import CoreLocation
 import WebKit
 import AVFoundation
 import SystemConfiguration
-import SwiftyJSON
 
 private let _RWFrameworkSharedInstance = RWFramework()
 
@@ -100,8 +99,7 @@ public class RWFramework: NSObject {
     var uploaderUploading: Bool = false
 
     // Misc
-    var reverse_domain = "org.roundware" // This will be replaced once the config data is loaded
-    //TODO not true?
+    var reverse_domain = "org.roundware"
 
 // MARK: - Main
 

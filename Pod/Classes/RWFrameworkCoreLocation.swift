@@ -39,12 +39,10 @@ extension RWFramework: CLLocationManagerDelegate {
                     let fakeLocation: CLLocation = CLLocation(latitude: 1.0, longitude: 1.0)
                     apiPatchStreamsIdWithLocation(fakeLocation)
                 #else
-                    apiPatchStreamsIdWithLocation(locations[0] as? CLLocation)
+                    apiPatchStreamsIdWithLocation(locations[0])
                 #endif
             }
         }
-
-        // TODO: Set theme
 
         rwLocationManager(manager, didUpdateLocations: locations)
     }

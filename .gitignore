@@ -31,3 +31,8 @@ Carthage
 # `pod install` in .travis.yml
 #
 Example/Pods/
+fastlane/devices.txt
+fastlane/.env
+fastlane/report.xml
+fastlane/.env
+RWFramework_Example.app.dSYM.zip

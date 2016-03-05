@@ -107,6 +107,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
                 AVNumberOfChannelsKey: 1,
                 AVEncoderAudioQualityKey: AVAudioQuality.Max.rawValue]
 
+            //TODO needs error handling
             var error: NSError?
             do {
                 soundRecorder = try AVAudioRecorder(URL: soundFileURL, settings: recordSettings )
@@ -177,6 +178,8 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
 
             let rwfar = RWFrameworkAudioRecorder.sharedInstance()
             let soundFileURL = rwfar.outputURL
+            
+            //TODO needs error handling
             var error: NSError?
             do {
                 soundPlayer = try AVAudioPlayer(contentsOfURL: soundFileURL)
@@ -201,6 +204,8 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
             soundPlayer = nil
 
             let soundFileURL = NSURL(fileURLWithPath: soundFilePath())
+            
+            //TODO needs error handling
             var error: NSError?
             do {
                 soundPlayer = try AVAudioPlayer(contentsOfURL: soundFileURL)

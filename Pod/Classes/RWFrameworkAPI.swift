@@ -34,7 +34,6 @@ extension RWFramework {
 
     func postUsersSuccess(data: NSData) {
         let dict = JSON(data: data) // JSON returned as a Dictionary
-//        println(dict)
 
         let username = dict["username"]
         RWFrameworkConfig.setConfigValue("username", value: username.stringValue, group: RWFrameworkConfig.ConfigGroup.Client)
@@ -71,7 +70,7 @@ extension RWFramework {
 
     func postSessionsSuccess(data: NSData) {
         let dict = JSON(data: data)
-//        println(dict)
+        print("sessions success")
 
         let session_id = dict["session_id"]
         RWFrameworkConfig.setConfigValue("session_id", value: session_id.numberValue, group: RWFrameworkConfig.ConfigGroup.Client)
@@ -105,14 +104,14 @@ extension RWFramework {
 
         reverse_domain = RWFrameworkConfig.getConfigValueAsString("reverse_domain")
 
-        // TODO: where is this going to come from?
-        func configDisplayStartupMessage() {
-            let startupMessage = RWFrameworkConfig.getConfigValueAsString("startup_message", group: RWFrameworkConfig.ConfigGroup.Notifications)
-            if (startupMessage.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0) {
-                self.rwUpdateStatus(startupMessage)
-            }
-        }
-        configDisplayStartupMessage()
+        // DEPRECATED
+//        func configDisplayStartupMessage() {
+//            let startupMessage = RWFrameworkConfig.getConfigValueAsString("startup_message", group: RWFrameworkConfig.ConfigGroup.Notifications)
+//            if (startupMessage.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0) {
+//                self.rwUpdateStatus(startupMessage)
+//            }
+//        }
+//        configDisplayStartupMessage()
 
         if letFrameworkRequestWhenInUseAuthorizationForLocation {
             _ = requestWhenInUseAuthorizationForLocation()
@@ -230,13 +229,13 @@ extension RWFramework {
             self.requestStreamSucceeded = true
         }
 
-        // TODO: can we still expect this here?
-        func requestStreamDisplayUserMessage(userMessage: String?) {
-            if (userMessage != nil && userMessage!.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0) {
-                self.rwUpdateStatus(userMessage!)
-            }
-        }
-        requestStreamDisplayUserMessage(dict["user_message"].string)
+        // DEPRECATED
+//        func requestStreamDisplayUserMessage(userMessage: String?) {
+//            if (userMessage != nil && userMessage!.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0) {
+//                self.rwUpdateStatus(userMessage!)
+//            }
+//        }
+//        requestStreamDisplayUserMessage(dict["user_message"].string)
     }
 
 // MARK: PATCH streams id
