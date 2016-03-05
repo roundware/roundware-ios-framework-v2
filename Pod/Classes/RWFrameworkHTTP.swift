@@ -313,7 +313,8 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
         let token = RWFrameworkConfig.getConfigValueAsString("token", group: RWFrameworkConfig.ConfigGroup.Client)
         if token.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0 {
             request.addValue("token \(token)", forHTTPHeaderField: "Authorization")
-            //TODO should be
+            
+            //could set for whole session
             //session.configuration.HTTPAdditionalHeaders = ["Authorization" : "token \(token)"]
         }
 

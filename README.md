@@ -1,25 +1,21 @@
 # RWFramework
-Roundware framework, updated for api v2 and re-built in Swift and made open source. See <http://roundware.org> for more information on configuring the server and other components.
+Roundware framework, updated for API v2 and re-built in Swift and made open source. See <http://roundware.org> for more information on configuring the server and other components.
+
+What is Roundware?
+
+> Roundware is a flexible, distributed framework which collects, stores, organizes and re-presents audio content. Basically, it lets you collect audio from anyone with a smartphone or web access, upload it to a central repository along with its metadata and then filter it and play it back collectively in continuous audio streams.
+
 
 ## Introduction
 
-This project consists of the Roundware framework (RWFramework) and an example app that implements the framework. Open the `RWFrameworkExample.xcworkspace` Xcode workspace to examine and run the project.
+This project consists of the Roundware framework (RWFramework) and an example app that implements the framework. Open the `Example/RWFramework.xcworkspace` Xcode workspace to examine and run the project. The file structure follows from <https://github.com/CocoaPods/pod-template>.
 
-The code is written in Swift 2.0 and currently requires Xcode 7 or later and iOS 9 or later.
+The code is written in Swift 2.0 and currently requires Xcode 7.2 or later and iOS 9 or later.
 
 You can look throughout the code for all methods marked `public` to see what is available to your application. This document outlines some of the more common use cases. Be sure to read the comments on the methods you plan to use.
 
+
 ## Setup
-
-A `RWFramework.plist` is required with minimum parameters defined. See the server setup documentation for more information.
-
-## Usage
-
-Your application is responsible for configuring the `AVAudioSession` for itself. You can see an example of this in the example app in `AppDelegate.swift`.
-
-Note, however, that `RWFrameworkAudioRecorder.m` was provided and added to the project to facilitate a more advanced way of recording audio that would allow VoiceOver audio to be filtered out of the recorded audio. The `useComplexRecordingMechanism` global flag is used to set whether this mechanism is used. If `useComplexRecordingMechanism` is set to true note that certain aspects of the `AVAudioSession` will be set internally in the framework. See `setupAudioSession` in `RWFrameworkAudioRecorder.m` for details.
-
-### Installation
 
 RWFramework is available through [CocoaPods](http://cocoapods.org). To install
 it, simply add the following line to your Podfile:
@@ -27,6 +23,22 @@ it, simply add the following line to your Podfile:
 ```ruby
 pod "RWFramework"
 ```
+
+A `RWFramework.plist` is required with minimum parameters defined. See the server setup documentation for more information.
+
+## RWFramework_Example
+
+We use fastlane to load onto our device. Edit the fastlane configuration, add a `devices.txt` and install [ios-deploy](https://github.com/phonegap/ios-deploy). Plug in your device and then run this command to load the example onto your device the first time.
+
+    fastlane load first:true
+
+
+## Usage
+
+Your application is responsible for configuring the `AVAudioSession` for itself. You can see an example of this in the example app in `AppDelegate.swift`.
+
+Note, however, that `RWFrameworkAudioRecorder.m` was provided and added to the project to facilitate a more advanced way of recording audio that would allow VoiceOver audio to be filtered out of the recorded audio. The `useComplexRecordingMechanism` global flag is used to set whether this mechanism is used. If `useComplexRecordingMechanism` is set to true note that certain aspects of the `AVAudioSession` will be set internally in the framework. See `setupAudioSession` in `RWFrameworkAudioRecorder.m` for details.
+
 
 ### Initialization
 
@@ -40,6 +52,9 @@ Note that setting a delegate is not required but your app will be next to useles
 
 When you are completely done with the framework you should call `rwf.end()` to give the framework a chance to cleanup anything it needs to cleanup.
 
+
+
+
 ### Listening
 
 ##### Playing or stopping a stream
@@ -50,6 +65,7 @@ Anytime after receiving the `rwPostStreamsSuccess()` delegate method callback yo
     rwf.isPlaying ? rwf.stop() : rwf.play()
 
 Other methods regarding audio playback include:
+
 - `canPlay() -> Bool`
 - `play()`
 - `pause()`
@@ -58,9 +74,14 @@ Other methods regarding audio playback include:
 
 See `RWFrameworkAudioPlayer.swift`
 
+
+
+
 ### Speak Assets
 
 The framework has a number of ways to automatically handle adding assets of various types to its internal queue to be uploaded. However, if your app needs more control you can always add them manually as well.
+
+
 
 ##### Attaching an audio asset
 
@@ -94,6 +115,9 @@ Note that the standard `AVAudioRecorderDelegate` and `AVAudioPlayerDelegate` cal
 
 See `RWFrameworkAudioRecorder.swift`
 
+
+
+
 ##### Attaching a photo asset from the camera
 
 Simply call `doImage()`
@@ -103,6 +127,9 @@ You can add an image manually by calling `addImage(string: String, description: 
 Also see the `rwImagePickerControllerDidFinishPickingMedia` delegate protocol method
 
 See `RWFrameworkCamera.swift`
+
+
+
 
 ##### Attaching a movie asset from the camera
 
@@ -114,6 +141,9 @@ Also see the `rwImagePickerControllerDidFinishPickingMedia` delegate protocol me
 
 See `RWFrameworkCamera.swift`
 
+
+
+
 ##### Attaching an image or movie asset from the photo library
 
 Simply call `doPhotoLibrary()`
@@ -122,6 +152,9 @@ You can add an image or movie manually by calling `addImage(string: String)` or 
 
 See `RWFrameworkCamera.swift`
 
+
+
+
 ##### Attaching a text asset
 
 Simply call `addText(string: String, description: String = "") -> String?`
@@ -129,6 +162,9 @@ Simply call `addText(string: String, description: String = "") -> String?`
 The return value is a key to be used when referencing this asset.
 
 See `RWFrameworkText.swift`
+
+
+
 
 ##### Removing an asset from the queue
 
@@ -140,11 +176,17 @@ To remove a text asset simply call `removeText(string: String)` passing the stri
 
 If you added an image or movie asset you can call the associated `remove` method to remove the item. For example, if you called `addImage(string: String, description: String = "") -> String?` or `addMovie(string: String, description: String = "") -> String?` with the path of the assets, simply call `removeImage(string: String)` or `removeMovie(string: String)` to remove them, passing the key that was returned from the `add*` call.
 
+
+
+
 ##### Submitting all attached assets and managing the queue
 
 You can see how many assets are ready for upload by calling `countMedia() -> Int`.
 
 When you are ready to submit all the queued assets simply call `uploadAllMedia()`
+
+
+
 
 ##### Failed media
 
@@ -156,11 +198,14 @@ There are times when uploads may fail. Errors are reported back to your applicat
 
 `purgeUploadFailedMedia()` will delete any media that has failed to upload at least once.
 
+
+
 ### Tags
 
 Your application can get all of the tags for both Listen and Speak modes and the current settings of each. It should use the methods in the framework to get and set them accordingly. The Speak tags will be sent when you `uploadAllMedia()`. The Listen tags can be submitted anytime by calling `submitListenTags()`. This will update the current stream (if playing) accordingly.
 
 See `RWFrameworkTags.swift`
+
 
 ##### Listen Tags
 
@@ -171,6 +216,7 @@ See `RWFrameworkTags.swift`
 - `getAllListenTagsCurrent() -> AnyObject?`
 - `getAllListenTagsCurrentAsString() -> String`
 
+
 ##### Speak Tags
 
 - `getSpeakTags() -> AnyObject?`
@@ -179,6 +225,9 @@ See `RWFrameworkTags.swift`
 - `setSpeakTagsCurrent(code: String, value: AnyObject)`
 - `getAllSpeakTagsCurrent() -> AnyObject?`
 - `getAllSpeakTagsCurrentAsString() -> String`
+
+
+
 
 ### Assets
 
@@ -190,11 +239,17 @@ To get the details of a specific asset you can call `apiGetAssetsId(asset_id: St
 
 See `RWFrameworkAPI.swift`
 
+
+
+
 ### Voting
 
 You can vote on an asset by calling the `apiPostAssetsIdVotes(asset_id: String, session_id: String, vote_type: String, value: NSNumber = 0, success:(data: NSData?) -> Void, failure:(error: NSError) -> Void)` method. See the documentation for valid vote_types and value parameter specifics.
 
 You can get the votes for an asset by calling the `apiGetAssetsIdVotes(asset_id: String, success:(data: NSData?) -> Void, failure:(error: NSError) -> Void)` method.
+
+
+
 
 ### RWFrameworkProtocol
 
@@ -208,7 +263,13 @@ NOTE: The example app shows how some of them are used in the `ViewController.swi
 
 See `RWFrameworkProtocol.swift`
 
+
+
+
 ##Authors
+
+- Joe Zobkiw, @zobskewed
+- Christopher Reed, @seereadnow
 
 ## License
 

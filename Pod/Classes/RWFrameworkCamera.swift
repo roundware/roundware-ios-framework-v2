@@ -211,6 +211,7 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
             let movieFileName = "\(r)_\(movie_file_name)"
             let movieFilePath = (NSTemporaryDirectory() as NSString).stringByAppendingPathComponent(movieFileName)
 
+            //TODO needs error handling
             var error: NSError?
             let success: Bool
             do {

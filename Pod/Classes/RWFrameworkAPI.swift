@@ -34,7 +34,6 @@ extension RWFramework {
 
     func postUsersSuccess(data: NSData) {
         let dict = JSON(data: data) // JSON returned as a Dictionary
-//        println(dict)
 
         let username = dict["username"]
         RWFrameworkConfig.setConfigValue("username", value: username.stringValue, group: RWFrameworkConfig.ConfigGroup.Client)
@@ -71,7 +70,7 @@ extension RWFramework {
 
     func postSessionsSuccess(data: NSData) {
         let dict = JSON(data: data)
-//        println(dict)
+        print("sessions success")
 
         let session_id = dict["session_id"]
         RWFrameworkConfig.setConfigValue("session_id", value: session_id.numberValue, group: RWFrameworkConfig.ConfigGroup.Client)
