@@ -33,4 +33,5 @@ Carthage
 Example/Pods/
 fastlane/devices.txt
 fastlane/report.xml
+fastlane/.env
 RWFramework_Example.app.dSYM.zip

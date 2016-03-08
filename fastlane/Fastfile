@@ -1,0 +1,62 @@
+# If you want to automatically update fastlane if a new version is available:
+# update_fastlane
+
+# This is the minimum version number required.
+# Update this, if you use features of a newer version
+fastlane_version "1.63.0"
+
+default_platform :ios
+
+platform :ios do |options|
+  before_all do |lane, options|
+    # ENV["SLACK_URL"] = "https://hooks.slack.com/services/..."
+    if options[:slow]
+        cocoapods
+    end
+  end
+
+
+  desc "Build and load to my device"
+  lane :load do |options|
+    if options[:first]
+      produce(
+        username: 'developers@seeread.info',
+        app_identifier: 'org.cocoapods.demo.RWFramework-Example',
+        app_name: 'RWFramework_Example',
+        language: 'English',
+        app_version: '1.0',
+        sku: '123',
+        team_name: '' # only necessary when in multiple teams
+      )
+      register_devices( devices_file: './fastlane/devices.txt')
+    end
+    match(type: "development", force_for_new_devices: true)
+    gym(
+      scheme: "RWFramework-Example",
+      workspace: "Example/RWFramework.xcworkspace"
+    )
+    install_on_device(
+      device_id: ENV["TEST_DEVICE"],
+      ipa: "./RWFramework_Example.ipa"
+    )
+  end
+
+  desc "Runs all the tests"
+  lane :test do |options|
+    scan
+  end
+
+  after_all do |lane, options|
+    # This block is called, only if the executed lane was successful
+  end
+
+  error do |lane, exception, options|
+    # slack(
+    #   message: exception.message,
+    #   success: false
+    # )
+  end
+end
+
+# More information about multiple platforms in fastlane: https://github.com/fastlane/fastlane/blob/master/docs/Platforms.md
+# All available actions: https://github.com/fastlane/fastlane/blob/master/docs/Actions.md
