@@ -44,7 +44,6 @@ extension RWFramework: CLLocationManagerDelegate {
             }
         }
 
-        // TODO: Set theme
         rwLocationManager(manager, didUpdateLocations: locations)
     }
 

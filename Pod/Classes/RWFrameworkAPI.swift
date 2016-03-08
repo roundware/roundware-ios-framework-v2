@@ -104,14 +104,14 @@ extension RWFramework {
 
         reverse_domain = RWFrameworkConfig.getConfigValueAsString("reverse_domain")
 
-        // TODO: where is this going to come from?
-        func configDisplayStartupMessage() {
-            let startupMessage = RWFrameworkConfig.getConfigValueAsString("startup_message", group: RWFrameworkConfig.ConfigGroup.Notifications)
-            if (startupMessage.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0) {
-                self.rwUpdateStatus(startupMessage)
-            }
-        }
-        configDisplayStartupMessage()
+        // DEPRECATED
+//        func configDisplayStartupMessage() {
+//            let startupMessage = RWFrameworkConfig.getConfigValueAsString("startup_message", group: RWFrameworkConfig.ConfigGroup.Notifications)
+//            if (startupMessage.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0) {
+//                self.rwUpdateStatus(startupMessage)
+//            }
+//        }
+//        configDisplayStartupMessage()
 
         if letFrameworkRequestWhenInUseAuthorizationForLocation {
             _ = requestWhenInUseAuthorizationForLocation()
@@ -229,13 +229,13 @@ extension RWFramework {
             self.requestStreamSucceeded = true
         }
 
-        // TODO: can we still expect this here?
-        func requestStreamDisplayUserMessage(userMessage: String?) {
-            if (userMessage != nil && userMessage!.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0) {
-                self.rwUpdateStatus(userMessage!)
-            }
-        }
-        requestStreamDisplayUserMessage(dict["user_message"].string)
+        // DEPRECATED
+//        func requestStreamDisplayUserMessage(userMessage: String?) {
+//            if (userMessage != nil && userMessage!.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0) {
+//                self.rwUpdateStatus(userMessage!)
+//            }
+//        }
+//        requestStreamDisplayUserMessage(dict["user_message"].string)
     }
 
 // MARK: PATCH streams id

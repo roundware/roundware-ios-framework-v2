@@ -214,7 +214,7 @@ extension RWFramework {
 
 // MARK: remove
 
-    // TODO: Do not remove media.mediaStatus if currently being pre-processed or uploaded
+    // TODO: Do not remove media if mediaStatus is currently being pre-processed or uploaded, assert
 
     /// Remove the specific piece of media from the mediaArray
     func removeMedia(media: Media) {

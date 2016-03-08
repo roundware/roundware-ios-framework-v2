@@ -501,7 +501,7 @@ static const NSTimeInterval kSilenceDurationThreshold = 1.5; // If more than thi
 }
 
 
-// Every time the shouldSaveAudio flag is switched, notify AudioController's delegate a change has happened.
+// TODO: Every time the shouldSaveAudio flag is switched, notify AudioController's delegate a change has happened didStartSavingAudio
 - (void)setShouldSaveAudio:(BOOL)shouldSaveAudio
 {
     if (_shouldSaveAudio != shouldSaveAudio) {
