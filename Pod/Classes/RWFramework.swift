@@ -131,6 +131,11 @@ public class RWFramework: NSObject {
         self.player?.currentItem?.removeObserver(self, forKeyPath: "timedMetadata")
     }
 
+    /// Sets ProjectId in case you are setting it in App
+    public func setProjectId(project_id: String){
+        RWFrameworkConfig.setConfigValue("project_id", value: project_id)
+    }
+    
     /// Start kicks everything else off - call this to start the framework running.
     /// Pass false for letFrameworkRequestWhenInUseAuthorizationForLocation if the caller would rather call requestWhenInUseAuthorizationForLocation() any time after rwGetProjectsIdSuccess is called.
     public func start(letFrameworkRequestWhenInUseAuthorizationForLocation: Bool = true) {
@@ -231,9 +236,10 @@ public class RWFramework: NSObject {
     func log<T>(object: T) {
         println(object)
     }
-
+    
     /// Log to server
     public func logToServer(event_type: String, data: String? = "") {
+        //TODO check if session
         apiPostEvents(event_type, data: data, success: { (data) -> Void in
             self.println("LOGGED TO SERVER: \(event_type)")
         }) { (error) -> Void in
