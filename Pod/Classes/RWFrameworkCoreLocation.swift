@@ -11,7 +11,7 @@ import CoreLocation
 
 extension RWFramework: CLLocationManagerDelegate {
 
-    /// This is called at app startup and also after permission has changed
+    /// This is called at framework startup and also after permission has changed
     public func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
         if status == CLAuthorizationStatus.AuthorizedAlways || status == CLAuthorizationStatus.AuthorizedWhenInUse {
             let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
@@ -52,7 +52,7 @@ extension RWFramework: CLLocationManagerDelegate {
         println("locationManager didFailWithError \(error)")
     }
 
-    /// If you pass false for letFrameworkRequestWhenInUseAuthorizationForLocation in the framework's start() method then you can call method this anytime after rwGetProjectsIdSuccess is called in roder to request in use location authorization from the user. This method returns true if the request will be made, false otherwise.
+    /// If you pass false for letFrameworkRequestWhenInUseAuthorizationForLocation in the framework's start() method then you can call method this anytime after rwGetProjectsIdSuccess is called in order to request in use location authorization from the user. This method returns true if the request will be made, false otherwise.
     public func requestWhenInUseAuthorizationForLocation() -> Bool {
         let geo_image_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_image_enabled")
         let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")

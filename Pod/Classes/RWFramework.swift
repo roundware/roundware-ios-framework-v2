@@ -117,7 +117,7 @@ public class RWFramework: NSObject {
 
         mediaArray = loadMediaArray()
         rwUpdateApplicationIconBadgeNumber(mediaArray.count)
-        
+
         locationManager.delegate = self
         locationManager.distanceFilter = kCLDistanceFilterNone // This is updated later once getProjectsIdSuccess is called
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
@@ -185,6 +185,11 @@ public class RWFramework: NSObject {
     }
 
 // MARK: - Utilities
+
+    /// Sets ProjectId in case you need to change it in the app
+    public func setProjectId(project_id: String){
+        RWFrameworkConfig.setConfigValue("project_id", value: project_id)
+    }
 
     /// Returns true if the framework is running on a compatible OS
     func compatibleOS() -> Bool {

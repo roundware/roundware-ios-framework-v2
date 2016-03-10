@@ -18,15 +18,30 @@ You can look throughout the code for all methods marked `public` to see what is 
 ## Setup
 
 RWFramework is available through [CocoaPods](http://cocoapods.org). To install
-it, simply add the following line to your Podfile:
+it, simply add the following line to your `Podfile`:
 
 ```ruby
 pod "RWFramework"
 ```
 
+Then install.
+
+```bash
+pod install
+```
+
+
 A `RWFramework.plist` is required with minimum parameters defined. See the server setup documentation for more information.
 
 ## RWFramework_Example
+
+You can try the example out like so:
+
+```bash
+pod try RWFramework
+```
+
+In order to demo any functionality in the simulator, you will need to set the location to `Debug` > `Location` > `Apple`.
 
 We use fastlane to load onto our device. Edit the fastlane configuration, add a `devices.txt` and install [ios-deploy](https://github.com/phonegap/ios-deploy). Plug in your device and then run this command to load the example onto your device the first time.
 
@@ -52,8 +67,7 @@ Note that setting a delegate is not required but your app will be next to useles
 
 When you are completely done with the framework you should call `rwf.end()` to give the framework a chance to cleanup anything it needs to cleanup.
 
-
-
+If you want to change the `project_id` after initialization, you can use `setProjectId`.
 
 ### Listening
 
@@ -263,7 +277,13 @@ NOTE: The example app shows how some of them are used in the `ViewController.swi
 
 See `RWFrameworkProtocol.swift`
 
+## Development
 
+`RWFramework` depends on `SwiftyJSON` so you will need to run:
+
+```bash
+pod install
+```
 
 
 ##Authors

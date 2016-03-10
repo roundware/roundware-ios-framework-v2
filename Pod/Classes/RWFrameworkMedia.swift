@@ -115,6 +115,7 @@ extension RWFramework {
     /// Loads the array of media from NSUserDefaults during framework initialization.
     /// The array is stored to NSUserDefaults via its willSet
     func loadMediaArray() -> Array<Media> {
+        //NOTE I think this might accidentally load images from old sessions in simulator even if the media is not there
         if let mediaArrayData: NSData? = RWFrameworkConfig.getConfigValue("mediaArray", group: RWFrameworkConfig.ConfigGroup.Client) as? NSData {
             if (mediaArrayData != nil) {
                 if let a: AnyObject? = NSKeyedUnarchiver.unarchiveObjectWithData(mediaArrayData!) {

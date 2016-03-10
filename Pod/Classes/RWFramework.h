@@ -15,6 +15,4 @@ FOUNDATION_EXPORT double RWFrameworkVersionNumber;
 FOUNDATION_EXPORT const unsigned char RWFrameworkVersionString[];
 
 // In this header, you should import all the public headers of your framework using statements like #import <RWFramework/PublicHeader.h>
-
-//TODO
 //#import <RWFramework/RWFrameworkAudioRecorder.h>
