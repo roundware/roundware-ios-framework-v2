@@ -18,11 +18,18 @@ You can look throughout the code for all methods marked `public` to see what is 
 ## Setup
 
 RWFramework is available through [CocoaPods](http://cocoapods.org). To install
-it, simply add the following line to your Podfile:
+it, simply add the following line to your `Podfile`:
 
 ```ruby
 pod "RWFramework"
 ```
+
+Then install.
+
+```bash
+pod install
+```
+
 
 A `RWFramework.plist` is required with minimum parameters defined. See the server setup documentation for more information.
 
@@ -52,8 +59,7 @@ Note that setting a delegate is not required but your app will be next to useles
 
 When you are completely done with the framework you should call `rwf.end()` to give the framework a chance to cleanup anything it needs to cleanup.
 
-
-
+If you want to change the `project_id` after initialization, you can use `setProjectId`.
 
 ### Listening
 
@@ -262,8 +268,6 @@ NOTE: All of these methods will be called on the main thread.
 NOTE: The example app shows how some of them are used in the `ViewController.swift` file.
 
 See `RWFrameworkProtocol.swift`
-
-
 
 
 ##Authors

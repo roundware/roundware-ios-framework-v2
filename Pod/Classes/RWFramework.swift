@@ -117,7 +117,7 @@ public class RWFramework: NSObject {
 
         mediaArray = loadMediaArray()
         rwUpdateApplicationIconBadgeNumber(mediaArray.count)
-        
+
         locationManager.delegate = self
         locationManager.distanceFilter = kCLDistanceFilterNone // This is updated later once getProjectsIdSuccess is called
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
@@ -131,11 +131,6 @@ public class RWFramework: NSObject {
         self.player?.currentItem?.removeObserver(self, forKeyPath: "timedMetadata")
     }
 
-    /// Sets ProjectId in case you are setting it in App
-    public func setProjectId(project_id: String){
-        RWFrameworkConfig.setConfigValue("project_id", value: project_id)
-    }
-    
     /// Start kicks everything else off - call this to start the framework running.
     /// Pass false for letFrameworkRequestWhenInUseAuthorizationForLocation if the caller would rather call requestWhenInUseAuthorizationForLocation() any time after rwGetProjectsIdSuccess is called.
     public func start(letFrameworkRequestWhenInUseAuthorizationForLocation: Bool = true) {
@@ -191,6 +186,11 @@ public class RWFramework: NSObject {
 
 // MARK: - Utilities
 
+    /// Sets ProjectId in case you need to change it in the app
+    public func setProjectId(project_id: String){
+        RWFrameworkConfig.setConfigValue("project_id", value: project_id)
+    }
+
     /// Returns true if the framework is running on a compatible OS
     func compatibleOS() -> Bool {
         let iOS8OrLater: Bool = NSProcessInfo().isOperatingSystemAtLeastVersion(NSOperatingSystemVersion(majorVersion: 8, minorVersion: 0, patchVersion: 0))
@@ -236,7 +236,7 @@ public class RWFramework: NSObject {
     func log<T>(object: T) {
         println(object)
     }
-    
+
     /// Log to server
     public func logToServer(event_type: String, data: String? = "") {
         //TODO check if session

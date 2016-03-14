@@ -6,12 +6,8 @@
 	<integer>2</integer>
 	<key>reverse_domain</key>
 	<string>org.roundware</string>
-	<key>base_url_saved</key>
-	<string>http://rwdev.dyndns.org/roundware/?</string>
 	<key>base_url</key>
-	<string>http://devapi.digita11y.org/</string>
-	<key>reachability_host_name</key>
-	<string>rwdev.dyndns.org</string>
+	<string>https://devapi.digita11y.org/</string>
 	<key>distance_filter_in_meters</key>
 	<real>5</real>
 	<key>gps_idle_interval_in_seconds</key>
