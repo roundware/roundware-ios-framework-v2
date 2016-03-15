@@ -11,7 +11,7 @@ import CoreLocation
 
 extension RWFramework: CLLocationManagerDelegate {
 
-    /// This is called at app startup and also after permission has changed
+    /// This is called at framework startup and also after permission has changed
     public func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
         if status == CLAuthorizationStatus.AuthorizedAlways || status == CLAuthorizationStatus.AuthorizedWhenInUse {
             let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")

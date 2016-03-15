@@ -239,7 +239,6 @@ public class RWFramework: NSObject {
 
     /// Log to server
     public func logToServer(event_type: String, data: String? = "") {
-        //TODO check if session
         apiPostEvents(event_type, data: data, success: { (data) -> Void in
             self.println("LOGGED TO SERVER: \(event_type)")
         }) { (error) -> Void in

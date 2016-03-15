@@ -23,7 +23,8 @@ class ViewController: UIViewController {
     @IBOutlet var listenCurrentButton: UIButton!
     
     @IBAction func listenTags(sender: UIButton) {
-        RWFramework.sharedInstance.editListenTags()
+        //TODO show tags available
+        //RWFramework.sharedInstance.editListenTags()
     }
     
     @IBAction func listenPlay(sender: UIButton) {
@@ -51,7 +52,8 @@ class ViewController: UIViewController {
     }
     
     @IBAction func speakTags(sender: UIButton) {
-        RWFramework.sharedInstance.editSpeakTags()
+        //TODO show tags available
+        //RWFramework.sharedInstance.editSpeakTags()
     }
     
     @IBAction func speakRecord(sender: UIButton) {
