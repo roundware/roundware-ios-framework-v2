@@ -41,5 +41,5 @@ Pod::Spec.new do |s|
   s.public_header_files = 'Pod/Classes/**/*.h'
   s.frameworks =  'AVFoundation', 'CoreLocation', 'UIKit', 'Foundation', 'WebKit', 'SystemConfiguration', 'MobileCoreServices'
 
-  s.dependency 'SwiftyJSON'
+  s.dependency 'SwiftyJSON', '>3'
 end

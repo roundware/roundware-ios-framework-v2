@@ -26,7 +26,7 @@ extension RWFramework {
 
         let media = getMediaToProcess()
         if (media != nil) {
-            self.uploadMedia(media!)
+            self.uploadMedia(media: media!)
         } else {
             self.uploaderUploading = false
         }
@@ -42,8 +42,8 @@ extension RWFramework {
                 return media
             }
             if (media.mediaStatus == MediaStatus.UploadFailed && media.retryCount.intValue >= mediaRetryLimit.intValue) {
-                self.deleteMediaFile(media)
-                self.removeMedia(media)
+                self.deleteMediaFile(media: media)
+                self.removeMedia(media: media)
             }
         }
         return nil
@@ -55,30 +55,30 @@ extension RWFramework {
     func uploadMedia(media: Media) {
         media.mediaStatus = MediaStatus.Uploading
 
-        let bti = UIApplication.sharedApplication().beginBackgroundTaskWithName("RWFramework_uploadMedia", expirationHandler: { () -> Void in
+        let bti = UIApplication.shared.beginBackgroundTask(withName: "RWFramework_uploadMedia", expirationHandler: { () -> Void in
             // last ditch effort
-            self.logToServer("upload_failed", data: "RWFramework_uploadMedia background task expired.")
-            self.println("RWFramework couldn't finish uploading in time.")
+            self.logToServer(event_type: "upload_failed", data: "RWFramework_uploadMedia background task expired.")
+            self.println(object: "RWFramework couldn't finish uploading in time.")
         })
 
         // upload here
-        apiPatchEnvelopesId(media, success:{ () -> Void in
-            self.println("apiPatchEnvelopesId success")
+        apiPatchEnvelopesId(media: media, success:{ () -> Void in
+            self.println(object: "apiPatchEnvelopesId success")
             media.mediaStatus = MediaStatus.UploadCompleted
-            self.deleteMediaFile(media)
-            self.removeMedia(media)
-            UIApplication.sharedApplication().endBackgroundTask(bti)
+            self.deleteMediaFile(media: media)
+            self.removeMedia(media: media)
+            UIApplication.shared.endBackgroundTask(bti)
             self.uploaderUploading = false
         }, failure:{ (error: NSError) -> Void in
-            self.println("apiPatchEnvelopesId failure")
+            self.println(object: "apiPatchEnvelopesId failure")
             if (error.code == 400) {
-                self.deleteMediaFile(media)
-                self.removeMedia(media)
+                self.deleteMediaFile(media: media)
+                self.removeMedia(media: media)
             } else {
                 media.mediaStatus = MediaStatus.UploadFailed
-                media.retryCount = media.retryCount.integerValue + 1
+                media.retryCount = (media.retryCount.intValue + 1) as NSNumber
             }
-            UIApplication.sharedApplication().endBackgroundTask(bti)
+            UIApplication.shared.endBackgroundTask(bti)
             self.uploaderUploading = false
         })
     }
@@ -89,16 +89,16 @@ extension RWFramework {
         var error: NSError?
         var b: Bool
         do {
-            try NSFileManager.defaultManager().removeItemAtPath(media.string)
+            try FileManager.default.removeItem(atPath: media.string)
             b = true
         } catch let error1 as NSError {
             error = error1
             b = false
         }
         if let _ = error {
-            println("RWFramework - Couldn't delete media file after successful upload \(error)")
+            println(object: "RWFramework - Couldn't delete media file after successful upload \(error)")
         } else if (b == false) {
-            println("RWFramework - Couldn't delete media file after successful upload for an unknown reason")
+            println(object: "RWFramework - Couldn't delete media file after successful upload for an unknown reason")
         }
     }
 }

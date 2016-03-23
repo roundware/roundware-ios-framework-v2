@@ -20,135 +20,135 @@ import CoreLocation
     // API success/failure delegate methods
 
     /// Sent when a token and username are returned from the server
-    optional func rwPostUsersSuccess(data: NSData?)
+    @objc optional func rwPostUsersSuccess(data: NSData?)
     /// Sent when a token and username fails to be returned from the server
-    optional func rwPostUsersFailure(error: NSError?)
+    @objc optional func rwPostUsersFailure(error: NSError?)
 
     /// Sent when a new user session for the project has been created
-    optional func rwPostSessionsSuccess(data: NSData?)
+    @objc optional func rwPostSessionsSuccess(data: NSData?)
     /// Sent when the server fails to create a new user session for the project
-    optional func rwPostSessionsFailure(error: NSError?)
+    @objc optional func rwPostSessionsFailure(error: NSError?)
 
     /// Sent when project information has been received from the server
-    optional func rwGetProjectsIdSuccess(data: NSData?)
+    @objc optional func rwGetProjectsIdSuccess(data: NSData?)
     /// Sent when the server fails to send project information
-    optional func rwGetProjectsIdFailure(error: NSError?)
+    @objc optional func rwGetProjectsIdFailure(error: NSError?)
 
     /// Sent when project tags have been received from the server
-    optional func rwGetProjectsIdTagsSuccess(data: NSData?)
+    @objc optional func rwGetProjectsIdTagsSuccess(data: NSData?)
     /// Sent when the server fails to send project tags
-    optional func rwGetProjectsIdTagsFailure(error: NSError?)
+    @objc optional func rwGetProjectsIdTagsFailure(error: NSError?)
     /// Sent when project uigroups have been received from the server
-    optional func rwGetProjectsIdUIGroupsSuccess(data: NSData?)
+    @objc optional func rwGetProjectsIdUIGroupsSuccess(data: NSData?)
     /// Sent when project uigroups have been received from the server
-    optional func rwGetProjectsIdUIGroupsFailure(error: NSError?)
+    @objc optional func rwGetProjectsIdUIGroupsFailure(error: NSError?)
     
     /// Sent when a stream has been acquired and can be played. Clients should enable their Play buttons.
-    optional func rwPostStreamsSuccess(data: NSData?)
+    @objc optional func rwPostStreamsSuccess(data: NSData?)
     /// Sent when a stream could not be acquired and therefore can not be played. Clients should disable their Play buttons.
-    optional func rwPostStreamsFailure(error: NSError?)
+    @objc optional func rwPostStreamsFailure(error: NSError?)
 
     /// Sent after a stream is modified successfully
-    optional func rwPatchStreamsIdSuccess(data: NSData?)
+    @objc optional func rwPatchStreamsIdSuccess(data: NSData?)
     /// Sent when a stream could not be modified successfully
-    optional func rwPatchStreamsIdFailure(error: NSError?)
+    @objc optional func rwPatchStreamsIdFailure(error: NSError?)
 
     /// Sent to the server if the GPS has not been updated in gps_idle_interval_in_seconds
-    optional func rwPostStreamsIdHeartbeatSuccess(data: NSData?)
+    @objc optional func rwPostStreamsIdHeartbeatSuccess(data: NSData?)
     /// Sent in the case that sending the heartbeat failed
-    optional func rwPostStreamsIdHeartbeatFailure(error: NSError?)
+    @objc optional func rwPostStreamsIdHeartbeatFailure(error: NSError?)
 
     /// Sent after the server successfully advances to the next sound in the stream
-    optional func rwPostStreamsIdNextSuccess(data: NSData?)
+    @objc optional func rwPostStreamsIdNextSuccess(data: NSData?)
     /// Sent in the case that advancing to the next sound in the stream fails
-    optional func rwPostStreamsIdNextFailure(error: NSError?)
+    @objc optional func rwPostStreamsIdNextFailure(error: NSError?)
 
     /// Sent after the server successfully gets the current asset ID in the stream
-    optional func rwGetStreamsIdCurrentSuccess(data: NSData?)
+    @objc optional func rwGetStreamsIdCurrentSuccess(data: NSData?)
     /// Sent in the case that getting the current assed ID in the stream fails
-    optional func rwGetStreamsIdCurrentFailure(error: NSError?)
+    @objc optional func rwGetStreamsIdCurrentFailure(error: NSError?)
 
     /// Sent after the server successfully returns a new envelope id
-    optional func rwPostEnvelopesSuccess(data: NSData?)
+    @objc optional func rwPostEnvelopesSuccess(data: NSData?)
     /// Sent in the case that the server can not return a new envelope id
-    optional func rwPostEnvelopesFailure(error: NSError?)
+    @objc optional func rwPostEnvelopesFailure(error: NSError?)
 
     /// Sent after the server successfully accepts an envelope item (media upload)
-    optional func rwPatchEnvelopesIdSuccess(data: NSData?)
+    @objc optional func rwPatchEnvelopesIdSuccess(data: NSData?)
     /// Sent in the case that the server can not accept an envelope item (media upload)
-    optional func rwPatchEnvelopesIdFailure(error: NSError?)
+    @objc optional func rwPatchEnvelopesIdFailure(error: NSError?)
 
     /// Sent after the server successfully gets asset info
-    optional func rwGetAssetsSuccess(data: NSData?)
+    @objc optional func rwGetAssetsSuccess(data: NSData?)
     /// Sent in the case that the server can not get asset info
-    optional func rwGetAssetsFailure(error: NSError?)
+    @objc optional func rwGetAssetsFailure(error: NSError?)
 
     /// Sent after the server successfully gets asset id info
-    optional func rwGetAssetsIdSuccess(data: NSData?)
+    @objc optional func rwGetAssetsIdSuccess(data: NSData?)
     /// Sent in the case that the server can not get asset id info
-    optional func rwGetAssetsIdFailure(error: NSError?)
+    @objc optional func rwGetAssetsIdFailure(error: NSError?)
 
     /// Sent after the server successfully posts a vote
-    optional func rwPostAssetsIdVotesSuccess(data: NSData?)
+    @objc optional func rwPostAssetsIdVotesSuccess(data: NSData?)
     /// Sent in the case that the server can not post a vote
-    optional func rwPostAssetsIdVotesFailure(error: NSError?)
+    @objc optional func rwPostAssetsIdVotesFailure(error: NSError?)
 
     /// Sent after the server successfully gets vote info for an asset
-    optional func rwGetAssetsIdVotesSuccess(data: NSData?)
+    @objc optional func rwGetAssetsIdVotesSuccess(data: NSData?)
     /// Sent in the case that the server can not get vote info for an asset
-    optional func rwGetAssetsIdVotesFailure(error: NSError?)
+    @objc optional func rwGetAssetsIdVotesFailure(error: NSError?)
 
     /// Sent after the server successfully posts an event
-    optional func rwPostEventsSuccess(data: NSData?)
+    @objc optional func rwPostEventsSuccess(data: NSData?)
     /// Sent in the case that the server can not post an event
-    optional func rwPostEventsFailure(error: NSError?)
+    @objc optional func rwPostEventsFailure(error: NSError?)
 
 // MARK: metadata
 
     /// Sent when metadata (and all other observed values) are found, sent synchronously on main thread
-    optional func rwObserveValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutablePointer<Void>)
+    @objc optional func rwObserveValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [NSKeyValueChangeKey : AnyObject]?, context: UnsafeMutableRawPointer?)
 
 // MARK: Image Picker
 
     /// Sent when the imagePickerController is dismissed after picking media
-    optional func rwImagePickerControllerDidFinishPickingMedia(info: [NSObject : AnyObject], path: String)
+    @objc optional func rwImagePickerControllerDidFinishPickingMedia(info: [String : AnyObject], path: String)
     /// Sent when the imagePickerController is dismissed after cancelling
-    optional func rwImagePickerControllerDidCancel()
+    @objc optional func rwImagePickerControllerDidCancel()
 
 // MARK: Record
 
     /// Sent when the framework determines that recording is possible (via config)
-    optional func rwReadyToRecord()
+    @objc optional func rwReadyToRecord()
 
     /// Sent to indicate the % complete when recording
-    optional func rwRecordingProgress(percentage: Double, maxDuration: NSTimeInterval, peakPower: Float, averagePower: Float)
+    @objc optional func rwRecordingProgress(percentage: Double, maxDuration: TimeInterval, peakPower: Float, averagePower: Float)
     /// Sent to indicate the % complete when playing back a recording
-    optional func rwPlayingBackProgress(percentage: Double, duration: NSTimeInterval, peakPower: Float, averagePower: Float)
+    @objc optional func rwPlayingBackProgress(percentage: Double, duration: TimeInterval, peakPower: Float, averagePower: Float)
 
     /// Sent when the audio recorder finishes recording
-    optional func rwAudioRecorderDidFinishRecording()
+    @objc optional func rwAudioRecorderDidFinishRecording()
     /// Sent when the audio player finishes playing
-    optional func rwAudioPlayerDidFinishPlaying()
+    @objc optional func rwAudioPlayerDidFinishPlaying()
 
 // MARK: UI/Status
 
     /// A user-readable message that can be passed on as status information. This will always be called on the main thread
-    optional func rwUpdateStatus(message: String)
+    @objc optional func rwUpdateStatus(message: String)
 
     /// The number of items in the queue waiting to be uploaded
-    optional func rwUpdateApplicationIconBadgeNumber(count: Int)
+    @objc optional func rwUpdateApplicationIconBadgeNumber(count: Int)
 
     /// Called when the framework needs the current view controller in order to display the tag editor.
 	/// If this method is not implemented then it is assumed that the delegate is a view controller.
-    optional func rwGetCurrentViewController() -> UIViewController
+    @objc optional func rwGetCurrentViewController() -> UIViewController
 
 // MARK: Location
 
     /// Called when location updates
-    optional func rwLocationManager(manager: CLLocationManager!, didUpdateLocations locations: [AnyObject]!)
+    @objc optional func rwLocationManager(manager: CLLocationManager!, didUpdateLocations locations: [AnyObject]!)
 
     /// Called when location authorization changes
-    optional func rwLocationManager(manager: CLLocationManager!, didChangeAuthorizationStatus status: CLAuthorizationStatus)
+    @objc optional func rwLocationManager(manager: CLLocationManager!, didChangeAuthorizationStatus status: CLAuthorizationStatus)
 
 }
 
@@ -159,32 +159,32 @@ extension RWFramework {
 
     /// Add a delegate to the list of delegates
     public func addDelegate(object: AnyObject) {
-        delegates.addObject(object)
-        println("addDelegate: \(delegates)")
+        delegates.add(object)
+        println(object: "addDelegate: \(delegates)")
     }
 
     /// Remove a delegate from the list of delegates (if it is a delegate)
     public func removeDelegate(object: AnyObject) {
-        delegates.removeObject(object)
-        println("removeDelegate: \(delegates)")
+        delegates.remove(object)
+        println(object: "removeDelegate: \(delegates)")
     }
 
     /// Remove all delegates from the list of delegates
     public func removeAllDelegates() {
         delegates.removeAllObjects()
-        println("removeAllDelegates: \(delegates)")
+        println(object: "removeAllDelegates: \(delegates)")
     }
 
     /// Return true if the object is currently a delegate, false otherwise
     public func isDelegate(object: AnyObject) -> Bool {
-        return delegates.containsObject(object)
+        return delegates.contains(object)
     }
 
 // MARK: dam
 
     /// dam = dispatch_async on the main queue
-    func dam(f: () -> Void) {
-        dispatch_async(dispatch_get_main_queue(), { () -> Void in
+    func dam(f: @escaping () -> Void) {
+        DispatchQueue.main.async(execute: { () -> Void in
             f()
         })
     }
@@ -192,11 +192,11 @@ extension RWFramework {
 // MARK: protocaller
 
     /// Utility function to call method with AnyObject param on valid delegates
-    func protocaller(param: AnyObject? = nil, completion:(rwfp: RWFrameworkProtocol, param: AnyObject?) -> Void) {
+    func protocaller(param: AnyObject? = nil, completion:(_ rwfp: RWFrameworkProtocol, _ param: AnyObject?) -> Void) {
         let enumerator = delegates.objectEnumerator()
-        while let d: AnyObject = enumerator.nextObject() {
+        while let d: AnyObject = enumerator.nextObject() as AnyObject? {
             if let dd = d as? RWFrameworkProtocol {
-                completion(rwfp: dd, param: param)
+                completion(dd, param)
             }
         }
     }
@@ -205,272 +205,272 @@ extension RWFramework {
 
     func rwPostUsersSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwPostUsersSuccess?(data) }
+            self.dam { rwfp.rwPostUsersSuccess?(data: data) }
         }
     }
 
     func rwPostUsersFailure(error: NSError?) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwPostUsersFailure != nil) {
-                self.dam { rwfp.rwPostUsersFailure?(error) }
+                self.dam { rwfp.rwPostUsersFailure?(error: error) }
             } else {
-                self.alertOK(self.LS("RWFramework - rwPostUsersFailure"), message: error!.localizedDescription)
+                self.alertOK(title: self.LS(key: "RWFramework - rwPostUsersFailure"), message: error!.localizedDescription)
             }
         }
     }
 
     func rwPostSessionsSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwPostSessionsSuccess?(data) }
+            self.dam { rwfp.rwPostSessionsSuccess?(data: data) }
         }
     }
 
     func rwPostSessionsFailure(error: NSError?) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwPostSessionsFailure != nil) {
-                self.dam { rwfp.rwPostSessionsFailure?(error) }
+                self.dam { rwfp.rwPostSessionsFailure?(error: error) }
             } else {
-                self.alertOK(self.LS("RWFramework - rwPostSessionsFailure"), message: error!.localizedDescription)
+                self.alertOK(title: self.LS(key: "RWFramework - rwPostSessionsFailure"), message: error!.localizedDescription)
             }
         }
     }
 
     func rwGetProjectsIdSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwGetProjectsIdSuccess?(data) }
+            self.dam { rwfp.rwGetProjectsIdSuccess?(data: data) }
         }
     }
 
     func rwGetProjectsIdFailure(error: NSError?) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwGetProjectsIdFailure != nil) {
-                self.dam { rwfp.rwGetProjectsIdFailure?(error) }
+                self.dam { rwfp.rwGetProjectsIdFailure?(error: error) }
             } else {
-                self.alertOK(self.LS("RWFramework - rwGetProjectsIdFailure"), message: error!.localizedDescription)
+                self.alertOK(title: self.LS(key: "RWFramework - rwGetProjectsIdFailure"), message: error!.localizedDescription)
             }
         }
     }
 
     func rwGetProjectsIdTagsSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwGetProjectsIdTagsSuccess?(data) }
+            self.dam { rwfp.rwGetProjectsIdTagsSuccess?(data: data) }
         }
     }
 
     func rwGetProjectsIdTagsFailure(error: NSError?) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwGetProjectsIdTagsFailure != nil) {
-                self.dam { rwfp.rwGetProjectsIdTagsFailure?(error) }
+                self.dam { rwfp.rwGetProjectsIdTagsFailure?(error: error) }
             } else {
-                self.alertOK(self.LS("RWFramework - rwGetProjectsIdTagsFailure"), message: error!.localizedDescription)
+                self.alertOK(title: self.LS(key: "RWFramework - rwGetProjectsIdTagsFailure"), message: error!.localizedDescription)
             }
         }
     }
     
     func rwGetProjectsIdUIGroupsSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwGetProjectsIdUIGroupsSuccess?(data) }
+            self.dam { rwfp.rwGetProjectsIdUIGroupsSuccess?(data: data) }
         }
     }
     
     func rwGetProjectsIdUIGroupsFailure(error: NSError?) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwGetProjectsIdTagsFailure != nil) {
-                self.dam { rwfp.rwGetProjectsIdUIGroupsFailure?(error) }
+                self.dam { rwfp.rwGetProjectsIdUIGroupsFailure?(error: error) }
             } else {
-                self.alertOK(self.LS("RWFramework - rwGetProjectsIdUIGroupsFailure"), message: error!.localizedDescription)
+                self.alertOK(title: self.LS(key: "RWFramework - rwGetProjectsIdUIGroupsFailure"), message: error!.localizedDescription)
             }
         }
     }
 
     func rwPostStreamsSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwPostStreamsSuccess?(data) }
+            self.dam { rwfp.rwPostStreamsSuccess?(data: data) }
         }
     }
 
     func rwPostStreamsFailure(error: NSError?) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwPostStreamsFailure != nil) {
-                self.dam { rwfp.rwPostStreamsFailure?(error) }
+                self.dam { rwfp.rwPostStreamsFailure?(error: error) }
             } else {
-                self.alertOK(self.LS("RWFramework - rwPostStreamsFailure"), message: error!.localizedDescription)
+                self.alertOK(title: self.LS(key: "RWFramework - rwPostStreamsFailure"), message: error!.localizedDescription)
             }
         }
     }
 
     func rwPatchStreamsIdSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwPatchStreamsIdSuccess?(data) }
+            self.dam { rwfp.rwPatchStreamsIdSuccess?(data: data) }
         }
     }
 
     func rwPatchStreamsIdFailure(error: NSError?) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwPatchStreamsIdFailure != nil) {
-                self.dam { rwfp.rwPatchStreamsIdFailure?(error) }
+                self.dam { rwfp.rwPatchStreamsIdFailure?(error: error) }
             } else {
-                self.alertOK(self.LS("RWFramework - rwPatchStreamsIdFailure"), message: error!.localizedDescription)
+                self.alertOK(title: self.LS(key: "RWFramework - rwPatchStreamsIdFailure"), message: error!.localizedDescription)
             }
         }
     }
 
     func rwPostStreamsIdHeartbeatSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwPostStreamsIdHeartbeatSuccess?(data) }
+            self.dam { rwfp.rwPostStreamsIdHeartbeatSuccess?(data: data) }
         }
     }
 
     func rwPostStreamsIdHeartbeatFailure(error: NSError?) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwPostStreamsIdHeartbeatFailure != nil) {
-                self.dam { rwfp.rwPostStreamsIdHeartbeatFailure?(error) }
+                self.dam { rwfp.rwPostStreamsIdHeartbeatFailure?(error: error) }
             } else {
-                self.alertOK(self.LS("RWFramework - rwPostStreamsIdHeartbeatFailure"), message: error!.localizedDescription)
+                self.alertOK(title: self.LS(key: "RWFramework - rwPostStreamsIdHeartbeatFailure"), message: error!.localizedDescription)
             }
         }
     }
 
     func rwPostStreamsIdNextSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwPostStreamsIdNextSuccess?(data) }
+            self.dam { rwfp.rwPostStreamsIdNextSuccess?(data: data) }
         }
     }
 
     func rwPostStreamsIdNextFailure(error: NSError?) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwPostStreamsIdNextFailure != nil) {
-                self.dam { rwfp.rwPostStreamsIdNextFailure?(error) }
+                self.dam { rwfp.rwPostStreamsIdNextFailure?(error: error) }
             } else {
-                self.alertOK(self.LS("RWFramework - rwPostStreamsIdNextFailure"), message: error!.localizedDescription)
+                self.alertOK(title: self.LS(key: "RWFramework - rwPostStreamsIdNextFailure"), message: error!.localizedDescription)
             }
         }
     }
 
     func rwGetStreamsIdCurrentSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwGetStreamsIdCurrentSuccess?(data) }
+            self.dam { rwfp.rwGetStreamsIdCurrentSuccess?(data: data) }
         }
     }
 
     func rwGetStreamsIdCurrentFailure(error: NSError?) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwGetStreamsIdCurrentFailure != nil) {
-                self.dam { rwfp.rwGetStreamsIdCurrentFailure?(error) }
+                self.dam { rwfp.rwGetStreamsIdCurrentFailure?(error: error) }
             } else {
-                self.alertOK(self.LS("RWFramework - rwGetStreamsIdCurrentFailure"), message: error!.localizedDescription)
+                self.alertOK(title: self.LS(key: "RWFramework - rwGetStreamsIdCurrentFailure"), message: error!.localizedDescription)
             }
         }
     }
 
     func rwPostEnvelopesSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwPostEnvelopesSuccess?(data) }
+            self.dam { rwfp.rwPostEnvelopesSuccess?(data: data) }
         }
     }
 
     func rwPostEnvelopesFailure(error: NSError?) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwPostEnvelopesFailure != nil) {
-                self.dam { rwfp.rwPostEnvelopesFailure?(error) }
+                self.dam { rwfp.rwPostEnvelopesFailure?(error: error) }
             } else {
-                self.alertOK(self.LS("RWFramework - rwPostEnvelopesFailure"), message: error!.localizedDescription)
+                self.alertOK(title: self.LS(key: "RWFramework - rwPostEnvelopesFailure"), message: error!.localizedDescription)
             }
         }
     }
 
     func rwPatchEnvelopesIdSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwPatchEnvelopesIdSuccess?(data) }
+            self.dam { rwfp.rwPatchEnvelopesIdSuccess?(data: data) }
         }
     }
 
     func rwPatchEnvelopesIdFailure(error: NSError?) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwPatchEnvelopesIdFailure != nil) {
-                self.dam { rwfp.rwPatchEnvelopesIdFailure?(error) }
+                self.dam { rwfp.rwPatchEnvelopesIdFailure?(error: error) }
             } else {
-                self.alertOK(self.LS("RWFramework - rwPatchEnvelopesIdFailure"), message: error!.localizedDescription)
+                self.alertOK(title: self.LS(key: "RWFramework - rwPatchEnvelopesIdFailure"), message: error!.localizedDescription)
             }
         }
     }
 
     func rwGetAssetsSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwGetAssetsSuccess?(data) }
+            self.dam { rwfp.rwGetAssetsSuccess?(data: data) }
         }
     }
 
     func rwGetAssetsFailure(error: NSError?) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwGetAssetsFailure != nil) {
-                self.dam { rwfp.rwGetAssetsFailure?(error) }
+                self.dam { rwfp.rwGetAssetsFailure?(error: error) }
             } else {
-                self.alertOK(self.LS("RWFramework - rwGetAssetsFailure"), message: error!.localizedDescription)
+                self.alertOK(title: self.LS(key: "RWFramework - rwGetAssetsFailure"), message: error!.localizedDescription)
             }
         }
     }
 
     func rwGetAssetsIdSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwGetAssetsIdSuccess?(data) }
+            self.dam { rwfp.rwGetAssetsIdSuccess?(data: data) }
         }
     }
 
     func rwGetAssetsIdFailure(error: NSError?) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwGetAssetsIdFailure != nil) {
-                self.dam { rwfp.rwGetAssetsIdFailure?(error) }
+                self.dam { rwfp.rwGetAssetsIdFailure?(error: error) }
             } else {
-                self.alertOK(self.LS("RWFramework - rwGetAssetsIdFailure"), message: error!.localizedDescription)
+                self.alertOK(title: self.LS(key: "RWFramework - rwGetAssetsIdFailure"), message: error!.localizedDescription)
             }
         }
     }
 
     func rwPostAssetsIdVotesSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwPostAssetsIdVotesSuccess?(data) }
+            self.dam { rwfp.rwPostAssetsIdVotesSuccess?(data: data) }
         }
     }
 
     func rwPostAssetsIdVotesFailure(error: NSError?) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwPostAssetsIdVotesFailure != nil) {
-                self.dam { rwfp.rwPostAssetsIdVotesFailure?(error) }
+                self.dam { rwfp.rwPostAssetsIdVotesFailure?(error: error) }
             } else {
-                self.alertOK(self.LS("RWFramework - rwPostAssetsIdVotesFailure"), message: error!.localizedDescription)
+                self.alertOK(title: self.LS(key: "RWFramework - rwPostAssetsIdVotesFailure"), message: error!.localizedDescription)
             }
         }
     }
 
     func rwGetAssetsIdVotesSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwGetAssetsIdVotesSuccess?(data) }
+            self.dam { rwfp.rwGetAssetsIdVotesSuccess?(data: data) }
         }
     }
 
     func rwGetAssetsIdVotesFailure(error: NSError?) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwGetAssetsIdVotesFailure != nil) {
-                self.dam { rwfp.rwGetAssetsIdVotesFailure?(error) }
+                self.dam { rwfp.rwGetAssetsIdVotesFailure?(error: error) }
             } else {
-                self.alertOK(self.LS("RWFramework - rwGetAssetsIdVotesFailure"), message: error!.localizedDescription)
+                self.alertOK(title: self.LS(key: "RWFramework - rwGetAssetsIdVotesFailure"), message: error!.localizedDescription)
             }
         }
     }
 
     func rwPostEventsSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwPostEventsSuccess?(data) }
+            self.dam { rwfp.rwPostEventsSuccess?(data: data) }
         }
     }
 
     func rwPostEventsFailure(error: NSError?) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwPostEventsFailure != nil) {
-                self.dam { rwfp.rwPostEventsFailure?(error) }
+                self.dam { rwfp.rwPostEventsFailure?(error: error) }
             } else {
-                self.alertOK(self.LS("RWFramework - rwPostEventsFailure"), message: error!.localizedDescription)
+                self.alertOK(title: self.LS(key: "RWFramework - rwPostEventsFailure"), message: error!.localizedDescription)
             }
         }
     }
@@ -478,17 +478,17 @@ extension RWFramework {
 
 // MARK: metadata
 
-    func rwObserveValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutablePointer<Void>) {
+    func rwObserveValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [NSKeyValueChangeKey : AnyObject]?, context: UnsafeMutableRawPointer?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwObserveValueForKeyPath?(keyPath, ofObject: object, change: change, context: context) }
+            self.dam { rwfp.rwObserveValueForKeyPath?(keyPath: keyPath, ofObject: object, change: change, context: context) }
         }
     }
 
 // MARK: Image Picker
 
-    func rwImagePickerControllerDidFinishPickingMedia(info: [NSObject : AnyObject], path: String) {
+    func rwImagePickerControllerDidFinishPickingMedia(info: [String : AnyObject], path: String) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwImagePickerControllerDidFinishPickingMedia?(info, path: path) }
+            self.dam { rwfp.rwImagePickerControllerDidFinishPickingMedia?(info: info, path: path) }
         }
     }
 
@@ -506,15 +506,15 @@ extension RWFramework {
         }
     }
 
-    func rwRecordingProgress(percentage: Double, maxDuration: NSTimeInterval, peakPower: Float, averagePower: Float) {
+    func rwRecordingProgress(percentage: Double, maxDuration: TimeInterval, peakPower: Float, averagePower: Float) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwRecordingProgress?(percentage, maxDuration: maxDuration, peakPower: peakPower, averagePower: averagePower) }
+            self.dam { rwfp.rwRecordingProgress?(percentage: percentage, maxDuration: maxDuration, peakPower: peakPower, averagePower: averagePower) }
         }
     }
 
-    func rwPlayingBackProgress(percentage: Double, duration: NSTimeInterval, peakPower: Float, averagePower: Float) {
+    func rwPlayingBackProgress(percentage: Double, duration: TimeInterval, peakPower: Float, averagePower: Float) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwPlayingBackProgress?(percentage, duration: duration, peakPower: peakPower, averagePower: averagePower) }
+            self.dam { rwfp.rwPlayingBackProgress?(percentage: percentage, duration: duration, peakPower: peakPower, averagePower: averagePower) }
         }
     }
 
@@ -536,19 +536,19 @@ extension RWFramework {
         var showedAlert = false
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwUpdateStatus != nil) {
-                self.dam { rwfp.rwUpdateStatus?(message) }
+                self.dam { rwfp.rwUpdateStatus?(message: message) }
             } else if (showedAlert == false) {
                 showedAlert = true // Only show the alert once per call
                 self.dam {
-                    let alert = UIAlertController(title: self.LS("RWFramework"), message: message, preferredStyle: UIAlertControllerStyle.Alert)
-                    let OKAction = UIAlertAction(title: self.LS("OK"), style: .Default) { (action) in }
+                    let alert = UIAlertController(title: self.LS(key: "RWFramework"), message: message, preferredStyle: UIAlertControllerStyle.alert)
+                    let OKAction = UIAlertAction(title: self.LS(key: "OK"), style: .default) { (action) in }
                     alert.addAction(OKAction)
                     if let currentViewController = rwfp.rwGetCurrentViewController?() {
-                        currentViewController.presentViewController(alert, animated: true, completion: { () -> Void in
+                        currentViewController.present(alert, animated: true, completion: { () -> Void in
                         })
                     } else {
                         let assumedViewController = rwfp as! UIViewController
-                        assumedViewController.presentViewController(alert, animated: true, completion: { () -> Void in
+                        assumedViewController.present(alert, animated: true, completion: { () -> Void in
                         })
                     }
                 }
@@ -558,7 +558,7 @@ extension RWFramework {
 
     func rwUpdateApplicationIconBadgeNumber(count: Int) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwUpdateApplicationIconBadgeNumber?(count) }
+            self.dam { rwfp.rwUpdateApplicationIconBadgeNumber?(count: count) }
         }
     }
 
@@ -566,13 +566,13 @@ extension RWFramework {
 
     func rwLocationManager(manager: CLLocationManager!, didUpdateLocations locations: [AnyObject]!) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwLocationManager?(manager, didUpdateLocations: locations) }
+            self.dam { rwfp.rwLocationManager?(manager: manager, didUpdateLocations: locations) }
         }
     }
 
     func rwLocationManager(manager: CLLocationManager!, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwLocationManager?(manager, didChangeAuthorizationStatus: status) }
+            self.dam { rwfp.rwLocationManager?(manager: manager, didChangeAuthorizationStatus: status) }
         }
     }
 

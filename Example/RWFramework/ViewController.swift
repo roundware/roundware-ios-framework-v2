@@ -23,17 +23,17 @@ class ViewController: UIViewController {
     @IBOutlet var listenCurrentButton: UIButton!
     
     
-    @IBAction func listenPlay(sender: UIButton) {
+    @IBAction func listenPlay(_ sender: UIButton) {
         let rwf = RWFramework.sharedInstance
         rwf.isPlaying ? rwf.stop() : rwf.play()
-        listenPlayButton.setTitle(rwf.isPlaying ? "Stop" : "Play", forState: UIControlState.Normal)
+        listenPlayButton.setTitle(rwf.isPlaying ? "Stop" : "Play", for: UIControlState.normal)
     }
     
-    @IBAction func listenNext(sender: UIButton) {
+    @IBAction func listenNext(_ sender: UIButton) {
         RWFramework.sharedInstance.next()
     }
     
-    @IBAction func listenCurrent(sender: UIButton) {
+    @IBAction func listenCurrent(_ sender: UIButton) {
         RWFramework.sharedInstance.current()
     }
     
@@ -43,57 +43,57 @@ class ViewController: UIViewController {
     @IBOutlet var speakPlayButton: UIButton!
     @IBOutlet var speakSubmitButton: UIButton!
     
-    @IBAction func speakUpload(sender: UIButton) {
-        RWFramework.sharedInstance.uploadAllMedia("")
+    @IBAction func speakUpload(_ sender: UIButton) {
+        RWFramework.sharedInstance.uploadAllMedia(tagIdsAsString: "")
     }
     
-    @IBAction func speakTags(sender: UIButton) {
+    @IBAction func speakTags(_ sender: UIButton) {
         //TODO show tags available
         //RWFramework.sharedInstance.editSpeakTags()
     }
     
-    @IBAction func speakRecord(sender: UIButton) {
+    @IBAction func speakRecord(_ sender: UIButton) {
         speakProgress.setProgress(0, animated: false)
         let rwf = RWFramework.sharedInstance
         rwf.stop()
         rwf.isRecording() ? rwf.stopRecording() : rwf.startRecording()
-        speakRecordButton.setTitle(rwf.isRecording() ? "Stop" : "Record", forState: UIControlState.Normal)
+        speakRecordButton.setTitle(rwf.isRecording() ? "Stop" : "Record", for: UIControlState.normal)
     }
     
-    @IBAction func speakPlay(sender: UIButton) {
+    @IBAction func speakPlay(_ sender: UIButton) {
         speakProgress.setProgress(0, animated: false)
         let rwf = RWFramework.sharedInstance
         rwf.stop()
         rwf.isPlayingBack() ? rwf.stopPlayback() : rwf.startPlayback()
-        speakPlayButton.setTitle(rwf.isPlayingBack() ? "Stop" : "Play", forState: UIControlState.Normal)
+        speakPlayButton.setTitle(rwf.isPlayingBack() ? "Stop" : "Play", for: UIControlState.normal)
     }
     
-    @IBAction func speakSubmit(sender: UIButton) {
+    @IBAction func speakSubmit(_ sender: UIButton) {
         let rwf = RWFramework.sharedInstance
-        rwf.addRecording("This is my recording!")
+        rwf.addRecording(description: "This is my recording!")
     }
     
-    @IBAction func speakImage(sender: UIButton) {
+    @IBAction func speakImage(_ sender: UIButton) {
         let rwf = RWFramework.sharedInstance
         rwf.doImage()
     }
     
-    @IBAction func speakPhotoLibrary(sender: UIButton) {
+    @IBAction func speakPhotoLibrary(_ sender: UIButton) {
         let rwf = RWFramework.sharedInstance
-        rwf.doPhotoLibrary([kUTTypeImage as String])
+        rwf.doPhotoLibrary(mediaTypes: [kUTTypeImage as String])
     }
     
-    @IBAction func speakMovie(sender: UIButton) {
+    @IBAction func speakMovie(_ sender: UIButton) {
         let rwf = RWFramework.sharedInstance
         rwf.doMovie()
     }
     
-    @IBAction func speakText(sender: UIButton) {
+    @IBAction func speakText(_ sender: UIButton) {
         let rwf = RWFramework.sharedInstance
-        rwf.addText("Hello, world!")
+        rwf.addText(string: "Hello, world!")
     }
     
-    @IBAction func speakDelete(sender: UIButton) {
+    @IBAction func speakDelete(_ sender: UIButton) {
         let rwf = RWFramework.sharedInstance
         rwf.deleteRecording()
     }
@@ -104,16 +104,16 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        listenPlayButton.enabled = false
-        listenNextButton.enabled = false
-        listenCurrentButton.enabled = false
+        listenPlayButton.isEnabled = false
+        listenNextButton.isEnabled = false
+        listenCurrentButton.isEnabled = false
         
         let rwf = RWFramework.sharedInstance
-        rwf.addDelegate(self)
+        rwf.addDelegate(object: self)
         rwf.start()
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
         let rwf = RWFramework.sharedInstance
@@ -125,32 +125,44 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    override func viewWillDisappear(animated: Bool) {
-        NSNotificationCenter.defaultCenter().removeObserver(self)
+    override func viewWillDisappear(_ animated: Bool) {
+        NotificationCenter.default.removeObserver(self)
     }
     
-    override func shouldAutorotate() -> Bool {
+    override var shouldAutorotate: Bool {
         return false
     }
 }
 
 extension ViewController: RWFrameworkProtocol {
-    
+
+    //deprecated presently
     func rwUpdateStatus(message: String) {
         self.statusTextView.text = self.statusTextView.text + "\r\n" + message
-        self.statusTextView.scrollRangeToVisible(NSMakeRange(self.statusTextView.text.lengthOfBytesUsingEncoding(NSUTF8StringEncoding), 0))
+        self.statusTextView.scrollRangeToVisible(NSMakeRange(self.statusTextView.text.lengthOfBytes(using: String.Encoding.utf8), 0))
     }
-    
-    func rwUpdateApplicationIconBadgeNumber(count: Int) {
-        UIApplication.sharedApplication().applicationIconBadgeNumber = count
-    }
-    func rwGetSessionsIdSuccess(data: NSData?) {
-        let rwf = RWFramework.sharedInstance
-        rwf.addDelegate(self)
-        let path = NSBundle.mainBundle().pathForResource("RWFramework", ofType: "plist")
-        let info  = NSDictionary(contentsOfFile: path!) as! [String:AnyObject!]
-        rwf.setProjectId(String(info["project_id"]))
 
+    func rwUpdateApplicationIconBadgeNumber(count: Int) {
+        UIApplication.shared.applicationIconBadgeNumber = count
+    }
+    func rwPostSessionsFailure(error: NSError?) {
+        print("fail")
+        dump(error)
+    }
+
+    func rwPostSessionsSuccess(data: NSData?) {
+        let rwf = RWFramework.sharedInstance
+        if let fileUrl = Bundle.main.url(forResource: "RWFramework", withExtension: "plist"),
+            let data = try? Data(contentsOf: fileUrl) {
+            if let result = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as! [String: Any] {
+                let id : String = "\(result["project_id"]!)"
+                rwf.setProjectId(project_id: id )
+            }
+        }
+        if let path = Bundle.main.path(forResource: "RWFramework", ofType: "plist"){
+            let info  = NSDictionary(contentsOfFile: path) as! [String:AnyObject?]
+
+        }
     }
 
     func rwGetProjectsIdSuccess(data: NSData?) {
@@ -159,16 +171,16 @@ extension ViewController: RWFrameworkProtocol {
         rwf.requestWhenInUseAuthorizationForLocation()
         
         // You can now access the project data
-        if let projectData = RWFrameworkConfig.getConfigDataFromGroup(RWFrameworkConfig.ConfigGroup.Project) as? NSDictionary {
+        if let projectData = RWFrameworkConfig.getConfigDataFromGroup(group: RWFrameworkConfig.ConfigGroup.Project) as? NSDictionary {
             //            println(projectData)
             
             
             // Get all assets for the project, can filter by adding other keys to dict as documented for GET api/2/assets/
             let project_id = projectData["project_id"] as! NSNumber
             let dict: [String:String] = ["project_id": project_id.stringValue]
-            rwf.apiGetAssets(dict, success: { (data) -> Void in
+            rwf.apiGetAssets(dict: dict, success: { (data) -> Void in
                 if (data != nil) {
-                    _ = JSON(data: data!)
+                    _ = JSON(data: data! as Data)
                     //                    println(d)
                 }
                 }) { (error) -> Void in
@@ -188,21 +200,21 @@ extension ViewController: RWFrameworkProtocol {
     }
     
     func rwGetStreamsIdCurrentSuccess(data: NSData?) {
-        _ = JSON(data: data!)
+        _ = JSON(data: data! as Data)
         //        println(d)
     }
     
     func rwPostStreamsSuccess(data: NSData?) {
-        dispatch_async(dispatch_get_main_queue(), { () -> Void in
-            self.listenPlayButton.enabled = true
-            self.listenNextButton.enabled = true
-            self.listenCurrentButton.enabled = true
+        DispatchQueue.main.async(execute: { () -> Void in
+            self.listenPlayButton.isEnabled = true
+            self.listenNextButton.isEnabled = true
+            self.listenCurrentButton.isEnabled = true
         })
     }
     
     func rwPostStreamsIdHeartbeatSuccess(data: NSData?) {
-        dispatch_async(dispatch_get_main_queue(), { () -> Void in
-            UIView.animateWithDuration(0.5, animations: { () -> Void in
+        DispatchQueue.main.async(execute: { () -> Void in
+            UIView.animate(withDuration: 0.5, animations: { () -> Void in
                 self.heartbeatButton.alpha = 0.0
                 }, completion: { (Bool) -> Void in
                     self.heartbeatButton.alpha = 1.0
@@ -210,49 +222,53 @@ extension ViewController: RWFrameworkProtocol {
         })
     }
     
-    func rwImagePickerControllerDidFinishPickingMedia(info: [NSObject : AnyObject], path: String) {
+    func rwImagePickerControllerDidFinishPickingMedia(info: [String : AnyObject], path: String) {
         print(path)
         print(info)
         let rwf = RWFramework.sharedInstance
-        rwf.setImageDescription(path, description: "Hello, This is an image!")
+        rwf.setImageDescription(string: path, description: "Hello, This is an image!")
     }
     
-    func rwRecordingProgress(percentage: Double, maxDuration: NSTimeInterval, peakPower: Float, averagePower: Float) {
+    func rwRecordingProgress(percentage: Double, maxDuration: TimeInterval, peakPower: Float, averagePower: Float) {
+        print("Recording progress")
         speakProgress.setProgress(Float(percentage), animated: true)
     }
     
-    func rwPlayingBackProgress(percentage: Double, duration: NSTimeInterval, peakPower: Float, averagePower: Float) {
+    func rwPlayingBackProgress(percentage: Double, duration: TimeInterval, peakPower: Float, averagePower: Float) {
+        print("Playback progress")
         speakProgress.setProgress(Float(percentage), animated: true)
     }
     
     func rwAudioRecorderDidFinishRecording() {
         let rwf = RWFramework.sharedInstance
-        speakRecordButton.setTitle(rwf.isRecording() ? "Stop" : "Record", forState: UIControlState.Normal)
+        print("Finished recording")
+        speakRecordButton.setTitle(rwf.isRecording() ? "Stop" : "Record", for: UIControlState.normal)
         speakProgress.setProgress(0, animated: false)
     }
     
     func rwAudioPlayerDidFinishPlaying() {
         let rwf = RWFramework.sharedInstance
-        speakPlayButton.setTitle(rwf.isPlayingBack() ? "Stop" : "Play", forState: UIControlState.Normal)
+        print("Finished playing")
+        speakPlayButton.setTitle(rwf.isPlayingBack() ? "Stop" : "Play", for: UIControlState.normal)
         speakProgress.setProgress(0, animated: false)
     }
     
     func rwGetProjectsIdTagsSuccess(data: NSData?) {
-        rwUpdateStatus("Tags received")
-        let dict = JSON(data: data!)
+        print("Tags received")
+        let dict = JSON(data: data! as Data)
         let tagsArray = dict["tags"]
         for (_, dict): (String, JSON) in tagsArray {
             let value = dict["value"]
-            rwUpdateStatus("\(value)")
+            print("\(value)")
         }
     }
     func rwGetProjectsIdUIGroupsSuccess(data: NSData?) {
-        rwUpdateStatus("UI Groups received")
-        let dict = JSON(data: data!)
+        print("UI Groups received")
+        let dict = JSON(data: data! as Data)
         let uiGroupsArray = dict["ui_groups"]
         for (_, dict): (String, JSON) in uiGroupsArray {
             let header_text_loc = dict["header_text_loc"]
-            rwUpdateStatus("\(header_text_loc)")
+            print("\(header_text_loc)")
         }
     }
 }

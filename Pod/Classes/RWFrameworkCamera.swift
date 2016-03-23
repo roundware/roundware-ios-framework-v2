@@ -15,122 +15,122 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 
     /// Add an image path with optional description, returns a path (key) to the file that will ultimately be uploaded
     public func addImage(string: String, description: String = "") -> String? {
-        addMedia(MediaType.Image, string: string, description: description)
+        addMedia(mediaType: MediaType.Image, string: string, description: description)
         return string
     }
 
     /// Set a description on an already added image, pass the path returned from addImage or rwImagePickerControllerDidFinishPickingMedia as the string parameter
     public func setImageDescription(string: String, description: String) {
-        setMediaDescription(MediaType.Image, string: string, description: description)
+        setMediaDescription(mediaType: MediaType.Image, string: string, description: description)
     }
 
     /// Remove an image path, pass the path returned from addImage or rwImagePickerControllerDidFinishPickingMedia as the string parameter
     public func removeImage(string: String) {
-        removeMedia(MediaType.Image, string: string)
+        removeMedia(mediaType: MediaType.Image, string: string)
     }
 
     /// Add a movie path with optional description, returns a path (key) to the file that will ultimately be uploaded
     public func addMovie(string: String, description: String = "") -> String? {
-        addMedia(MediaType.Movie, string: string, description: description)
+        addMedia(mediaType: MediaType.Movie, string: string, description: description)
         return string
     }
 
     /// Set a description on an already added movie, pass the path returned from addMovie or rwImagePickerControllerDidFinishPickingMedia as the string parameter
     public func setMovieDescription(string: String, description: String) {
-        setMediaDescription(MediaType.Movie, string: string, description: description)
+        setMediaDescription(mediaType: MediaType.Movie, string: string, description: description)
     }
 
     /// Remove a movie path, pass the path returned from addMovie or rwImagePickerControllerDidFinishPickingMedia as the string parameter
     public func removeMovie(string: String) {
-        removeMedia(MediaType.Movie, string: string)
+        removeMedia(mediaType: MediaType.Movie, string: string)
     }
 
 // MARK: - Convenience methods
 
     /// Allow the user to choose a photo from the photo library
-    public func doPhotoLibrary(mediaTypes: [String] = UIImagePickerController.availableMediaTypesForSourceType(UIImagePickerControllerSourceType.PhotoLibrary)!) {
-        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.PhotoLibrary) == false { return }
+    public func doPhotoLibrary(mediaTypes: [String] = UIImagePickerController.availableMediaTypes(for: UIImagePickerControllerSourceType.photoLibrary)!) {
+        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.photoLibrary) == false { return }
 
         preflightGeoImage()
 
         let picker = UIImagePickerController()
-        picker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
+        picker.sourceType = UIImagePickerControllerSourceType.photoLibrary
         picker.mediaTypes = mediaTypes
         picker.allowsEditing = false
         picker.delegate = self
 
-        showPicker(picker)
+        showPicker(picker: picker)
     }
 
     /// Allow the user to take a still image with the camera
     public func doImage() {
-        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera) == false { return }
+        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.camera) == false { return }
 
         preflightGeoImage()
 
         let picker = UIImagePickerController()
-        picker.sourceType = UIImagePickerControllerSourceType.Camera
+        picker.sourceType = UIImagePickerControllerSourceType.camera
         picker.mediaTypes = [kUTTypeImage as String]
-        picker.cameraCaptureMode = UIImagePickerControllerCameraCaptureMode.Photo
+        picker.cameraCaptureMode = UIImagePickerControllerCameraCaptureMode.photo
         picker.allowsEditing = false
         picker.delegate = self
 
-        showPicker(picker)
+        showPicker(picker: picker)
     }
 
     /// Allow the user to take a movie with the camera
     public func doMovie() {
-        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera) == false { return }
+        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.camera) == false { return }
 
         preflightGeoImage()
 
         let picker = UIImagePickerController()
-        picker.sourceType = UIImagePickerControllerSourceType.Camera
+        picker.sourceType = UIImagePickerControllerSourceType.camera
         picker.mediaTypes = [kUTTypeMovie as String]
-        picker.cameraCaptureMode = UIImagePickerControllerCameraCaptureMode.Video
-        let movie_max_duration_in_seconds = RWFrameworkConfig.getConfigValueAsNumber("movie_max_duration_in_seconds").doubleValue
+        picker.cameraCaptureMode = UIImagePickerControllerCameraCaptureMode.video
+        let movie_max_duration_in_seconds = RWFrameworkConfig.getConfigValueAsNumber(key: "movie_max_duration_in_seconds").doubleValue
         picker.videoMaximumDuration = movie_max_duration_in_seconds != 0 ? movie_max_duration_in_seconds : 30
-        picker.videoQuality = UIImagePickerControllerQualityType.TypeMedium
+        picker.videoQuality = UIImagePickerControllerQualityType.typeMedium
         picker.allowsEditing = false
         picker.delegate = self
 
-        showPicker(picker)
+        showPicker(picker: picker)
     }
 
 // MARK: - UIImagePickerControllerDelegate
 
-    public func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
+    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         let mediaType = info[UIImagePickerControllerMediaType] as! String
         if mediaType == kUTTypeImage as String {
-            handleImageMediaType(info)
+            handleImageMediaType(info: info as [String : AnyObject])
         } else if mediaType == kUTTypeMovie as String {
-            handleMovieMediaType(info)
+            handleMovieMediaType(info: info as [String : AnyObject])
         } else {
             imagePickerControllerDidCancel(picker)
         }
     }
 
-    public func imagePickerControllerDidCancel(picker: UIImagePickerController) {
+    public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         _rwImagePickerControllerDidCancel()
     }
 
 // MARK: - delegate stubs
 
-    func _rwImagePickerControllerDidFinishPickingMedia(info: [NSObject : AnyObject], path: String) {
+    func _rwImagePickerControllerDidFinishPickingMedia(info: [String : AnyObject], path: String) {
         finishPreflightGeoImage()
-        if let keyWindow = UIApplication.sharedApplication().keyWindow,
-            rootViewController = keyWindow.rootViewController {
-            rootViewController.dismissViewControllerAnimated(true, completion: { () -> Void in
-                self.rwImagePickerControllerDidFinishPickingMedia(info, path: path)
+        if let keyWindow = UIApplication.shared.keyWindow,
+            let rootViewController = keyWindow.rootViewController {
+            rootViewController.dismiss(animated: true, completion: { () -> Void in
+                self.rwImagePickerControllerDidFinishPickingMedia(info: info, path: path)
             })
         }
     }
 
     func _rwImagePickerControllerDidCancel() {
         finishPreflightGeoImage()
-        if let keyWindow = UIApplication.sharedApplication().keyWindow,
-            rootViewController = keyWindow.rootViewController {
-            rootViewController.dismissViewControllerAnimated(true, completion: { () -> Void in
+        if let keyWindow = UIApplication.shared.keyWindow,
+            let rootViewController = keyWindow.rootViewController {
+            rootViewController.dismiss(animated: true, completion: { () -> Void in
                 self.rwImagePickerControllerDidCancel()
             })
         }
@@ -138,25 +138,25 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 
 // MARK: - Utilities
 
-    func handleImageMediaType(info: [NSObject : AnyObject]) {
+    func handleImageMediaType(info: [String : AnyObject]) {
 
         func imageWithImage(image: UIImage, newSize: CGSize) -> UIImage {
             UIGraphicsBeginImageContextWithOptions(newSize, false, 0.0)
-            let rect = CGRectMake(0, 0, newSize.width, newSize.height)
-            image.drawInRect(rect)
+            let rect = CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height)
+            image.draw(in: rect)
             let newImage = UIGraphicsGetImageFromCurrentImageContext()
             UIGraphicsEndImageContext()
-            return newImage
+            return newImage!
         }
-
-        if let image: UIImage? = info[UIImagePickerControllerOriginalImage] as? UIImage {
-            let q = dispatch_queue_create("com.roundware.image_resize_queue", nil)
-            dispatch_async(q, { () -> Void in
+        if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
+//        if let image: UIImage? = info[UIImagePickerControllerOriginalImage] as? UIImage {
+            let q = DispatchQueue(label: "com.roundware.image_resize_queue")
+            q.async(execute: { () -> Void in
                 var imageToDisplay: UIImage?
 
                 // Size
-                let image_minimum_side = CGFloat(RWFrameworkConfig.getConfigValueAsNumber("image_minimum_side").floatValue)
-                var size = image!.size
+                let image_minimum_side = CGFloat(RWFrameworkConfig.getConfigValueAsNumber(key: "image_minimum_side").floatValue)
+                var size = image.size
 
                 if (size.height > image_minimum_side || size.width > image_minimum_side) {
                     if (size.height > image_minimum_side && size.height < size.width) {
@@ -169,29 +169,29 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
                         size.width = image_minimum_side;
                         size.height = size.height * factor;
                     }
-                    imageToDisplay = imageWithImage(image!, newSize: size)
+                    imageToDisplay = imageWithImage(image: image, newSize: size)
                 } else {
                     imageToDisplay = image;
                 }
 
                 // Compression
-                let image_jpeg_compression = CGFloat(RWFrameworkConfig.getConfigValueAsNumber("image_jpeg_compression").floatValue)
-                if let imageData = UIImageJPEGRepresentation(image!, image_jpeg_compression) {
+                let image_jpeg_compression = CGFloat(RWFrameworkConfig.getConfigValueAsNumber(key: "image_jpeg_compression").floatValue)
+                if let imageData = UIImageJPEGRepresentation(image, image_jpeg_compression) {
 
                     // Write
                     let r = arc4random()
-                    let image_file_name = RWFrameworkConfig.getConfigValueAsString("image_file_name")
+                    let image_file_name = RWFrameworkConfig.getConfigValueAsString(key: "image_file_name")
                     let imageFileName = "\(r)_\(image_file_name)"
-                    let imageFilePath = (NSTemporaryDirectory() as NSString).stringByAppendingPathComponent(imageFileName)
+                    let imageFilePath = (NSTemporaryDirectory() as NSString).appendingPathComponent(imageFileName)
 
-                    let success = imageData.writeToFile(imageFilePath, atomically: false)
-                    if success == false {
-                        self.println("RWFramework - Couldn't write the image to disk")
+                    do {
+                        try imageData.write(to: URL(string: imageFilePath)!, options: [.
+                        atomic])
+                        let keyPath = self.addImage(string: imageFilePath)
+                        self._rwImagePickerControllerDidFinishPickingMedia(info: info, path: keyPath!)
+                    } catch _ as NSError {
+                        self.println(object: "RWFramework - Couldn't write the image to disk")
                         self._rwImagePickerControllerDidCancel()
-                    } else {
-                        // Success
-                        let keyPath = self.addImage(imageFilePath)
-                        self._rwImagePickerControllerDidFinishPickingMedia(info, path: keyPath!)
                     }
                 } else {
                     self._rwImagePickerControllerDidCancel()
@@ -202,34 +202,34 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
         }
     }
 
-    func handleMovieMediaType(info: [NSObject : AnyObject]) {
+    func handleMovieMediaType(info: [String : AnyObject]) {
         if let originalMovieURL: NSURL? = info[UIImagePickerControllerMediaURL] as? NSURL {
             let originalMoviePath = originalMovieURL!.path
 
             let r = arc4random()
-            let movie_file_name = RWFrameworkConfig.getConfigValueAsString("movie_file_name")
+            let movie_file_name = RWFrameworkConfig.getConfigValueAsString(key: "movie_file_name")
             let movieFileName = "\(r)_\(movie_file_name)"
-            let movieFilePath = (NSTemporaryDirectory() as NSString).stringByAppendingPathComponent(movieFileName)
+            let movieFilePath = (NSTemporaryDirectory() as NSString).appendingPathComponent(movieFileName)
 
             //TODO needs error handling
             var error: NSError?
             let success: Bool
             do {
-                try NSFileManager.defaultManager().moveItemAtPath(originalMoviePath!, toPath: movieFilePath)
+                try FileManager.default.moveItem(atPath: originalMoviePath!, toPath: movieFilePath)
                 success = true
             } catch let error1 as NSError {
                 error = error1
                 success = false
             }
             if let _ = error {
-                println("RWFramework - Couldn't move movie file \(error)")
+                println(object: "RWFramework - Couldn't move movie file \(error)")
                 _rwImagePickerControllerDidCancel()
             } else if success == false {
-                println("RWFramework - Couldn't move movie file for an unknown reason")
+                println(object: "RWFramework - Couldn't move movie file for an unknown reason")
                 _rwImagePickerControllerDidCancel()
             } else {
-                let keyPath = addMovie(movieFilePath)
-                _rwImagePickerControllerDidFinishPickingMedia(info, path: keyPath!)
+                let keyPath = addMovie(string: movieFilePath)
+                _rwImagePickerControllerDidFinishPickingMedia(info: info, path: keyPath!)
             }
         } else {
             _rwImagePickerControllerDidCancel()
@@ -237,24 +237,24 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
     }
 
     func showPicker(picker: UIImagePickerController) {
-        if let keyWindow = UIApplication.sharedApplication().keyWindow,
-            rootViewController = keyWindow.rootViewController {
-            rootViewController.presentViewController(picker, animated: true, completion: { () -> Void in
-                UIApplication.sharedApplication().setStatusBarHidden(true, withAnimation: UIStatusBarAnimation.None)
+        if let keyWindow = UIApplication.shared.keyWindow,
+            let rootViewController = keyWindow.rootViewController {
+            rootViewController.present(picker, animated: true, completion: { () -> Void in
+                UIApplication.shared.setStatusBarHidden(true, with: UIStatusBarAnimation.none)
             })
         }
     }
 
     func preflightGeoImage() {
-        let geo_image_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_image_enabled")
+        let geo_image_enabled = RWFrameworkConfig.getConfigValueAsBool(key: "geo_image_enabled")
         if (geo_image_enabled) {
             locationManager.startUpdatingLocation()
         }
     }
 
     func finishPreflightGeoImage() {
-        let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
-        let geo_image_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_image_enabled")
+        let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool(key: "geo_listen_enabled")
+        let geo_image_enabled = RWFrameworkConfig.getConfigValueAsBool(key: "geo_image_enabled")
         if (geo_image_enabled) {
             captureLastRecordedLocation()
             if (geo_listen_enabled == false) {

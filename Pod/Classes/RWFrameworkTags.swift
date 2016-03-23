@@ -133,7 +133,7 @@ extension RWFramework {
 //    }
     
     public func submitTags(tagIdsAsString: String) {
-        apiPatchStreamsIdWithTags(tagIdsAsString)
+        apiPatchStreamsIdWithTags(tag_ids: tagIdsAsString)
     }
 
 

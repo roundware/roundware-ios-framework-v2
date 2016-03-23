@@ -60,6 +60,7 @@ extension RWFramework {
     }
 
     class Media: NSObject, NSCoding {
+
         var mediaType: MediaType = MediaType.None
         var mediaStatus: MediaStatus = MediaStatus.None
         var string: String = ""     // plain text for MediaType.Text, file path for MediaType.Audio, MediaType.Image and MediaType.Movie
@@ -74,8 +75,9 @@ extension RWFramework {
             self.mediaType = mediaType
             self.mediaStatus = MediaStatus.Hold
             self.string = string
-            self.latitude = location.coordinate.latitude
-            self.longitude = location.coordinate.longitude
+            self.latitude = location.coordinate.latitude as NSNumber
+            self.longitude = location.coordinate.longitude as NSNumber
+
         }
 
         init(mediaType: MediaType, string: String, description: String, location: CLLocation) {
@@ -83,32 +85,33 @@ extension RWFramework {
             self.mediaStatus = MediaStatus.Hold
             self.string = string
             self.desc = description
-            self.latitude = location.coordinate.latitude
-            self.longitude = location.coordinate.longitude
+            self.latitude = location.coordinate.latitude as NSNumber
+            self.longitude = location.coordinate.longitude as NSNumber
+
         }
 
         required init?(coder aDecoder: NSCoder) {
-            mediaType = MediaType.allValues[aDecoder.decodeIntegerForKey("mediaType")]
-            mediaStatus = MediaStatus.allValues[aDecoder.decodeIntegerForKey("mediaStatus")]
-            string = aDecoder.decodeObjectForKey("string") as! String
-            desc = aDecoder.decodeObjectForKey("desc") as! String
-            latitude = aDecoder.decodeObjectForKey("latitude") as! NSNumber
-            longitude = aDecoder.decodeObjectForKey("longitude") as! NSNumber
-            tagIDs = aDecoder.decodeObjectForKey("tagIDs") as! String
-            envelopeID = aDecoder.decodeObjectForKey("envelopeID") as! NSNumber
-            retryCount = aDecoder.decodeObjectForKey("retryCount") as! NSNumber
+            mediaType = MediaType.allValues[aDecoder.decodeInteger(forKey: "mediaType")]
+            mediaStatus = MediaStatus.allValues[aDecoder.decodeInteger(forKey: "mediaStatus")]
+            string = aDecoder.decodeObject(forKey:"string") as! String
+            desc = aDecoder.decodeObject(forKey: "desc") as! String
+            latitude = aDecoder.decodeObject(forKey: "latitude") as! NSNumber
+            longitude = aDecoder.decodeObject(forKey: "longitude") as! NSNumber
+            tagIDs = aDecoder.decodeObject(forKey: "tagIDs") as! String
+            envelopeID = aDecoder.decodeObject(forKey: "envelopeID") as! NSNumber
+            retryCount = aDecoder.decodeObject(forKey: "retryCount") as! NSNumber
         }
+        public func encode(with aCoder: NSCoder) {
 
-        func encodeWithCoder(aCoder: NSCoder) {
-            aCoder.encodeInteger(MediaType.allValues.indexOf(mediaType)!, forKey: "mediaType")
-            aCoder.encodeInteger(MediaStatus.allValues.indexOf(mediaStatus)!, forKey: "mediaStatus")
-            aCoder.encodeObject(string, forKey: "string")
-            aCoder.encodeObject(desc, forKey: "desc")
-            aCoder.encodeObject(latitude, forKey: "latitude")
-            aCoder.encodeObject(longitude, forKey: "longitude")
-            aCoder.encodeObject(tagIDs, forKey: "tagIDs")
-            aCoder.encodeObject(envelopeID, forKey: "envelopeID")
-            aCoder.encodeObject(retryCount, forKey: "retryCount")
+            aCoder.encode(MediaType.allValues.index(of: mediaType)!, forKey: "mediaType")
+            aCoder.encode(MediaStatus.allValues.index(of: mediaStatus)!, forKey: "mediaStatus")
+            aCoder.encode(string, forKey: "string")
+            aCoder.encode(desc, forKey: "desc")
+            aCoder.encode(latitude, forKey: "latitude")
+            aCoder.encode(longitude, forKey: "longitude")
+            aCoder.encode(tagIDs, forKey: "tagIDs")
+            aCoder.encode(envelopeID, forKey: "envelopeID")
+            aCoder.encode(retryCount, forKey: "retryCount")
         }
     }
 
@@ -116,11 +119,11 @@ extension RWFramework {
     /// The array is stored to NSUserDefaults via its willSet
     func loadMediaArray() -> Array<Media> {
         //NOTE I think this might accidentally load images from old sessions in simulator even if the media is not there
-        if let mediaArrayData: NSData? = RWFrameworkConfig.getConfigValue("mediaArray", group: RWFrameworkConfig.ConfigGroup.Client) as? NSData {
+        if let mediaArrayData: NSData? = RWFrameworkConfig.getConfigValue(key: "mediaArray", group: RWFrameworkConfig.ConfigGroup.Client) as? NSData {
             if (mediaArrayData != nil) {
-                if let a: AnyObject? = NSKeyedUnarchiver.unarchiveObjectWithData(mediaArrayData!) {
+                if let a: AnyObject? = NSKeyedUnarchiver.unarchiveObject(with: mediaArrayData! as Data ) as AnyObject?? {
                     let b = a as! Array<Media>
-                    println("loadMediaArray loaded \(b.count) items")
+                    println(object: "loadMediaArray loaded \(b.count) items")
                     return b
                 }
             }
@@ -134,10 +137,10 @@ extension RWFramework {
     /// Mark all media on MediaStatus.Hold as MediaStatus.Ready and add current speak tags and envelope ID (called from apiPostEnvelopesSuccess)
     public func uploadAllMedia(tagIdsAsString: String) {
         if (countMedia() == 0) { return }
-        apiPostEnvelopes({ (envelopeID: Int) -> Void in
+        apiPostEnvelopes(success: { (envelopeID: Int) -> Void in
             for media: Media in self.mediaArray {
                 if media.mediaStatus == MediaStatus.Hold {
-                    media.envelopeID = envelopeID
+                    media.envelopeID =  envelopeID as NSNumber
                     media.tagIDs = tagIdsAsString
                     media.mediaStatus = MediaStatus.Ready
                 }
@@ -166,25 +169,25 @@ extension RWFramework {
     public func purgeUploadFailedMedia() {
         let newArray = mediaArray.filter() {$0.mediaStatus != MediaStatus.UploadFailed}
         self.mediaArray = newArray
-        println("purgeUploadFailedMedia: ITEMS: \(mediaArray.count)")
+        println(object: "purgeUploadFailedMedia: ITEMS: \(mediaArray.count)")
     }
 
 // MARK: add
 
     /// Add a MediaType to the array
     func addMedia(mediaType: MediaType, string: String) {
-        if mediaExists(mediaType, string: string) { return }
+        if mediaExists(mediaType: mediaType, string: string) { return }
         let media = Media(mediaType: mediaType, string: string, location: lastRecordedLocation)
         self.mediaArray.append(media)
-        println("addMedia: \(mediaType.rawValue) \(string) ITEMS: \(mediaArray.count)")
+        println(object: "addMedia: \(mediaType.rawValue) \(string) ITEMS: \(mediaArray.count)")
     }
 
     /// Add a MediaType to the array with description
     func addMedia(mediaType: MediaType, string: String, description: String) {
-        if mediaExists(mediaType, string: string) { return }
+        if mediaExists(mediaType: mediaType, string: string) { return }
         let media = Media(mediaType: mediaType, string: string, description: description, location: lastRecordedLocation)
         self.mediaArray.append(media)
-        println("addMedia: \(mediaType.rawValue) \(string) ITEMS: \(mediaArray.count)")
+        println(object: "addMedia: \(mediaType.rawValue) \(string) ITEMS: \(mediaArray.count)")
     }
 
 // MARK: exists
@@ -221,23 +224,23 @@ extension RWFramework {
     func removeMedia(media: Media) {
         let newArray = mediaArray.filter() {"\($0.description)" != "\(media.description)"}
         self.mediaArray = newArray
-        println("removeMedia: \(media) ITEMS: \(mediaArray.count)")
+        println(object: "removeMedia: \(media) ITEMS: \(mediaArray.count)")
     }
 
     /// Remove a MediaType by type and string
     func removeMedia(mediaType: MediaType, string: String) {
-        if (!mediaExists(mediaType, string: string)) { return }
+        if (!mediaExists(mediaType: mediaType, string: string)) { return }
         let newArray = mediaArray.filter() {"\($0.mediaType.rawValue)\($0.string)" != "\(mediaType.rawValue)\(string)"}
         self.mediaArray = newArray
-        println("removeMedia: \(mediaType.rawValue) \(string) ITEMS: \(mediaArray.count)")
+        println(object: "removeMedia: \(mediaType.rawValue) \(string) ITEMS: \(mediaArray.count)")
     }
 
     /// Remove a MediaType by type
     func removeMedia(mediaType: MediaType) {
-        if (!mediaExists(mediaType)) { return }
+        if (!mediaExists(mediaType: mediaType)) { return }
         let newArray = mediaArray.filter() {$0.mediaType.rawValue != mediaType.rawValue}
         self.mediaArray = newArray
-        println("removeMedia: \(mediaType.rawValue) ITEMS: \(mediaArray.count)")
+        println(object: "removeMedia: \(mediaType.rawValue) ITEMS: \(mediaArray.count)")
     }
 
 // MARK: count
@@ -252,7 +255,7 @@ extension RWFramework {
         var count = 0
         for media: Media in mediaArray {
             if media.mediaType == mediaType {
-                count++
+                count += 1
             }
         }
         return count
