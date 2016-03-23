@@ -8,9 +8,8 @@ end
 
 target 'RWFramework_Tests', :exclusive => true do
   pod 'RWFramework', :path => '../'
-
-  pod 'Quick', '~> 0.8.0'
-  pod 'Nimble', '3.0.0'
-  pod 'FBSnapshotTestCase'
+  pod 'FBSnapshotTestCase', :git => 'https://github.com/facebook/ios-snapshot-test-case.git', :commit => '6f5acce351e4a50d1d7001ead2754fcb4aa05f41'
+  pod 'Quick', '~> 0.9.1'
+  pod 'Nimble', '3.2.0'
   pod 'Nimble-Snapshots'
 end
