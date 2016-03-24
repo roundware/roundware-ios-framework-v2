@@ -38,7 +38,11 @@ import CoreLocation
     optional func rwGetProjectsIdTagsSuccess(data: NSData?)
     /// Sent when the server fails to send project tags
     optional func rwGetProjectsIdTagsFailure(error: NSError?)
-
+    /// Sent when project uigroups have been received from the server
+    optional func rwGetProjectsIdUIGroupsSuccess(data: NSData?)
+    /// Sent when project uigroups have been received from the server
+    optional func rwGetProjectsIdUIGroupsFailure(error: NSError?)
+    
     /// Sent when a stream has been acquired and can be played. Clients should enable their Play buttons.
     optional func rwPostStreamsSuccess(data: NSData?)
     /// Sent when a stream could not be acquired and therefore can not be played. Clients should disable their Play buttons.
@@ -259,6 +263,22 @@ extension RWFramework {
                 self.dam { rwfp.rwGetProjectsIdTagsFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwGetProjectsIdTagsFailure"), message: error!.localizedDescription)
+            }
+        }
+    }
+    
+    func rwGetProjectsIdUIGroupsSuccess(data: NSData?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwGetProjectsIdUIGroupsSuccess?(data) }
+        }
+    }
+    
+    func rwGetProjectsIdUIGroupsFailure(error: NSError?) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwGetProjectsIdTagsFailure != nil) {
+                self.dam { rwfp.rwGetProjectsIdUIGroupsFailure?(error) }
+            } else {
+                self.alertOK(self.LS("RWFramework - rwGetProjectsIdUIGroupsFailure"), message: error!.localizedDescription)
             }
         }
     }

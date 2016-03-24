@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>project_id</key>
-	<integer>2</integer>
+	<integer>1</integer>
 	<key>reverse_domain</key>
 	<string>org.roundware</string>
 	<key>base_url</key>
-	<string>https://devapi.digita11y.org/</string>
+	<string>http://devapi.digita11y.org/</string>
 	<key>distance_filter_in_meters</key>
 	<real>5</real>
 	<key>gps_idle_interval_in_seconds</key>

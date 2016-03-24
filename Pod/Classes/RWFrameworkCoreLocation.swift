@@ -26,6 +26,7 @@ extension RWFramework: CLLocationManagerDelegate {
     /// Called by the CLLocationManager when location has been updated
     public func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         // println("locationManager didUpdateLocations \(locations)")
+        //TODO throttle?
 
         captureLastRecordedLocation()
 
@@ -73,7 +74,12 @@ extension RWFramework: CLLocationManagerDelegate {
             let fakeLocation: CLLocation = CLLocation(latitude: 1.0, longitude: 1.0)
             lastRecordedLocation = fakeLocation
         #else
-            lastRecordedLocation = locationManager.location!
+            
+            if let thisLocation = locationManager.location {
+                lastRecordedLocation = thisLocation
+            } else {
+                print("Last location unavailable")
+            }
         #endif
     }
 }

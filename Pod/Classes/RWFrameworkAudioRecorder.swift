@@ -81,9 +81,11 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
             rwfar.setupAllCustomAudio()
         }
     }
-
+    
     /// Start recording audio
     public func startRecording() {
+        preflightRecording()
+        
         let speak_enabled = RWFrameworkConfig.getConfigValueAsBool("speak_enabled")
         if (!speak_enabled) { return }
 
@@ -160,7 +162,8 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
                     self.println("file conversion failure from \(soundFileURL)")
                 }
             }
-
+            //restore VoiceOver sample rate
+            rwfar.setupAudioSession(false)
         } else {
             if (soundRecorder == nil) { return }
             if soundRecorder!.recording {

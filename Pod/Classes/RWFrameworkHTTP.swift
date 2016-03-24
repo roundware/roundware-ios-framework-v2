@@ -48,10 +48,23 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
             completion(data: nil, error: error)
         }
     }
+    
+    func httpGetProjectsIdUIGroups(project_id: String, session_id: String, completion:(data: NSData?, error: NSError?) -> Void) {
+        if let url = NSURL(string: RWFrameworkURLFactory.getProjectsIdUIGroupsURL(project_id, session_id: session_id)) {
+            getDataFromURL(url, completion: completion)
+        } else {
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "getProjectsIdUIGroupsURL unable to be created."])
+            completion(data: nil, error: error)
+        }
+    }
 
-    func httpPostStreams(session_id: String, completion:(data: NSData?, error: NSError?) -> Void) {
+    func httpPostStreams(session_id: String, latitude: String?, longitude: String?, completion:(data: NSData?, error: NSError?) -> Void) {
         if let url = NSURL(string: RWFrameworkURLFactory.postStreamsURL()) {
-            let postData = ["session_id": session_id]
+            var postData = ["session_id": session_id]
+            if let ourLatitude = latitude, ourLongitude = longitude {
+                postData["latitude"]    = ourLatitude
+                postData["longitude"]   = ourLongitude
+            }
             postDataToURL(url, postData: postData, completion: completion)
         } else {
             let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsURL unable to be created."])

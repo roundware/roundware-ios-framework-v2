@@ -22,10 +22,6 @@ class ViewController: UIViewController {
     @IBOutlet var listenNextButton: UIButton!
     @IBOutlet var listenCurrentButton: UIButton!
     
-    @IBAction func listenTags(sender: UIButton) {
-        //TODO show tags available
-        //RWFramework.sharedInstance.editListenTags()
-    }
     
     @IBAction func listenPlay(sender: UIButton) {
         let rwf = RWFramework.sharedInstance
@@ -48,7 +44,7 @@ class ViewController: UIViewController {
     @IBOutlet var speakSubmitButton: UIButton!
     
     @IBAction func speakUpload(sender: UIButton) {
-        RWFramework.sharedInstance.uploadAllMedia()
+        RWFramework.sharedInstance.uploadAllMedia("")
     }
     
     @IBAction func speakTags(sender: UIButton) {
@@ -114,7 +110,7 @@ class ViewController: UIViewController {
         
         let rwf = RWFramework.sharedInstance
         rwf.addDelegate(self)
-        rwf.start(false)
+        rwf.start()
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -231,5 +227,24 @@ extension ViewController: RWFrameworkProtocol {
         let rwf = RWFramework.sharedInstance
         speakPlayButton.setTitle(rwf.isPlayingBack() ? "Stop" : "Play", forState: UIControlState.Normal)
         speakProgress.setProgress(0, animated: false)
+    }
+    
+    func rwGetProjectsIdTagsSuccess(data: NSData?) {
+        rwUpdateStatus("Tags received")
+        let dict = JSON(data: data!)
+        let tagsArray = dict["tags"]
+        for (_, dict): (String, JSON) in tagsArray {
+            let value = dict["value"]
+            rwUpdateStatus("\(value)")
+        }
+    }
+    func rwGetProjectsIdUIGroupsSuccess(data: NSData?) {
+        rwUpdateStatus("UI Groups received")
+        let dict = JSON(data: data!)
+        let uiGroupsArray = dict["ui_groups"]
+        for (_, dict): (String, JSON) in uiGroupsArray {
+            let header_text_loc = dict["header_text_loc"]
+            rwUpdateStatus("\(header_text_loc)")
+        }
     }
 }
