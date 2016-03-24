@@ -98,10 +98,8 @@ extension RWFramework {
 
     func getProjectsIdSuccess(data: NSData, project_id: String, session_id: String) {
         let dict = JSON(data: data)
-//        println(dict)
-
+        
         RWFrameworkConfig.setConfigDataAsDictionary(data, key: "project")
-
         reverse_domain = RWFrameworkConfig.getConfigValueAsString("reverse_domain")
 
         // DEPRECATED
@@ -154,57 +152,87 @@ extension RWFramework {
     }
 
     func getProjectsIdTagsSuccess(data: NSData, project_id: String, session_id: String) {
-
-        let reset_tag_defaults_on_startup = RWFrameworkConfig.getConfigValueAsBool("reset_tag_defaults_on_startup")
-
-        let dict = JSON(data: data)
-//        println(dict)
-
+        //NEW
+        //let dict = JSON(data: data)
+        //dump(dict)
+        //let tagsArray = dict["tags"]
+        //NSUserDefaults.standardUserDefaults().setObject(tagsArray.object, forKey: "tags")
+        
+        apiGetProjectsIdUIGroups(project_id, session_id: session_id)
+        
+//        let reset_tag_defaults_on_startup = RWFrameworkConfig.getConfigValueAsBool("reset_tag_defaults_on_startup")
+//        let dict = JSON(data: data)
+        //OLD
         // Listen
-        let listenArray = dict["listen"]
-        NSUserDefaults.standardUserDefaults().setObject(listenArray.object, forKey: "tags_listen")
+//        let listenArray = dict["listen"]
+//        NSUserDefaults.standardUserDefaults().setObject(listenArray.object, forKey: "tags_listen")
 
         // Save defaults as "current settings" for listen tags if they are not already set
-        for (_, dict): (String, JSON) in listenArray {
-            let code = dict["code"]
-            let defaults = dict["defaults"]
-            let defaultsKeyName = "tags_listen_\(code)_current"
-            let current: AnyObject? = NSUserDefaults.standardUserDefaults().objectForKey(defaultsKeyName)
-            if (current == nil || reset_tag_defaults_on_startup) {
-                NSUserDefaults.standardUserDefaults().setObject(defaults.object, forKey: defaultsKeyName)
-            }
-        }
-
+//        for (_, dict): (String, JSON) in listenArray {
+//            let code = dict["code"]
+//            let defaults = dict["defaults"]
+//            let defaultsKeyName = "tags_listen_\(code)_current"
+//            let current: AnyObject? = NSUserDefaults.standardUserDefaults().objectForKey(defaultsKeyName)
+//            if (current == nil || reset_tag_defaults_on_startup) {
+//                NSUserDefaults.standardUserDefaults().setObject(defaults.object, forKey: defaultsKeyName)
+//            }
+//        }
+//
         // Speak
-        let speakArray = dict["speak"]
-        NSUserDefaults.standardUserDefaults().setObject(speakArray.object, forKey: "tags_speak")
+//        let speakArray = dict["speak"]
+//        NSUserDefaults.standardUserDefaults().setObject(speakArray.object, forKey: "tags_speak")
 
         // Save defaults as "current settings" for speak tags if they are not already set
-        for (_, dict): (String, JSON) in speakArray {
-            let code = dict["code"]
-            let defaults = dict["defaults"]
-            let defaultsKeyName = "tags_speak_\(code)_current"
-            let current: AnyObject? = NSUserDefaults.standardUserDefaults().objectForKey(defaultsKeyName)
-            if (current == nil || reset_tag_defaults_on_startup) {
-                NSUserDefaults.standardUserDefaults().setObject(defaults.object, forKey: defaultsKeyName)
-            }
-        }
-
+//        for (_, dict): (String, JSON) in speakArray {
+//            let code = dict["code"]
+//            let defaults = dict["defaults"]
+//            let defaultsKeyName = "tags_speak_\(code)_current"
+//            let current: AnyObject? = NSUserDefaults.standardUserDefaults().objectForKey(defaultsKeyName)
+//            if (current == nil || reset_tag_defaults_on_startup) {
+//                NSUserDefaults.standardUserDefaults().setObject(defaults.object, forKey: defaultsKeyName)
+//            }
+//        }
+//
         getProjectsIdTagsSucceeded = true
     }
+    
+// MARK: GET UIGroups
 
-// MARK: POST streams
+    func apiGetProjectsIdUIGroups(project_id: String, session_id: String) {
+        httpGetProjectsIdUIGroups(project_id, session_id: session_id) { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                self.getProjectsIdUIGroupsSuccess(data!, project_id: project_id, session_id: session_id)
+                self.rwGetProjectsIdUIGroupsSuccess(data)
+            } else if (error != nil) {
+                self.rwGetProjectsIdUIGroupsFailure(error)
+                self.apiProcessError(data, error: error!, caller: "apiGetProjectsIdUIGroups")
+            }
+        }
+    }
 
+    func getProjectsIdUIGroupsSuccess(data: NSData, project_id: String, session_id: String) {
+        //let dict = JSON(data: data)
+        //dump(dict)
+        //let uiGroupsArray = dict["ui_groups"]
+        //NSUserDefaults.standardUserDefaults().setObject(uiGroupsArray.object, forKey: "uigroups")
+    }
+    
+    
+    // MARK: POST streams
+    
     func apiPostStreams() {
         if (requestStreamInProgress == true) { return }
         if (requestStreamSucceeded == true) { return }
         if (postSessionsSucceeded == false) { return }
-
+        
         requestStreamInProgress = true
-
+        
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.Client).stringValue
-
-        httpPostStreams(session_id) { (data, error) -> Void in
+        
+        let latitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.latitude)
+        let longitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.longitude)
+        
+        httpPostStreams(session_id, latitude: latitude, longitude: longitude) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.postStreamsSuccess(data!, session_id: session_id)
                 self.rwPostStreamsSuccess(data)
@@ -215,6 +243,10 @@ extension RWFramework {
             self.requestStreamInProgress = false
         }
     }
+    
+
+    
+// MARK: POST streams
 
     func postStreamsSuccess(data: NSData, session_id: String) {
         let dict = JSON(data: data)

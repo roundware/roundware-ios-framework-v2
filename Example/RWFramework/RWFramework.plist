@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>project_id</key>
-	<integer>2</integer>
+	<integer>1</integer>
 	<key>reverse_domain</key>
 	<string>org.roundware</string>
 	<key>base_url</key>
