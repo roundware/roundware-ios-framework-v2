@@ -25,53 +25,53 @@ extension RWFramework {
 
 // MARK: Listen Tags
 
-    /// Returns an array of dictionaries of listen information
-    public func getListenTags() -> AnyObject? {
-        return NSUserDefaults.standardUserDefaults().objectForKey("tags_listen")
-    }
-
-    /// Sets the array of dictionaries as listen information
-    public func setListenTags(value: AnyObject) {
-        NSUserDefaults.standardUserDefaults().setObject(value, forKey: "tags_listen")
-    }
-
-    /// Get the current values for the listen tags code
-    public func getListenTagsCurrent(code: String) -> AnyObject? {
-        let defaultsKeyName = "tags_listen_\(code)_current"
-        return NSUserDefaults.standardUserDefaults().objectForKey(defaultsKeyName)
-    }
-
-    /// Set the current values for the listen tags code
-    public func setListenTagsCurrent(code: String, value: AnyObject) {
-        let defaultsKeyName = "tags_listen_\(code)_current"
-        NSUserDefaults.standardUserDefaults().setObject(value, forKey: defaultsKeyName)
-    }
-
-    /// Get all the current values for the listen tags
-    public func getAllListenTagsCurrent() -> AnyObject? {
-        var allListenTagsCurrentArray = [AnyObject]()
-        if let listenTagsArray = getListenTags() as! NSArray? {
-            for d in listenTagsArray {
-                let code = d["code"] as! String
-                if let tagsForCode = getListenTagsCurrent(code) as! [AnyObject]? {
-                    allListenTagsCurrentArray += tagsForCode
-                }
-            }
-        }
-        return allListenTagsCurrentArray
-    }
-
-    /// Get all the current values for the listen tags as a comma-separated string
-    public func getAllListenTagsCurrentAsString() -> String {
-        var tag_ids = ""
-        if let allListenTagsArray = getAllListenTagsCurrent() as! NSArray? {
-            for tag in allListenTagsArray {
-                if (tag_ids != "") { tag_ids += "," }
-                tag_ids += tag.description
-            }
-        }
-        return tag_ids
-    }
+//    /// Returns an array of dictionaries of listen information
+//    public func getListenTags() -> AnyObject? {
+//        return NSUserDefaults.standardUserDefaults().objectForKey("tags_listen")
+//    }
+//
+//    /// Sets the array of dictionaries as listen information
+//    public func setListenTags(value: AnyObject) {
+//        NSUserDefaults.standardUserDefaults().setObject(value, forKey: "tags_listen")
+//    }
+//
+//    /// Get the current values for the listen tags code
+//    public func getListenTagsCurrent(code: String) -> AnyObject? {
+//        let defaultsKeyName = "tags_listen_\(code)_current"
+//        return NSUserDefaults.standardUserDefaults().objectForKey(defaultsKeyName)
+//    }
+//
+//    /// Set the current values for the listen tags code
+//    public func setListenTagsCurrent(code: String, value: AnyObject) {
+//        let defaultsKeyName = "tags_listen_\(code)_current"
+//        NSUserDefaults.standardUserDefaults().setObject(value, forKey: defaultsKeyName)
+//    }
+//
+//    /// Get all the current values for the listen tags
+//    public func getAllListenTagsCurrent() -> AnyObject? {
+//        var allListenTagsCurrentArray = [AnyObject]()
+//        if let listenTagsArray = getListenTags() as! NSArray? {
+//            for d in listenTagsArray {
+//                let code = d["code"] as! String
+//                if let tagsForCode = getListenTagsCurrent(code) as! [AnyObject]? {
+//                    allListenTagsCurrentArray += tagsForCode
+//                }
+//            }
+//        }
+//        return allListenTagsCurrentArray
+//    }
+//
+//    /// Get all the current values for the listen tags as a comma-separated string
+//    public func getAllListenTagsCurrentAsString() -> String {
+//        var tag_ids = ""
+//        if let allListenTagsArray = getAllListenTagsCurrent() as! NSArray? {
+//            for tag in allListenTagsArray {
+//                if (tag_ids != "") { tag_ids += "," }
+//                tag_ids += tag.description
+//            }
+//        }
+//        return tag_ids
+//    }
 
 // MARK: Speak Tags
 
@@ -127,10 +127,15 @@ extension RWFramework {
 // MARK: submit tags
 
     /// Submit all current listen tags to the server
-    public func submitListenTags() {
-        let tag_ids = getAllListenTagsCurrentAsString()
-        apiPatchStreamsIdWithTags(tag_ids)
+//    public func submitListenTags() {
+//        let tag_ids = getAllListenTagsCurrentAsString()
+//        apiPatchStreamsIdWithTags(tag_ids)
+//    }
+    
+    public func submitTags(tagIdsAsString: String) {
+        apiPatchStreamsIdWithTags(tagIdsAsString)
     }
+
 
 // MARK: edit tags
 //

@@ -26,6 +26,7 @@ extension RWFramework: CLLocationManagerDelegate {
     /// Called by the CLLocationManager when location has been updated
     public func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         // println("locationManager didUpdateLocations \(locations)")
+        //TODO throttle?
 
         captureLastRecordedLocation()
 

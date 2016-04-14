@@ -211,10 +211,11 @@ extension RWFramework {
     }
 
     func getProjectsIdUIGroupsSuccess(data: NSData, project_id: String, session_id: String) {
-        //let dict = JSON(data: data)
-        //dump(dict)
-        //let uiGroupsArray = dict["ui_groups"]
-        //NSUserDefaults.standardUserDefaults().setObject(uiGroupsArray.object, forKey: "uigroups")
+        apiGetAssets(["project_id": project_id],
+            success: { (data) -> Void in
+            }, failure:  { (error) -> Void in
+        })
+
     }
     
     
@@ -502,9 +503,11 @@ extension RWFramework {
         let dateFormatter = NSDateFormatter()
         dateFormatter.dateFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss" // 2015-03-13T13:00:09
         let client_time = dateFormatter.stringFromDate(NSDate())
-        let tag_ids = getAllListenTagsCurrentAsString() + "," + getAllSpeakTagsCurrentAsString()
+//        let tag_ids = getAllListenTagsCurrentAsString() + "," + getAllSpeakTagsCurrentAsString()
 
-        httpPostEvents(session_id, event_type: event_type, data: data, latitude: latitude, longitude: longitude, client_time: client_time, tag_ids: tag_ids) { (data, error) -> Void in
+//        httpPostEvents(session_id, event_type: event_type, data: data, latitude: latitude, longitude: longitude, client_time: client_time, tag_ids: tag_ids) { (data, error) -> Void in
+        httpPostEvents(session_id, event_type: event_type, data: data, latitude: latitude, longitude: longitude, client_time: client_time, tag_ids:"") { (data, error) -> Void in
+
             if (data != nil) && (error == nil) {
                 success(data: data)
                 self.rwPostEventsSuccess(data)

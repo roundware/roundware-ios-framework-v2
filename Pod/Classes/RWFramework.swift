@@ -82,8 +82,8 @@ public class RWFramework: NSObject {
         didSet {
             if timeToSendTheListenTags {
                 dispatch_once(&timeToSendTheListenTagsOnceToken, { () -> Void in
-                    self.println("Submitting Listen Tags (timeToSendTheListenTags)")
-                    self.submitListenTags()
+//                    self.println("Submitting Listen Tags (timeToSendTheListenTags)")
+//                    self.submitListenTags()
                 })
             }
         }
