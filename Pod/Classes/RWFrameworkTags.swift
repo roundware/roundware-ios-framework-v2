@@ -74,55 +74,55 @@ extension RWFramework {
 //    }
 
 // MARK: Speak Tags
-
-    /// Returns an array of dictionaries of speak information
-    public func getSpeakTags() -> AnyObject? {
-        return NSUserDefaults.standardUserDefaults().objectForKey("tags_speak")
-    }
-
-    /// Sets the array of dictionaries of speak information
-    public func setSpeakTags(value: AnyObject) {
-        NSUserDefaults.standardUserDefaults().setObject(value, forKey: "tags_speak")
-    }
-
-    /// Get the current values for the speak tags code
-    public func getSpeakTagsCurrent(code: String) -> AnyObject? {
-        let defaultsKeyName = "tags_speak_\(code)_current"
-        return NSUserDefaults.standardUserDefaults().objectForKey(defaultsKeyName)
-    }
-
-    /// Set the current values for the speak tags code
-    public func setSpeakTagsCurrent(code: String, value: AnyObject) {
-        let defaultsKeyName = "tags_speak_\(code)_current"
-        NSUserDefaults.standardUserDefaults().setObject(value, forKey: defaultsKeyName)
-    }
-
-    /// Get all the current values for the speak tags
-    public func getAllSpeakTagsCurrent() -> AnyObject? {
-        var allSpeakTagsCurrentArray = [AnyObject]()
-        if let speakTagsArray = getSpeakTags() as! NSArray? {
-            for d in speakTagsArray {
-                let code = d["code"] as! String
-                if let tagsForCode = getSpeakTagsCurrent(code) as! [AnyObject]? {
-                    allSpeakTagsCurrentArray += tagsForCode
-                }
-            }
-        }
-        return allSpeakTagsCurrentArray
-    }
-
-    /// Get all the current values for the speak tags as a comma-separated string
-    public func getAllSpeakTagsCurrentAsString() -> String {
-        if let allSpeakTagsArray = getAllSpeakTagsCurrent() as! NSArray? {
-            var tags = ""
-            for tag in allSpeakTagsArray {
-                if (tags != "") { tags += "," }
-                tags += tag.description
-            }
-            return tags
-        }
-        return ""
-    }
+//
+//    /// Returns an array of dictionaries of speak information
+//    public func getSpeakTags() -> AnyObject? {
+//        return NSUserDefaults.standardUserDefaults().objectForKey("tags_speak")
+//    }
+//
+//    /// Sets the array of dictionaries of speak information
+//    public func setSpeakTags(value: AnyObject) {
+//        NSUserDefaults.standardUserDefaults().setObject(value, forKey: "tags_speak")
+//    }
+//
+//    /// Get the current values for the speak tags code
+//    public func getSpeakTagsCurrent(code: String) -> AnyObject? {
+//        let defaultsKeyName = "tags_speak_\(code)_current"
+//        return NSUserDefaults.standardUserDefaults().objectForKey(defaultsKeyName)
+//    }
+//
+//    /// Set the current values for the speak tags code
+//    public func setSpeakTagsCurrent(code: String, value: AnyObject) {
+//        let defaultsKeyName = "tags_speak_\(code)_current"
+//        NSUserDefaults.standardUserDefaults().setObject(value, forKey: defaultsKeyName)
+//    }
+//
+//    /// Get all the current values for the speak tags
+//    public func getAllSpeakTagsCurrent() -> AnyObject? {
+//        var allSpeakTagsCurrentArray = [AnyObject]()
+//        if let speakTagsArray = getSpeakTags() as! NSArray? {
+//            for d in speakTagsArray {
+//                let code = d["code"] as! String
+//                if let tagsForCode = getSpeakTagsCurrent(code) as! [AnyObject]? {
+//                    allSpeakTagsCurrentArray += tagsForCode
+//                }
+//            }
+//        }
+//        return allSpeakTagsCurrentArray
+//    }
+//
+//    /// Get all the current values for the speak tags as a comma-separated string
+//    public func getAllSpeakTagsCurrentAsString() -> String {
+//        if let allSpeakTagsArray = getAllSpeakTagsCurrent() as! NSArray? {
+//            var tags = ""
+//            for tag in allSpeakTagsArray {
+//                if (tags != "") { tags += "," }
+//                tags += tag.description
+//            }
+//            return tags
+//        }
+//        return ""
+//    }
 
 // MARK: submit tags
 

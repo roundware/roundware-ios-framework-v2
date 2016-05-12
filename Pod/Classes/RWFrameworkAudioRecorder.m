@@ -44,6 +44,7 @@ typedef enum {
 
 @property (nonatomic) RecordingState recordingState;
 @property (nonatomic) BOOL shouldSaveAudio;
+@property (nonatomic) NSInteger deactivationAttempt;
 
 @end
 
@@ -69,6 +70,7 @@ typedef enum {
         self.durationOfContiguousSilence = 0.0;
         self.recordingState = kRecordingStateNone;
         self.shouldSaveAudio = NO;
+        self.deactivationAttempt = 0;
     }
     return self;
 }
@@ -100,9 +102,9 @@ typedef enum {
 // Go through all the steps required to setup the audio units and audio graph.
 - (void)setupAllCustomAudio
 {
-    [self setupAudioSession];
+    [self setupAudioSession:true];
     [self defineAudioDescriptions];
-    //[self setupOutputFile];
+    //[self setupOutputFile]; //TODO why is this commented out
     [self buildAudioProcessingGraph];
     [self attachRenderCallbackFunctions];
     [self connectNodesInAUGraph];
@@ -111,19 +113,43 @@ typedef enum {
 
 
 // Set the audio session to PlayAndRecord category, and get the preferred sample rate (after suggesting our own).
-- (void)setupAudioSession
-{
-    NSError *error = nil;
+
+-(void)setupAudioSession:(bool)active {
     
     AVAudioSession *audioSession = [AVAudioSession sharedInstance];
-    [audioSession setPreferredSampleRate:self.sampleRate error:&error];
-    [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionDefaultToSpeaker error:&error];
-    [audioSession setActive:YES error:&error];
     
-    // Update AudioController's sample rate with the one that the audio session finally allowed (hopefully, the preferred sample rate was accepted).
-    self.sampleRate = audioSession.preferredSampleRate;
-}
+    if(active){
+        NSError *error = nil;
+        
+        AVAudioSession *audioSession = [AVAudioSession sharedInstance];
+        [audioSession setPreferredSampleRate:self.sampleRate error:&error];
+        [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionDefaultToSpeaker error:&error];
 
+        [audioSession setActive:YES error:&error];
+        
+        // Update AudioController's sample rate with the one that the audio session finally allowed (hopefully, the preferred sample rate was accepted).
+        self.sampleRate = audioSession.preferredSampleRate;
+    } else {
+        
+        if (_deactivationAttempt < 3) {  // This doesn't always work first time, but don't want to keep trying forever if it decides not to work ever.
+            
+            NSError *activationError = nil;
+            BOOL success = [audioSession setActive:active error:&activationError];
+            
+            if (!success) {
+                NSLog(@"(de)activation ERROR");
+                ++_deactivationAttempt;
+                [self performSelector:@selector(setupAudioSession:) withObject:false afterDelay:2.0];
+            }
+            else {  // Success!
+                _deactivationAttempt = 0;
+            }
+        }
+        else {  // Failed, but reset the counter in case we have more luck next time
+            _deactivationAttempt = 0;
+        }
+    }
+}
 
 // Specify the audio unit and stream descriptions.
 - (void)defineAudioDescriptions

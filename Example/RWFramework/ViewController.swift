@@ -44,7 +44,7 @@ class ViewController: UIViewController {
     @IBOutlet var speakSubmitButton: UIButton!
     
     @IBAction func speakUpload(sender: UIButton) {
-        RWFramework.sharedInstance.uploadAllMedia()
+        RWFramework.sharedInstance.uploadAllMedia("")
     }
     
     @IBAction func speakTags(sender: UIButton) {

@@ -132,13 +132,13 @@ extension RWFramework {
 
     /// Called to take all media on hold and prepare it for upload by enveloping, etc.
     /// Mark all media on MediaStatus.Hold as MediaStatus.Ready and add current speak tags and envelope ID (called from apiPostEnvelopesSuccess)
-    public func uploadAllMedia() {
+    public func uploadAllMedia(tagIdsAsString: String) {
         if (countMedia() == 0) { return }
         apiPostEnvelopes({ (envelopeID: Int) -> Void in
             for media: Media in self.mediaArray {
                 if media.mediaStatus == MediaStatus.Hold {
                     media.envelopeID = envelopeID
-                    media.tagIDs = self.getAllSpeakTagsCurrentAsString()
+                    media.tagIDs = tagIdsAsString
                     media.mediaStatus = MediaStatus.Ready
                 }
             }

@@ -220,23 +220,13 @@ Your applicatin can get all the tags and organize them according to UIGroups.  U
 
 See `RWFrameworkTags.swift` and `RWFrameworkUIGroups.swift`
 
-###Tags (CHANGING)
+### Tags
 
-Your application can get all of the tags for both Listen and Speak modes and the current settings of each. It should use the methods in the framework to get and set them accordingly. The Speak tags will be sent when you `uploadAllMedia()`. Tags can be submitted by calling `submitTags()`. This will update the current stream (if playing) accordingly.
+Tags can be submitted by calling `submitTags()`. This will update the current stream (if playing) accordingly.
 
+Tags can and should be uploaded with media content by passing their IDs joined as a string as an argument to  `uploadAllMedia()`. 
 
 See `RWFrameworkTags.swift`
-
-##### Speak Tags (DEPRECATING)
-
-- `getSpeakTags() -> AnyObject?`
-- `setSpeakTags(value: AnyObject)`
-- `getSpeakTagsCurrent(code: String) -> AnyObject?`
-- `setSpeakTagsCurrent(code: String, value: AnyObject)`
-- `getAllSpeakTagsCurrent() -> AnyObject?`
-- `getAllSpeakTagsCurrentAsString() -> String`
-
-
 
 
 ### Assets

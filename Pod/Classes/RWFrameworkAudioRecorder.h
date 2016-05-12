@@ -15,7 +15,7 @@
 
 - (void)setupAllCustomAudio;
 
-- (void)setupAudioSession;
+- (void)setupAudioSession:(BOOL)active;
 - (void)setupOutputFile;
 
 - (void)startAudioGraph;

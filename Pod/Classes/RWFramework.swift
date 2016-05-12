@@ -142,7 +142,7 @@ public class RWFramework: NSObject {
         println("start")
         apiPostUsers(UIDevice().identifierForVendor!.UUIDString, client_type: UIDevice().model)
 
-        preflightRecording()
+        //preflightRecording()
     }
 
     /// Call this if you know you are done with the framework
