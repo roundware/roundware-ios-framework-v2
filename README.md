@@ -1,9 +1,16 @@
 # RWFramework
 Roundware framework, updated for API v2 and re-built in Swift and made open source. See <http://roundware.org> for more information on configuring the server and other components.
 
-What is Roundware?
+## What is Roundware?
 
 > Roundware is a flexible, distributed framework which collects, stores, organizes and re-presents audio content. Basically, it lets you collect audio from anyone with a smartphone or web access, upload it to a central repository along with its metadata and then filter it and play it back collectively in continuous audio streams.
+
+## Links
+- [Digita11y: Development](https://github.com/seeRead/roundware-ios-digita11y)
+- [Digita11y](https://github.com/roundware/roundware-ios-digita11y)
+- [RWFramework:Development](https://github.com/seeRead/roundware-ios-framework-v2)
+- [RWFramework](https://github.com/roundware/roundware-ios-framework-v2)
+- [Slack](https://roundware.slack.com/messages/digita11y-ios/)
 
 
 ## Introduction

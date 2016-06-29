@@ -144,7 +144,15 @@ extension ViewController: RWFrameworkProtocol {
     func rwUpdateApplicationIconBadgeNumber(count: Int) {
         UIApplication.sharedApplication().applicationIconBadgeNumber = count
     }
-    
+    func rwGetSessionsIdSuccess(data: NSData?) {
+        let rwf = RWFramework.sharedInstance
+        rwf.addDelegate(self)
+        let path = NSBundle.mainBundle().pathForResource("RWFramework", ofType: "plist")
+        let info  = NSDictionary(contentsOfFile: path!) as! [String:AnyObject!]
+        rwf.setProjectId(String(info["project_id"]))
+
+    }
+
     func rwGetProjectsIdSuccess(data: NSData?) {
         
         let rwf = RWFramework.sharedInstance
