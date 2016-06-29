@@ -145,6 +145,7 @@ public class RWFramework: NSObject {
         //preflightRecording()
     }
 
+
     /// Call this if you know you are done with the framework
     public func end() {
         removeAllDelegates()
@@ -189,6 +190,8 @@ public class RWFramework: NSObject {
     /// Sets ProjectId in case you need to change it in the app
     public func setProjectId(project_id: String){
         RWFrameworkConfig.setConfigValue("project_id", value: project_id)
+        apiGetProjectsId(project_id, session_id: RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.Client).stringValue
+        )
     }
 
     /// Returns true if the framework is running on a compatible OS

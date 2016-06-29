@@ -74,13 +74,16 @@ extension RWFramework {
 
         let session_id = dict["session_id"]
         RWFrameworkConfig.setConfigValue("session_id", value: session_id.numberValue, group: RWFrameworkConfig.ConfigGroup.Client)
-        let project_id = RWFrameworkConfig.getConfigValueAsNumber("project_id")
 
         postSessionsSucceeded = true
 
-        apiGetProjectsId(project_id.stringValue, session_id: session_id.stringValue)
+        //do not assume single project id
+//        let project_id = RWFrameworkConfig.getConfigValueAsNumber("project_id")
+//        apiGetProjectsId(project_id.stringValue, session_id: session_id.stringValue)
     }
 
+
+// TODO get projects index?
 
 // MARK: GET projects id
 
@@ -96,9 +99,19 @@ extension RWFramework {
         }
     }
 
+
+
     func getProjectsIdSuccess(data: NSData, project_id: String, session_id: String) {
         let dict = JSON(data: data)
-        
+
+
+        // TODO check respect for and availability to API of
+        // reverse_domain
+        // listen_enabled
+        // geo_listen_enabled
+        // startup_message
+        // speak_enabled
+
         RWFrameworkConfig.setConfigDataAsDictionary(data, key: "project")
         reverse_domain = RWFrameworkConfig.getConfigValueAsString("reverse_domain")
 
