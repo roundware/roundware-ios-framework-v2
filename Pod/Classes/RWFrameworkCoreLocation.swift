@@ -34,14 +34,14 @@ extension RWFramework: CLLocationManagerDelegate {
         if (listen_enabled) {
             let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
             if (geo_listen_enabled && requestStreamInProgress == false && requestStreamSucceeded == false) {
-                apiPostStreams()
-            } else {
                 #if DEBUG
                     let fakeLocation: CLLocation = CLLocation(latitude: 1.0, longitude: 1.0)
                     apiPatchStreamsIdWithLocation(fakeLocation)
                 #else
                     apiPatchStreamsIdWithLocation(locations[0])
                 #endif
+            } else {
+                apiPostStreams()
             }
         }
 
