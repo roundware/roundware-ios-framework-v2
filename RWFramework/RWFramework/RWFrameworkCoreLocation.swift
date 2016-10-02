@@ -12,9 +12,9 @@ import CoreLocation
 extension RWFramework: CLLocationManagerDelegate {
 
     /// This is called at app startup and also after permission has changed
-    public func locationManager(manager: CLLocationManager!, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
+    public func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
         if status == CLAuthorizationStatus.AuthorizedAlways || status == CLAuthorizationStatus.AuthorizedWhenInUse {
-            var geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
+            let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
             if (geo_listen_enabled) {
                 locationManager.startUpdatingLocation()
             }
@@ -24,12 +24,12 @@ extension RWFramework: CLLocationManagerDelegate {
     }
 
     /// Called by the CLLocationManager when location has been updated
-    public func locationManager(manager: CLLocationManager!, didUpdateLocations locations: [AnyObject]!) {
+    public func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         // println("locationManager didUpdateLocations \(locations)")
 
         captureLastRecordedLocation()
 
-        var listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
+        let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
         if (listen_enabled) {
             let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
             if (geo_listen_enabled && requestStreamInProgress == false && requestStreamSucceeded == false) {
@@ -50,7 +50,7 @@ extension RWFramework: CLLocationManagerDelegate {
     }
 
     /// Called by the CLLocationManager when location update has failed
-    public func locationManager(manager: CLLocationManager!, didFailWithError error: NSError!) {
+    public func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
         println("locationManager didFailWithError \(error)")
     }
 
@@ -75,7 +75,7 @@ extension RWFramework: CLLocationManagerDelegate {
             let fakeLocation: CLLocation = CLLocation(latitude: 1.0, longitude: 1.0)
             lastRecordedLocation = fakeLocation
         #else
-            lastRecordedLocation = locationManager.location
+            lastRecordedLocation = locationManager.location!
         #endif
     }
 }

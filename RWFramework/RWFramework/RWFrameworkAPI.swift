@@ -31,18 +31,53 @@ extension RWFramework {
         }
     }
 
+    // EXAMPLE CODE TO BE DELETED
+    func tobedeleted () {
+        let jsonStr = "{\"weather\":[{\"id\":804,\"main\":\"Clouds\",\"description\":\"overcast clouds\",\"icon\":\"04d\"}],}"
+        let data = jsonStr.dataUsingEncoding(NSASCIIStringEncoding, allowLossyConversion: false)
+        do {
+            let json = try NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.MutableContainers)
+
+            if let dict = json as? [String: AnyObject] {
+                if let weather = dict["weather"] as? [AnyObject] {
+                    for dict2 in weather {
+                        let id = dict2["id"] as? Int
+                        let main = dict2["main"] as? String
+                        let description = dict2["description"] as? String
+                        print(id)
+                        print(main)
+                        print(description)
+                    }
+                }
+            }
+
+        }
+        catch {
+            print(error)
+        }
+    }
+
     func postUsersSuccess(data: NSData) {
-        let dict = JSON(data: data) // JSON returned as a Dictionary
-//        println(dict)
+        // http://stackoverflow.com/questions/24671249/parse-json-in-swift-anyobject-type/27206145#27206145
+        do {
+            let json = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableContainers)
 
-        let username = dict["username"]
-        RWFrameworkConfig.setConfigValue("username", value: username.stringValue, group: RWFrameworkConfig.ConfigGroup.Client)
-        let token = dict["token"]
-        RWFrameworkConfig.setConfigValue("token", value: token.stringValue, group: RWFrameworkConfig.ConfigGroup.Client)
+            if let dict = json as? [String: AnyObject] {
+                if let username = dict["username"] as? String {
+                    RWFrameworkConfig.setConfigValue("username", value: username, group: RWFrameworkConfig.ConfigGroup.Client)
+                }
+                if let token = dict["token"] as? String {
+                    RWFrameworkConfig.setConfigValue("token", value: token, group: RWFrameworkConfig.ConfigGroup.Client)
+                }
+            }
 
-        postUsersSucceeded = true
+            postUsersSucceeded = true
 
-        apiPostSessions()
+            apiPostSessions()
+        }
+        catch {
+            print(error)
+        }
     }
 
 
@@ -69,16 +104,25 @@ extension RWFramework {
     }
 
     func postSessionsSuccess(data: NSData) {
-        let dict = JSON(data: data)
-//        println(dict)
+        do {
+            let json = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableContainers)
 
-        let session_id = dict["session_id"]
-        RWFrameworkConfig.setConfigValue("session_id", value: session_id.numberValue, group: RWFrameworkConfig.ConfigGroup.Client)
-        let project_id = RWFrameworkConfig.getConfigValueAsNumber("project_id")
+            var session_id : String = ""
+            if let dict = json as? [String: AnyObject] {
+                if let _session_id = dict["session_id"] as? String {
+                    session_id = _session_id
+                    RWFrameworkConfig.setConfigValue("session_id", value: session_id, group: RWFrameworkConfig.ConfigGroup.Client)
+                }
+            }
 
-        postSessionsSucceeded = true
+            postSessionsSucceeded = true
 
-        apiGetProjectsId(project_id.stringValue, session_id: session_id.stringValue)
+            let project_id = RWFrameworkConfig.getConfigValueAsString("project_id")
+            apiGetProjectsId(project_id, session_id: session_id)
+        }
+        catch {
+            print(error)
+        }
     }
 
 
@@ -97,45 +141,51 @@ extension RWFramework {
     }
 
     func getProjectsIdSuccess(data: NSData, project_id: String, session_id: String) {
-        let dict = JSON(data: data)
-//        println(dict)
+        do {
+            let json = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableContainers)
 
-        RWFrameworkConfig.setConfigDataAsDictionary(data, key: "project")
+            if let dict = json as? [String: AnyObject] {
+                RWFrameworkConfig.setConfigDataAsDictionary(data, key: "project")
 
-        reverse_domain = RWFrameworkConfig.getConfigValueAsString("reverse_domain")
+                reverse_domain = RWFrameworkConfig.getConfigValueAsString("reverse_domain")
 
-        // TODO: where is this going to come from?
-        func configDisplayStartupMessage() {
-            let startupMessage = RWFrameworkConfig.getConfigValueAsString("startup_message", group: RWFrameworkConfig.ConfigGroup.Notifications)
-            if (startupMessage.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0) {
-                self.rwUpdateStatus(startupMessage)
+                // TODO: where is this going to come from?
+                func configDisplayStartupMessage() {
+                    let startupMessage = RWFrameworkConfig.getConfigValueAsString("startup_message", group: RWFrameworkConfig.ConfigGroup.Notifications)
+                    if (startupMessage.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0) {
+                        self.rwUpdateStatus(startupMessage)
+                    }
+                }
+                configDisplayStartupMessage()
+
+                if letFrameworkRequestWhenInUseAuthorizationForLocation {
+                    _ = requestWhenInUseAuthorizationForLocation()
+                }
+
+                let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
+                if (listen_enabled) {
+                    let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
+                    if (!geo_listen_enabled) {
+                        apiPostStreams()
+                    }
+                    startHeartbeatTimer()
+                }
+
+                let speak_enabled = RWFrameworkConfig.getConfigValueAsBool("speak_enabled")
+                if (speak_enabled) {
+                    startAudioTimer()
+                    startUploadTimer()
+                    rwReadyToRecord()
+                }
+
+                getProjectsIdSucceeded = true
+
+                apiGetProjectsIdTags(project_id, session_id: session_id)
             }
         }
-        configDisplayStartupMessage()
-
-        if letFrameworkRequestWhenInUseAuthorizationForLocation {
-            let madeTheRequest = requestWhenInUseAuthorizationForLocation()
+        catch {
+            print(error)
         }
-
-        let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
-        if (listen_enabled) {
-            let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
-            if (!geo_listen_enabled) {
-                apiPostStreams()
-            }
-            startHeartbeatTimer()
-        }
-
-        let speak_enabled = RWFrameworkConfig.getConfigValueAsBool("speak_enabled")
-        if (speak_enabled) {
-            startAudioTimer()
-            startUploadTimer()
-            rwReadyToRecord()
-        }
-
-        getProjectsIdSucceeded = true
-
-        apiGetProjectsIdTags(project_id, session_id: session_id)
     }
 
 
@@ -154,43 +204,51 @@ extension RWFramework {
     }
 
     func getProjectsIdTagsSuccess(data: NSData, project_id: String, session_id: String) {
+        do {
 
-        let reset_tag_defaults_on_startup = RWFrameworkConfig.getConfigValueAsBool("reset_tag_defaults_on_startup")
+            let json = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableContainers)
 
-        let dict = JSON(data: data)
-//        println(dict)
+            if let dict = json as? [String: AnyObject] {
+                let reset_tag_defaults_on_startup = RWFrameworkConfig.getConfigValueAsBool("reset_tag_defaults_on_startup")
 
-        // Listen
-        let listenArray = dict["listen"]
-        NSUserDefaults.standardUserDefaults().setObject(listenArray.object, forKey: "tags_listen")
+                // Listen
+                if let listenArray = dict["listen"] as? [String: AnyObject] {
+                    NSUserDefaults.standardUserDefaults().setObject(listenArray, forKey: "tags_listen")
 
-        // Save defaults as "current settings" for listen tags if they are not already set
-        for (index: String, dict: JSON) in listenArray {
-            let code = dict["code"]
-            let defaults = dict["defaults"]
-            let defaultsKeyName = "tags_listen_\(code)_current"
-            let current: AnyObject? = NSUserDefaults.standardUserDefaults().objectForKey(defaultsKeyName)
-            if (current == nil || reset_tag_defaults_on_startup) {
-                NSUserDefaults.standardUserDefaults().setObject(defaults.object, forKey: defaultsKeyName)
+                    // Save defaults as "current settings" for listen tags if they are not already set
+                    for (index: _, dict: _) in listenArray {
+                        let code = dict["code"]
+                        let defaults = dict["defaults"]
+                        let defaultsKeyName = "tags_listen_\(code)_current"
+                        let current: AnyObject? = NSUserDefaults.standardUserDefaults().objectForKey(defaultsKeyName)
+                        if (current == nil || reset_tag_defaults_on_startup) {
+                            NSUserDefaults.standardUserDefaults().setObject(defaults!.object, forKey: defaultsKeyName)
+                        }
+                    }
+                }
+
+                // Speak
+                if let speakArray = dict["speak"] as? [String: AnyObject] {
+                    NSUserDefaults.standardUserDefaults().setObject(speakArray, forKey: "tags_speak")
+
+                    // Save defaults as "current settings" for speak tags if they are not already set
+                    for (index: _, dict: _) in speakArray {
+                        let code = dict["code"]
+                        let defaults = dict["defaults"]
+                        let defaultsKeyName = "tags_speak_\(code)_current"
+                        let current: AnyObject? = NSUserDefaults.standardUserDefaults().objectForKey(defaultsKeyName)
+                        if (current == nil || reset_tag_defaults_on_startup) {
+                            NSUserDefaults.standardUserDefaults().setObject(defaults!.object, forKey: defaultsKeyName)
+                        }
+                    }
+                }
+
+                getProjectsIdTagsSucceeded = true
             }
         }
-
-        // Speak
-        let speakArray = dict["speak"]
-        NSUserDefaults.standardUserDefaults().setObject(speakArray.object, forKey: "tags_speak")
-
-        // Save defaults as "current settings" for speak tags if they are not already set
-        for (index: String, dict: JSON) in speakArray {
-            let code = dict["code"]
-            let defaults = dict["defaults"]
-            let defaultsKeyName = "tags_speak_\(code)_current"
-            let current: AnyObject? = NSUserDefaults.standardUserDefaults().objectForKey(defaultsKeyName)
-            if (current == nil || reset_tag_defaults_on_startup) {
-                NSUserDefaults.standardUserDefaults().setObject(defaults.object, forKey: defaultsKeyName)
-            }
+        catch {
+            print(error)
         }
-
-        getProjectsIdTagsSucceeded = true
     }
 
 // MARK: POST streams
@@ -217,25 +275,32 @@ extension RWFramework {
     }
 
     func postStreamsSuccess(data: NSData, session_id: String) {
-        let dict = JSON(data: data)
-//        println(dict)
+        do {
 
-        let stream_url = dict["stream_url"]
-        if (stream_url.string != nil) {
-            self.streamURL = NSURL(string: stream_url.stringValue)
-            let stream_id = dict["stream_id"]
-            self.streamID = stream_id.intValue
-            self.createPlayer()
-            self.requestStreamSucceeded = true
-        }
+            let json = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableContainers)
 
-        // TODO: can we still expect this here?
-        func requestStreamDisplayUserMessage(userMessage: String?) {
-            if (userMessage != nil && userMessage!.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0) {
-                self.rwUpdateStatus(userMessage!)
+            if let dict = json as? [String: AnyObject] {
+                if let stream_url = dict["stream_url"] as? String {
+                    self.streamURL = NSURL(string: stream_url)
+                    if let stream_id = dict["stream_id"] as? NSNumber {
+                        self.streamID = stream_id.integerValue
+                        self.createPlayer()
+                        self.requestStreamSucceeded = true
+                    }
+                }
+
+                // TODO: can we still expect this here?
+                func requestStreamDisplayUserMessage(userMessage: String?) {
+                    if (userMessage != nil && userMessage!.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0) {
+                        self.rwUpdateStatus(userMessage!)
+                    }
+                }
+                requestStreamDisplayUserMessage(dict["user_message"] as? String)
             }
         }
-        requestStreamDisplayUserMessage(dict["user_message"].string)
+        catch {
+            print(error)
+        }
     }
 
 // MARK: PATCH streams id
@@ -275,7 +340,7 @@ extension RWFramework {
     }
 
     func patchStreamsIdSuccess(data: NSData) {
-        let dict = JSON(data: data)
+        //let dict = JSON(data: data)
 //        println(dict)
         // does nothing for now
     }
@@ -298,7 +363,7 @@ extension RWFramework {
     }
 
     func postStreamsIdHeartbeatSuccess(data: NSData) {
-        let dict = JSON(data: data)
+        //let dict = JSON(data: data)
 //        println(dict)
         // does nothing for now
     }
@@ -321,7 +386,7 @@ extension RWFramework {
     }
 
     func postStreamsIdNextSuccess(data: NSData) {
-        let dict = JSON(data: data)
+        //let dict = JSON(data: data)
 //        println(dict)
         // does nothing for now
     }
@@ -344,7 +409,7 @@ extension RWFramework {
     }
 
     func getStreamsIdCurrentSuccess(data: NSData) {
-        let dict = JSON(data: data)
+        //let dict = JSON(data: data)
 //        println(dict)
         // does nothing for now
     }
@@ -366,13 +431,19 @@ extension RWFramework {
     }
 
     func postEnvelopesSuccess(data: NSData, session_id: String, success:(envelopeID: Int) -> Void) {
-        let dict = JSON(data: data)
-//        println(dict)
 
-        let envelope_id = dict["envelope_id"]
-        if (envelope_id != nil) {
-            success(envelopeID: envelope_id.int!)
+        do {
+            let json = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableContainers)
+            if let dict = json as? [String: AnyObject] {
+                if let envelope_id = dict["envelope_id"] as? NSNumber {
+                    success(envelopeID: envelope_id.integerValue)
+                }
+            }
         }
+        catch {
+            print(error)
+        }
+
     }
 
 // MARK: PATCH envelopes id
@@ -497,16 +568,15 @@ extension RWFramework {
 // MARK: utilities
 
     func apiProcessError(data: NSData?, error: NSError, caller: String) {
-        var detailStringValue = ""
-        if (data != nil) {
-            let dict = JSON(data: data!)
-            let detail = dict["detail"]
-            detailStringValue = detail.stringValue
-            self.println("API ERROR: \(caller): \(detailStringValue) NSError = \(error.code) \(error.description)")
-        }
+        let detailStringValue = ""
+//        if (data != nil) {
+//            let dict = JSON(data: data!)
+//            let detail = dict["detail"]
+//            detailStringValue = detail.stringValue
+//            self.println("API ERROR: \(caller): \(detailStringValue) NSError = \(error.code) \(error.description)")
+//        }
         if (caller != "apiPostEvents") { // Don't log errors that occur while reporting errors
             logToServer("client_error", data: "\(caller): \(detailStringValue) NSError = \(error.code) \(error.description)")
         }
     }
-
 }

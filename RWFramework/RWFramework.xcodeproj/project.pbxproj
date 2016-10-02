@@ -11,7 +11,6 @@
 		7519C3D31A8555DB006A5D1E /* RWFrameworkText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7519C3D21A8555DB006A5D1E /* RWFrameworkText.swift */; };
 		7519C3D51A856518006A5D1E /* RWFrameworkCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7519C3D41A856518006A5D1E /* RWFrameworkCamera.swift */; };
 		75743B831A7831130058CCA4 /* RWFrameworkProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75743B821A7831130058CCA4 /* RWFrameworkProtocol.swift */; };
-		75743B851A7983A10058CCA4 /* SwiftyJSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75743B841A7983A10058CCA4 /* SwiftyJSON.swift */; };
 		75A09F111AE1946200A3B3D9 /* RWFrameworkAudioRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = 75E08D911AE181BE005AD74D /* RWFrameworkAudioRecorder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		75A2CDC21A8410760052F987 /* RWFrameworkCoreLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A2CDC11A8410760052F987 /* RWFrameworkCoreLocation.swift */; };
 		75A2CDC41A8411440052F987 /* RWFrameworkAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A2CDC31A8411440052F987 /* RWFrameworkAudioPlayer.swift */; };
@@ -45,7 +44,6 @@
 		7519C3D21A8555DB006A5D1E /* RWFrameworkText.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkText.swift; sourceTree = "<group>"; };
 		7519C3D41A856518006A5D1E /* RWFrameworkCamera.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkCamera.swift; sourceTree = "<group>"; };
 		75743B821A7831130058CCA4 /* RWFrameworkProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkProtocol.swift; sourceTree = "<group>"; };
-		75743B841A7983A10058CCA4 /* SwiftyJSON.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SwiftyJSON.swift; path = "../../ThirdParty/SwiftyJSON-master/Source/SwiftyJSON.swift"; sourceTree = "<group>"; };
 		75A2CDBF1A8172980052F987 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
 		75A2CDC11A8410760052F987 /* RWFrameworkCoreLocation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkCoreLocation.swift; sourceTree = "<group>"; };
 		75A2CDC31A8411440052F987 /* RWFrameworkAudioPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkAudioPlayer.swift; sourceTree = "<group>"; };
@@ -112,14 +110,6 @@
 			name = Server;
 			sourceTree = "<group>";
 		};
-		75743B861A7983A60058CCA4 /* ThirdParty */ = {
-			isa = PBXGroup;
-			children = (
-				75743B841A7983A10058CCA4 /* SwiftyJSON.swift */,
-			);
-			name = ThirdParty;
-			sourceTree = "<group>";
-		};
 		75A7D2C71A745B7400E662A8 = {
 			isa = PBXGroup;
 			children = (
@@ -151,7 +141,6 @@
 				75E7DE9E1A7FEDE600B092AF /* RWFrameworkConfig.swift */,
 				75A2E8971A93CA7F0008AAF1 /* RWFrameworkTimers.swift */,
 				75A2CDC11A8410760052F987 /* RWFrameworkCoreLocation.swift */,
-				75743B861A7983A60058CCA4 /* ThirdParty */,
 				75A7D2D41A745B7400E662A8 /* Supporting Files */,
 			);
 			path = RWFramework;
@@ -239,11 +228,12 @@
 		75A7D2C81A745B7400E662A8 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = Roundware;
 				TargetAttributes = {
 					75A7D2D01A745B7400E662A8 = {
 						CreatedOnToolsVersion = 6.1.1;
+						LastSwiftMigration = 0800;
 					};
 					75A7D2DB1A745B7400E662A8 = {
 						CreatedOnToolsVersion = 6.1.1;
@@ -296,7 +286,6 @@
 				7519C3D51A856518006A5D1E /* RWFrameworkCamera.swift in Sources */,
 				75A2CDC21A8410760052F987 /* RWFrameworkCoreLocation.swift in Sources */,
 				75A2CDC41A8411440052F987 /* RWFrameworkAudioPlayer.swift in Sources */,
-				75743B851A7983A10058CCA4 /* SwiftyJSON.swift in Sources */,
 				75A7D3161A75922600E662A8 /* RWFramework.swift in Sources */,
 				75A2E8961A93C7A90008AAF1 /* RWFrameworkAPI.swift in Sources */,
 				7519C3D01A85511A006A5D1E /* RWFrameworkMedia.swift in Sources */,
@@ -342,16 +331,20 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -388,8 +381,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -398,6 +393,7 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -407,6 +403,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -418,6 +415,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -426,10 +424,12 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_SWIFT_FLAGS = "-D DEBUG";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.roundware.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 2.3;
 			};
 			name = Debug;
 		};
@@ -437,6 +437,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -445,9 +446,11 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_SWIFT_FLAGS = "";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.roundware.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_VERSION = 2.3;
 			};
 			name = Release;
 		};
@@ -464,6 +467,7 @@
 				);
 				INFOPLIST_FILE = RWFrameworkTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.roundware.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -477,6 +481,7 @@
 				);
 				INFOPLIST_FILE = RWFrameworkTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.roundware.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

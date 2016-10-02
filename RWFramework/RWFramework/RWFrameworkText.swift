@@ -18,17 +18,16 @@ extension RWFramework {
 
         let r = arc4random()
         let text_file_name = RWFrameworkConfig.getConfigValueAsString("text_file_name")
-        let textFilePath = NSTemporaryDirectory().stringByAppendingPathComponent("\(r)_\(text_file_name)")
+// TBD       let textFilePath = NSTemporaryDirectory().stringByAppendingPathComponent("\(r)_\(text_file_name)")
+        let textFilePath = NSURL(fileURLWithPath: NSTemporaryDirectory()).URLByAppendingPathComponent("\(r)_\(text_file_name)")?.absoluteString
 
-        var error: NSError?
-        var success = string.writeToFile(textFilePath, atomically: false, encoding: NSUTF8StringEncoding, error: &error)
-        if let e = error {
+        do {
+            try string.writeToFile(textFilePath!, atomically: false, encoding: NSUTF8StringEncoding)
+            addMedia(MediaType.Text, string: textFilePath!, description: description)
+            key = textFilePath!
+        }
+        catch {
             println("RWFramework - Couldn't write text to file \(error)")
-        } else if success == false {
-            println("RWFramework - Couldn't write text to file for an unknown reason")
-        } else {
-            addMedia(MediaType.Text, string: textFilePath, description: description)
-            key = textFilePath
         }
 
         return key

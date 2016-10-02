@@ -10,7 +10,7 @@ import Foundation
 
 public class RWFrameworkConfig {
 
-    public enum ConfigGroup : Printable {
+    public enum ConfigGroup : CustomStringConvertible {
         case Client
         case Device
         case Notifications
@@ -46,28 +46,24 @@ public class RWFrameworkConfig {
 // MARK: set
 
     /// Passed JSON data, this function saves that data to NSUserDefaults
-    public class func setConfigDataAsArrayOfDictionaries(data: NSData) {
-        let array = JSON(data: data) // JSON returned as an Array of Dictionarys
-        for (index: String, dict: JSON) in array {
-            for (key: String, value: JSON) in dict {
-                NSUserDefaults.standardUserDefaults().setObject(value.object, forKey: key)
-            }
-        }
-    }
-
-    /// Passed JSON data, this function saves that data to NSUserDefaults
     public class func setConfigDataAsDictionary(data: NSData, key: String) {
-        let dict = JSON(data: data) // JSON returned as a Dictionary
+        do {
+            let json = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableContainers)
 
-        // Convert NSNull into empty strings so they can be written to NSUserDefaults properly
-        var md = dict.object as! Dictionary<String, AnyObject>
-        for (k, v) in md {
-            if (v is NSNull) {
-                md[k] = ""
+            if var dict = json as? [String: AnyObject] {
+                // Convert NSNull into empty strings so they can be written to NSUserDefaults properly
+                for (k, v) in dict {
+                    if (v is NSNull) {
+                        dict[k] = ""
+                    }
+                }
+                NSUserDefaults.standardUserDefaults().setObject(dict, forKey: key)
             }
-        }
 
-        NSUserDefaults.standardUserDefaults().setObject(md, forKey: key)
+        }
+        catch {
+            print(error)
+        }
     }
 
     /// Set a config value as a Bool in a particular group, creating it if it doesn't exist

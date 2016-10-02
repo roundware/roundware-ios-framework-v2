@@ -16,7 +16,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
             let postData = ["device_id": device_id, "client_type": client_type]
             postDataToURL(url, postData: postData, completion: completion)
         } else {
-            var error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postUsersURL unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postUsersURL unable to be created."])
             completion(data: nil, error: error)
         }
     }
@@ -26,7 +26,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
             let postData = ["project_id": project_id, "timezone": timezone, "client_system": client_system, "language": language]
             postDataToURL(url, postData: postData, completion: completion)
         } else {
-            var error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postSessionsURL unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postSessionsURL unable to be created."])
             completion(data: nil, error: error)
         }
     }
@@ -35,7 +35,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
         if let url = NSURL(string: RWFrameworkURLFactory.getProjectsIdURL(project_id, session_id: session_id)) {
             getDataFromURL(url, completion: completion)
         } else {
-            var error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "getProjectsIdURL unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "getProjectsIdURL unable to be created."])
             completion(data: nil, error: error)
         }
     }
@@ -44,7 +44,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
         if let url = NSURL(string: RWFrameworkURLFactory.getProjectsIdTagsURL(project_id, session_id: session_id)) {
             getDataFromURL(url, completion: completion)
         } else {
-            var error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "getProjectsIdTagsURL unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "getProjectsIdTagsURL unable to be created."])
             completion(data: nil, error: error)
         }
     }
@@ -54,7 +54,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
             let postData = ["session_id": session_id]
             postDataToURL(url, postData: postData, completion: completion)
         } else {
-            var error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsURL unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsURL unable to be created."])
             completion(data: nil, error: error)
         }
     }
@@ -64,7 +64,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
             let postData = ["latitude": latitude, "longitude": longitude]
             patchDataToURL(url, postData: postData, completion: completion)
         } else {
-            var error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "patchStreamsIdURL unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "patchStreamsIdURL unable to be created."])
             completion(data: nil, error: error)
         }
     }
@@ -74,7 +74,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
             let postData = ["tag_ids": tag_ids]
             patchDataToURL(url, postData: postData, completion: completion)
         } else {
-            var error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "patchStreamsIdURL unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "patchStreamsIdURL unable to be created."])
             completion(data: nil, error: error)
         }
     }
@@ -84,7 +84,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
             let postData = [:] as Dictionary<String, String>
             postDataToURL(url, postData: postData, completion: completion)
         } else {
-            var error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsIdHeartbeatURL unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsIdHeartbeatURL unable to be created."])
             completion(data: nil, error: error)
         }
     }
@@ -94,7 +94,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
             let postData = [:] as Dictionary<String, String>
             postDataToURL(url, postData: postData, completion: completion)
         } else {
-            var error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsIdNextURL unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsIdNextURL unable to be created."])
             completion(data: nil, error: error)
         }
     }
@@ -103,7 +103,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
         if let url = NSURL(string: RWFrameworkURLFactory.getStreamsIdCurrentURL(stream_id)) {
             getDataFromURL(url, completion: completion)
         } else {
-            var error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "getStreamsIdCurrentURL unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "getStreamsIdCurrentURL unable to be created."])
             completion(data: nil, error: error)
         }
     }
@@ -113,7 +113,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
             let postData = ["session_id": session_id]
             postDataToURL(url, postData: postData, completion: completion)
         } else {
-            var error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postEnvelopesURL unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postEnvelopesURL unable to be created."])
             completion(data: nil, error: error)
         }
     }
@@ -124,7 +124,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
             let postData = ["session_id": session_id, "media_type": serverMediaType.rawValue, "latitude": media.latitude.stringValue, "longitude": media.longitude.stringValue, "tag_ids": media.tagIDs, "description": media.desc]
             patchFileAndDataToURL(url, filePath: media.string, postData: postData, completion: completion)
         } else {
-            var error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "httpPatchEnvelopesId unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "httpPatchEnvelopesId unable to be created."])
             completion(data: nil, error: error)
         }
     }
@@ -133,7 +133,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
         if let url = NSURL(string: RWFrameworkURLFactory.getAssetsURL(dict)) {
             getDataFromURL(url, completion: completion)
         } else {
-            var error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "httpGetAssets unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "httpGetAssets unable to be created."])
             completion(data: nil, error: error)
         }
     }
@@ -142,7 +142,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
         if let url = NSURL(string: RWFrameworkURLFactory.getAssetsIdURL(asset_id)) {
             getDataFromURL(url, completion: completion)
         } else {
-            var error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "httpGetAssetsId unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "httpGetAssetsId unable to be created."])
             completion(data: nil, error: error)
         }
     }
@@ -152,7 +152,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
             let postData = ["session_id": session_id, "vote_type": vote_type, "value": value.stringValue]
             postDataToURL(url, postData: postData, completion: completion)
         } else {
-            var error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postAssetsIdVotesURL unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postAssetsIdVotesURL unable to be created."])
             completion(data: nil, error: error)
         }
     }
@@ -161,7 +161,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
         if let url = NSURL(string: RWFrameworkURLFactory.getAssetsIdVotesURL(asset_id)) {
             getDataFromURL(url, completion: completion)
         } else {
-            var error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "getAssetsIdVotesURL unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "getAssetsIdVotesURL unable to be created."])
             completion(data: nil, error: error)
         }
     }
@@ -171,7 +171,7 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
             let postData = ["session_id": session_id, "event_type": event_type, "data": data ?? "", "latitude": latitude, "longitude": longitude, "client_time": client_time, "tag_ids": tag_ids]
             postDataToURL(url, postData: postData, completion: completion)
         } else {
-            var error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postEventsURL unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postEventsURL unable to be created."])
             completion(data: nil, error: error)
         }
     }
@@ -192,19 +192,19 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
         // Mime type
         var mimeType: String {
             get {
-                let pathExtension = filePath.pathExtension
+                let pathExtension = NSURL(fileURLWithPath: filePath).pathExtension!
                 let UTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, pathExtension, nil)
-                let str = UTTypeCopyPreferredTagWithClass(UTI.takeRetainedValue(), kUTTagClassMIMEType)
+                let str = UTTypeCopyPreferredTagWithClass(UTI!.takeRetainedValue(), kUTTagClassMIMEType)
                 if (str == nil) {
                     return "application/octet-stream"
                 } else {
-                    return str.takeUnretainedValue() as String
+                    return str!.takeUnretainedValue() as String
                 }
             }
         }
 
-        var session = NSURLSession.sharedSession()
-        var request = NSMutableURLRequest(URL: url)
+        let session = NSURLSession.sharedSession()
+        let request = NSMutableURLRequest(URL: url)
         request.HTTPMethod = "PATCH"
 
         // Token
@@ -216,22 +216,26 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
         // Multipart/form-data
         request.addValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
 
-        var error: NSError?
-        let fileData = NSData(contentsOfFile: filePath, options: NSDataReadingOptions.DataReadingMappedAlways, error: &error)
-        if (fileData == nil || error != nil) {
-            completion(data: nil, error: error)
+        var fileData: NSData
+        do {
+            fileData = try NSData(contentsOfFile: filePath, options: NSDataReadingOptions.DataReadingMappedAlways)
+        }
+        catch {
+            print(error)
+            completion(data: nil, error: nil)
             return
         }
 
         // The actual Multipart/form-data content
         let data = NSMutableData()
         data.appendData("--\(boundary)\r\n".dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)!)
-        let fileName = filePath.lastPathComponent
+        let fileName = NSURL(fileURLWithPath: filePath).lastPathComponent!
+
         data.appendData("Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName)\"\r\n".dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)!)
         data.appendData("Content-Type: \(mimeType)\r\n".dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)!)
         println("mimeType = \(mimeType)")
         data.appendData("\r\n".dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)!)
-        data.appendData(fileData!)
+        data.appendData(fileData)
         data.appendData("\r\n".dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)!)
         for (key, value) in postData {
             if (value.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0) {
@@ -241,18 +245,18 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
         }
         data.appendData("--\(boundary)--\r\n".dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)!)
 
-        let uploadTask = session.uploadTaskWithRequest(request, fromData: data, completionHandler: { (data: NSData!, response: NSURLResponse!, error: NSError!) -> Void in
+        let uploadTask = session.uploadTaskWithRequest(request, fromData: data, completionHandler: { (data: NSData?, response: NSURLResponse?, error: NSError?) -> Void in
             if let errorResponse = error {
                 completion(data: nil, error: errorResponse)
             } else if let httpResponse = response as? NSHTTPURLResponse {
                 if httpResponse.statusCode == 200 {
                     completion(data: data, error: nil)
                 } else {
-                    var error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
+                    let error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
                     completion(data: data, error: error)
                 }
             } else {
-                var error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
+                let error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
                 completion(data: nil, error: error)
             }
         })
@@ -263,8 +267,8 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
     func patchDataToURL(url: NSURL, postData: Dictionary<String,String>, completion:(data: NSData?, error: NSError?) -> Void) {
         println("patchDataToURL: " + url.absoluteString! + " postData = " + postData.description)
 
-        var session = NSURLSession.sharedSession()
-        var request = NSMutableURLRequest(URL: url)
+        let session = NSURLSession.sharedSession()
+        let request = NSMutableURLRequest(URL: url)
         request.HTTPMethod = "PATCH"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "content-type")
 
@@ -278,18 +282,18 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
             body += "\(key)=\(value)&"
         }
         request.HTTPBody = body.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
-        let loadDataTask = session.dataTaskWithRequest(request, completionHandler: { (data: NSData!, response: NSURLResponse!, error: NSError!) -> Void in
+        let loadDataTask = session.dataTaskWithRequest(request, completionHandler: { (data: NSData?, response: NSURLResponse?, error: NSError?) -> Void in
             if let errorResponse = error {
                 completion(data: nil, error: errorResponse)
             } else if let httpResponse = response as? NSHTTPURLResponse {
                 if httpResponse.statusCode == 200 {
                     completion(data: data, error: nil)
                 } else {
-                    var error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
+                    let error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
                     completion(data: data, error: error)
                 }
             } else {
-                var error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
+                let error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
                 completion(data: nil, error: error)
             }
         })
@@ -300,8 +304,8 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
     func postDataToURL(url: NSURL, postData: Dictionary<String,String>, completion:(data: NSData?, error: NSError?) -> Void) {
         println("postDataToURL: " + url.absoluteString! + " postData = " + postData.description)
 
-        var session = NSURLSession.sharedSession()
-        var request = NSMutableURLRequest(URL: url)
+        let session = NSURLSession.sharedSession()
+        let request = NSMutableURLRequest(URL: url)
         request.HTTPMethod = "POST"
 
         let token = RWFrameworkConfig.getConfigValueAsString("token", group: RWFrameworkConfig.ConfigGroup.Client)
@@ -314,18 +318,18 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
             body += "\(key)=\(value)&"
         }
         request.HTTPBody = body.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
-        let loadDataTask = session.dataTaskWithRequest(request, completionHandler: { (data: NSData!, response: NSURLResponse!, error: NSError!) -> Void in
+        let loadDataTask = session.dataTaskWithRequest(request, completionHandler: { (data: NSData?, response: NSURLResponse?, error: NSError?) -> Void in
             if let errorResponse = error {
                 completion(data: nil, error: errorResponse)
             } else if let httpResponse = response as? NSHTTPURLResponse {
                 if httpResponse.statusCode == 200 {
                     completion(data: data, error: nil)
                 } else {
-                    var error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
+                    let error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
                     completion(data: data, error: error)
                 }
             } else {
-                var error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
+                let error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
                 completion(data: nil, error: error)
             }
         })
@@ -336,8 +340,8 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
     func getDataFromURL(url: NSURL, completion:(data: NSData?, error: NSError?) -> Void) {
         println("getDataFromURL: " + url.absoluteString!)
 
-        var session = NSURLSession.sharedSession()
-        var request = NSMutableURLRequest(URL: url)
+        let session = NSURLSession.sharedSession()
+        let request = NSMutableURLRequest(URL: url)
         request.HTTPMethod = "GET"
 
         let token = RWFrameworkConfig.getConfigValueAsString("token", group: RWFrameworkConfig.ConfigGroup.Client)
@@ -345,18 +349,18 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
             request.addValue("token \(token)", forHTTPHeaderField: "Authorization")
         }
 
-        let loadDataTask = session.dataTaskWithRequest(request, completionHandler: { (data: NSData!, response: NSURLResponse!, error: NSError!) -> Void in
+        let loadDataTask = session.dataTaskWithRequest(request, completionHandler: { (data: NSData?, response: NSURLResponse?, error: NSError?) -> Void in
             if let errorResponse = error {
                 completion(data: nil, error: errorResponse)
             } else if let httpResponse = response as? NSHTTPURLResponse {
                 if httpResponse.statusCode == 200 {
                     completion(data: data, error: nil)
                 } else {
-                    var error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
+                    let error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
                     completion(data: data, error: error)
                 }
             } else {
-                var error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
+                let error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
                 completion(data: nil, error: error)
             }
         })
@@ -369,19 +373,19 @@ extension RWFramework: NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSess
     func loadDataFromURL(url: NSURL, completion:(data: NSData?, error: NSError?) -> Void) {
         println("loadDataFromURL: " + url.absoluteString!)
 
-        var session = NSURLSession.sharedSession()
-        let loadDataTask = session.dataTaskWithURL(url, completionHandler: { (data: NSData!, response: NSURLResponse!, error: NSError!) -> Void in
+        let session = NSURLSession.sharedSession()
+        let loadDataTask = session.dataTaskWithURL(url, completionHandler: { (data: NSData?, response: NSURLResponse?, error: NSError?) -> Void in
             if let errorResponse = error {
                 completion(data: nil, error: errorResponse)
             } else if let httpResponse = response as? NSHTTPURLResponse {
                 if httpResponse.statusCode == 200 {
                     completion(data: data, error: nil)
                 } else {
-                    var error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
+                    let error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
                     completion(data: nil, error: error)
                 }
             } else {
-                var error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
+                let error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
                 completion(data: nil, error: error)
             }
         })

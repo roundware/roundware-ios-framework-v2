@@ -19,39 +19,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
 
         // Configure AVAudioSession for the application
-        var avAudioSession = AVAudioSession.sharedInstance()
-        var error: NSError?
+        let avAudioSession = AVAudioSession.sharedInstance()
 
         // This can be moved to the appropriate place in the application where it makes sense
         avAudioSession.requestRecordPermission { (granted: Bool) -> Void in
-            println("AppDelegate: record permission granted: \(granted)")
+            print("AppDelegate: record permission granted: \(granted)")
         }
 
-        // Play and record for VOIP
-        if !avAudioSession.setCategory(AVAudioSessionCategoryPlayAndRecord, error: &error) {
-            println("AppDelegate: could not set session category")
-            if let e = error {
-                println(e.localizedDescription)
-            }
+        do {
+            // Play and record for VOIP
+            try avAudioSession.setCategory(AVAudioSessionCategoryPlayAndRecord)
+            // Send audio to the speaker
+            try avAudioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.Speaker)
+            // Activiate the AVAudioSession
+            try avAudioSession.setActive(true)
+        } catch {
+            print("RWExample - Couldn't setup audio session \(error)")
         }
 
-        // Send audio to the speaker
-        if !avAudioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.Speaker, error:&error) {
-            println("AppDelegate: could not overide output audio port")
-            if let e = error {
-                println(e.localizedDescription)
-            }
-        }
-
-        // Activiate the AVAudioSession
-        if !avAudioSession.setActive(true, error: &error) {
-            println("AppDelegate: could not make session active")
-            if let e = error {
-                println(e.localizedDescription)
-            }
-        }
-
-        var rwf = RWFramework.sharedInstance
+        let rwf = RWFramework.sharedInstance
         rwf.addDelegate(self)
 
         return true

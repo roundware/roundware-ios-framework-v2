@@ -520,14 +520,14 @@ extension RWFramework {
             } else if (showedAlert == false) {
                 showedAlert = true // Only show the alert once per call
                 self.dam {
-                    var alert = UIAlertController(title: self.LS("RWFramework"), message: message, preferredStyle: UIAlertControllerStyle.Alert)
+                    let alert = UIAlertController(title: self.LS("RWFramework"), message: message, preferredStyle: UIAlertControllerStyle.Alert)
                     let OKAction = UIAlertAction(title: self.LS("OK"), style: .Default) { (action) in }
                     alert.addAction(OKAction)
                     if let currentViewController = rwfp.rwGetCurrentViewController?() {
                         currentViewController.presentViewController(alert, animated: true, completion: { () -> Void in
                         })
                     } else {
-                        var assumedViewController = rwfp as! UIViewController
+                        let assumedViewController = rwfp as! UIViewController
                         assumedViewController.presentViewController(alert, animated: true, completion: { () -> Void in
                         })
                     }

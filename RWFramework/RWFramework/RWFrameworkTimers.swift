@@ -15,7 +15,7 @@ extension RWFramework {
     func heartbeatTimer(timer: NSTimer) {
         if (requestStreamSucceeded == false) { return }
 
-        var geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
+        let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
         if (!geo_listen_enabled) ||
             (geo_listen_enabled && lastRecordedLocation.timestamp.timeIntervalSinceNow < -RWFrameworkConfig.getConfigValueAsNumber("gps_idle_interval_in_seconds").doubleValue) {
             apiPostStreamsIdHeartbeat()
@@ -24,8 +24,8 @@ extension RWFramework {
 
     func startHeartbeatTimer() {
         dispatch_async(dispatch_get_main_queue(), { () -> Void in
-            var gps_idle_interval_in_seconds = RWFrameworkConfig.getConfigValueAsNumber("gps_idle_interval_in_seconds").doubleValue
-            self.heartbeatTimer = NSTimer.scheduledTimerWithTimeInterval(gps_idle_interval_in_seconds, target:self, selector:Selector("heartbeatTimer:"), userInfo:nil, repeats:true)
+            let gps_idle_interval_in_seconds = RWFrameworkConfig.getConfigValueAsNumber("gps_idle_interval_in_seconds").doubleValue
+            self.heartbeatTimer = NSTimer.scheduledTimerWithTimeInterval(gps_idle_interval_in_seconds, target:self, selector:#selector(RWFramework.heartbeatTimer(_:)), userInfo:nil, repeats:true)
         })
     }
 
@@ -45,8 +45,8 @@ extension RWFramework {
 
             // TODO: Meters (kAudioUnitProperty_MeteringMode on a mixer in the AUGraph)
 
-            var peakPower: Float = 0.0
-            var averagePower: Float = 0.0
+            let peakPower: Float = 0.0
+            let averagePower: Float = 0.0
             rwRecordingProgress(percentage, maxDuration: max_recording_length, peakPower: peakPower, averagePower: averagePower)
 
             if percentage >= 1.0 {
@@ -62,7 +62,7 @@ extension RWFramework {
 
     func startAudioTimer() {
         dispatch_async(dispatch_get_main_queue(), { () -> Void in
-            self.audioTimer = NSTimer.scheduledTimerWithTimeInterval(0.1, target:self, selector:Selector("audioTimer:"), userInfo:nil, repeats:true)
+            self.audioTimer = NSTimer.scheduledTimerWithTimeInterval(0.1, target:self, selector:#selector(RWFramework.audioTimer(_:)), userInfo:nil, repeats:true)
         })
     }
 
@@ -74,7 +74,7 @@ extension RWFramework {
 
     func startUploadTimer() {
         dispatch_async(dispatch_get_main_queue(), { () -> Void in
-            self.uploadTimer = NSTimer.scheduledTimerWithTimeInterval(1.0, target:self, selector:Selector("uploadTimer:"), userInfo:nil, repeats:true)
+            self.uploadTimer = NSTimer.scheduledTimerWithTimeInterval(1.0, target:self, selector:#selector(RWFramework.uploadTimer(_:)), userInfo:nil, repeats:true)
         })
     }
 
