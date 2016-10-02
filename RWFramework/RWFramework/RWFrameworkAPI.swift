@@ -117,7 +117,7 @@ extension RWFramework {
 
             postSessionsSucceeded = true
 
-            let project_id = RWFrameworkConfig.getConfigValueAsString("project_id")
+            let project_id = RWFrameworkConfig.getConfigValueAsNumber("project_id").stringValue
             apiGetProjectsId(project_id, session_id: session_id)
         }
         catch {
