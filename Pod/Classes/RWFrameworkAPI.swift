@@ -242,10 +242,15 @@ extension RWFramework {
         requestStreamInProgress = true
         
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.Client).stringValue
-        
-        let latitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.latitude)
-        let longitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.longitude)
-        
+
+        var latitude: String? = nil
+        var longitude: String? = nil
+        let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
+        if (geo_listen_enabled) {
+            latitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.latitude)
+            longitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.longitude)
+        }
+
         httpPostStreams(session_id, latitude: latitude, longitude: longitude) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.postStreamsSuccess(data!, session_id: session_id)
@@ -368,6 +373,8 @@ extension RWFramework {
 
     func postStreamsIdNextSuccess(data: NSData) {
         _ = JSON(data: data)
+
+//        self.player!.replaceCurrentItemWithPlayerItem(nil)
 //        println(dict)
         // does nothing for now
     }
