@@ -2,14 +2,14 @@ source 'https://github.com/CocoaPods/Specs.git'
 platform :ios, '8.0'
 use_frameworks!
 
-target 'RWFramework_Example', :exclusive => true do
+target 'RWFramework_Example' do
   pod 'RWFramework', :path => '../'
 end
 
-target 'RWFramework_Tests', :exclusive => true do
+target 'RWFramework_Tests' do
   pod 'RWFramework', :path => '../'
-  pod 'FBSnapshotTestCase', :git => 'https://github.com/facebook/ios-snapshot-test-case.git', :commit => '6f5acce351e4a50d1d7001ead2754fcb4aa05f41'
-  pod 'Quick', '~> 0.9.1'
-  pod 'Nimble', '3.2.0'
+  pod 'FBSnapshotTestCase'
+  pod 'Quick'
+  pod 'Nimble'
   pod 'Nimble-Snapshots'
 end
