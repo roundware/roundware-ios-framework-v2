@@ -13,3 +13,13 @@ target 'RWFramework_Tests' do
   pod 'Nimble'
   pod 'Nimble-Snapshots'
 end
+
+
+#http://stackoverflow.com/questions/38446097/xcode-8-beta-3-use-legacy-swift-issue
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['SWIFT_VERSION'] = '3.0'
+    end
+  end
+end
