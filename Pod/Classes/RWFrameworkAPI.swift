@@ -513,7 +513,7 @@ extension RWFramework {
 
 // MARK: POST events
 
-    func apiPostEvents(event_type: String, data: String?, success:(data: NSData?) -> Void, failure:(error: NSError) -> Void) {
+    func apiPostEvents(event_type: String, data: String?, success:((data: NSData?) -> Void, failure:(error: NSError) -> Void) {
         
         //TODO might need a check here to see if session_id has been set
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.Client).stringValue
