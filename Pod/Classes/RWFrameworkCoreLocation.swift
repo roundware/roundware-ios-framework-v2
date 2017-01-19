@@ -13,8 +13,8 @@ extension RWFramework: CLLocationManagerDelegate {
 
     /// This is called at framework startup and also after permission has changed
     public func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
-        if status == CLAuthorizationStatus.AuthorizedAlways || status == CLAuthorizationStatus.AuthorizedWhenInUse {
-            let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
+        if status == CLAuthorizationStatus.authorizedAlways || status == CLAuthorizationStatus.authorizedWhenInUse {
+            let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool(key: "geo_listen_enabled")
             if (geo_listen_enabled) {
                 locationManager.startUpdatingLocation()
             }
@@ -30,15 +30,15 @@ extension RWFramework: CLLocationManagerDelegate {
 
         captureLastRecordedLocation()
 
-        let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
+        let listen_enabled = RWFrameworkConfig.getConfigValueAsBool(key: "listen_enabled")
         if (listen_enabled) {
-            let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
+            let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool(key: "geo_listen_enabled")
             if (geo_listen_enabled && requestStreamInProgress == false && requestStreamSucceeded == false) {
                 #if DEBUG
                     let fakeLocation: CLLocation = CLLocation(latitude: 1.0, longitude: 1.0)
                     apiPatchStreamsIdWithLocation(fakeLocation)
                 #else
-                    apiPatchStreamsIdWithLocation(locations[0])
+                    apiPatchStreamsIdWithLocation(newLocation: locations[0])
                 #endif
             } else {
                 apiPostStreams()
@@ -50,18 +50,18 @@ extension RWFramework: CLLocationManagerDelegate {
 
     /// Called by the CLLocationManager when location update has failed
     public func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
-        println("locationManager didFailWithError \(error)")
+        println(object: "locationManager didFailWithError \(error)")
     }
 
     /// If you pass false for letFrameworkRequestWhenInUseAuthorizationForLocation in the framework's start() method then you can call method this anytime after rwGetProjectsIdSuccess is called in order to request in use location authorization from the user. This method returns true if the request will be made, false otherwise.
     public func requestWhenInUseAuthorizationForLocation() -> Bool {
-        let geo_image_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_image_enabled")
-        let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
-        let geo_speak_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_speak_enabled")
+        let geo_image_enabled = RWFrameworkConfig.getConfigValueAsBool(key: "geo_image_enabled")
+        let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool(key: "geo_listen_enabled")
+        let geo_speak_enabled = RWFrameworkConfig.getConfigValueAsBool(key: "geo_speak_enabled")
         let shouldMakeTheRequest = geo_listen_enabled || geo_speak_enabled || geo_image_enabled
         if (shouldMakeTheRequest) {
-            locationManager.distanceFilter = RWFrameworkConfig.getConfigValueAsNumber("distance_filter_in_meters").doubleValue
-            if CLLocationManager.authorizationStatus() == .NotDetermined {
+            locationManager.distanceFilter = RWFrameworkConfig.getConfigValueAsNumber(key: "distance_filter_in_meters").doubleValue
+            if CLLocationManager.authorizationStatus() == .notDetermined {
                 locationManager.requestWhenInUseAuthorization()
             }
         }

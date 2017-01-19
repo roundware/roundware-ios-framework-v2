@@ -12,10 +12,10 @@ import AVFoundation
 extension RWFramework {
 
     /// This is set in the self.player's willSet/didSet
-    public override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+    public func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
         //println("keyPath: \(keyPath) object: \(object) change: \(change)")
 
-        rwObserveValueForKeyPath(keyPath!, ofObject: object!, change: change!, context: context)
+        rwObserveValueForKeyPath(keyPath: keyPath!, ofObject: object!, change: change! as [NSObject : AnyObject], context: context)
 
 //        if (keyPath == "timedMetadata") {
 //            let newChange = change["new"] as! NSArray // NB: change may be nil when backgrounding - TOFIX
@@ -28,14 +28,14 @@ extension RWFramework {
 
     /// Return true if the framework can play audio
     public func canPlay() -> Bool {
-        let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
+        let listen_enabled = RWFrameworkConfig.getConfigValueAsBool(key: "listen_enabled")
         return listen_enabled && streamURL != nil
     }
 
     /// Create an AVPlayer to play the stream
     func createPlayer() {
         if (streamURL == nil) { return }
-        player = AVPlayer(URL:streamURL!) as AVPlayer
+        player = AVPlayer(url:streamURL! as URL) as AVPlayer
     }
 
     /// Destroy the AVPlayer
@@ -52,7 +52,7 @@ extension RWFramework {
         }
         player?.play()
         isPlaying = (player?.rate == 1.0)
-        logToServer("start_listen")
+        logToServer(event_type: "start_listen")
     }
 
     /// Pause audio
@@ -67,7 +67,7 @@ extension RWFramework {
         pause()
         destroyPlayer()
         createPlayer()
-        logToServer("stop_listen")
+        logToServer(event_type: "stop_listen")
     }
 
     /// Next audio

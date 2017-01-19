@@ -48,72 +48,72 @@ public class RWFrameworkConfig {
 
     /// Passed JSON data, this function saves that data to NSUserDefaults
     public class func setConfigDataAsArrayOfDictionaries(data: NSData) {
-        let array = JSON(data: data) // JSON returned as an Array of Dictionarys
+        let array = JSON(data: data as Data) // JSON returned as an Array of Dictionarys
         for (_, dict): (String, JSON) in array {
             for (key, value): (String, JSON) in dict {
-                NSUserDefaults.standardUserDefaults().setObject(value.object, forKey: key)
+                UserDefaults.standard.set(value.object, forKey: key)
             }
         }
     }
 
     /// Passed JSON data, this function saves that data to NSUserDefaults
     public class func setConfigDataAsDictionary(data: NSData, key: String) {
-        let dict = JSON(data: data) // JSON returned as a Dictionary
+        let dict = JSON(data: data as Data) // JSON returned as a Dictionary
 
         // Convert NSNull into empty strings so they can be written to NSUserDefaults properly
         var md = dict.object as! Dictionary<String, AnyObject>
         for (k, v) in md {
             if (v is NSNull) {
-                md[k] = ""
+                md[k] = "" as AnyObject?
             }
         }
 
-        NSUserDefaults.standardUserDefaults().setObject(md, forKey: key)
+        UserDefaults.standard.set(md, forKey: key)
     }
 
     /// Set a config value as a Bool in a particular group, creating it if it doesn't exist
     /// Group defaults to ConfigGroup.Client
     public class func setConfigValue(key: String, value: Bool, group: ConfigGroup = ConfigGroup.Client) {
-        var d = getConfigGroup(group)
-        d[key] = NSNumber(bool: value)
-        setConfigGroup(group, value: d)
+        var d = getConfigGroup(group: group)
+        d[key] = NSNumber(value: value)
+        setConfigGroup(group: group, value: d)
     }
 
     /// Set a config value as an NSNumber in a particular group, creating it if it doesn't exist
     /// Group defaults to ConfigGroup.Client
     public class func setConfigValue(key: String, value: NSNumber, group: ConfigGroup = ConfigGroup.Client) {
-        var d = getConfigGroup(group)
+        var d = getConfigGroup(group: group)
         d[key] = value
-        setConfigGroup(group, value: d)
+        setConfigGroup(group: group, value: d)
     }
 
     /// Set a config value as a String in a particular group, creating it if it doesn't exist
     /// Group defaults to ConfigGroup.Client
     public class func setConfigValue(key: String, value: String, group: ConfigGroup = ConfigGroup.Client) {
-        var d = getConfigGroup(group)
-        d[key] = value
-        setConfigGroup(group, value: d)
+        var d = getConfigGroup(group: group)
+        d[key] = value as AnyObject?
+        setConfigGroup(group: group, value: d)
     }
 
     /// Set a config value as an AnyObject in a particular group, creating it if it doesn't exist
     /// Group defaults to ConfigGroup.Client
     public class func setConfigValue(key: String, value: AnyObject, group: ConfigGroup = ConfigGroup.Client) {
-        var d = getConfigGroup(group)
+        var d = getConfigGroup(group: group)
         d[key] = value
-        setConfigGroup(group, value: d)
+        setConfigGroup(group: group, value: d)
     }
 
 // MARK: get
 
     /// After the rwGetProjectsIdSuccess delegate method is sent you can call this method to get the project data
     public class func getConfigDataFromGroup(group: ConfigGroup = ConfigGroup.Project) -> AnyObject? {
-        return NSUserDefaults.standardUserDefaults().objectForKey(group.description)
+        return UserDefaults.standard.object(forKey: group.description) as AnyObject?
     }
 
     /// Get a config value as a Bool
     /// Group defaults to ConfigGroup.Project
     public class func getConfigValueAsBool(key: String, group: ConfigGroup = ConfigGroup.Project) -> Bool {
-        if let value: AnyObject = getConfigValue(key, group: group) {
+        if let value: AnyObject = getConfigValue(key: key, group: group) {
             return (value as! NSNumber).boolValue
         } else {
             return false
@@ -123,7 +123,7 @@ public class RWFrameworkConfig {
     /// Get a config value as an NSNumber
     /// Group defaults to ConfigGroup.Project
     public class func getConfigValueAsNumber(key: String, group: ConfigGroup = ConfigGroup.Project) -> NSNumber {
-        if let value: AnyObject = getConfigValue(key, group: group) {
+        if let value: AnyObject = getConfigValue(key: key, group: group) {
             return (value as! NSNumber)
         } else {
             return 0 as NSNumber
@@ -133,7 +133,7 @@ public class RWFrameworkConfig {
     /// Get a config value as a String
     /// Group defaults to ConfigGroup.Project
     public class func getConfigValueAsString(key: String, group: ConfigGroup = ConfigGroup.Project) -> String {
-        if let value: AnyObject = getConfigValue(key, group: group) {
+        if let value: AnyObject = getConfigValue(key: key, group: group) {
             return (value as! String)
         } else {
             return ""
@@ -146,23 +146,23 @@ public class RWFrameworkConfig {
     internal class func getConfigValue(key: String, group: ConfigGroup) -> AnyObject? {
 
         // First check NSUserDefaults for server-based configuration values
-        if let g: AnyObject = NSUserDefaults.standardUserDefaults().objectForKey(group.description) {
-            if let v: AnyObject = g.valueForKey(key) {
+        if let g: AnyObject = UserDefaults.standard.object(forKey: group.description) as AnyObject? {
+            if let v: AnyObject = g.value!(forKey: key) as AnyObject? {
                 return v
             }
         }
 
         // Load the RWFramework.plist the first time we need to access it
         if defaults == nil {
-            if let path = NSBundle.mainBundle().pathForResource("RWFramework", ofType: "plist"),
-                dict = NSDictionary(contentsOfFile: path) as? Dictionary<String, AnyObject> {
-                    RWFrameworkConfig.defaults = dict
+            if let path = Bundle.main.path(forResource: "RWFramework", ofType: "plist"),
+                let dict = NSDictionary(contentsOfFile: path) as? Dictionary<String, AnyObject> {
+                    RWFrameworkConfig.defaults = dict as NSDictionary?
             }
         }
 
         // If nothing found, use local defaults
         if let defaults = self.defaults {
-            if let value: AnyObject = defaults.valueForKey(key) {
+            if let value: AnyObject = defaults.value(forKey: key) as AnyObject? {
                 return value
             } else {
                 return nil
@@ -177,15 +177,15 @@ public class RWFrameworkConfig {
     /// Return the entire group as a Dictionary<String, String> (usually to be edited and set back.)
     /// Will return an empty Dictionary if one does not exist
     internal class func getConfigGroup(group: ConfigGroup) -> [String:AnyObject] {
-        var value: AnyObject? = NSUserDefaults.standardUserDefaults().objectForKey(group.description)
+        var value: AnyObject? = UserDefaults.standard.object(forKey: group.description) as AnyObject?
         if value == nil {
-            value = [String:AnyObject]()
+            value = [String:AnyObject]() as AnyObject?
         }
         return value as! [String:AnyObject]
     }
 
     /// Set the entire group (usually after being edited)
     internal class func setConfigGroup(group: ConfigGroup, value: [String:AnyObject]) {
-        NSUserDefaults.standardUserDefaults().setObject(value, forKey: group.description)
+        UserDefaults.standard.set(value, forKey: group.description)
     }
 }
