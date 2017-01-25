@@ -87,7 +87,7 @@ public class RWFramework: NSObject {
 
     /// A list of delegates that conform to RWFrameworkProtocol (see RWFrameworkProtocol.swift)
     //TODO
-//    public var delegates: NSHashTable = NSHashTable.weakObjectsHashTable()
+    public var delegates: NSHashTable<AnyObject> = NSHashTable.weakObjects()
     // Location (see RWFrameworkCoreLocation.swift)
     let locationManager: CLLocationManager = CLLocationManager()
     var lastRecordedLocation: CLLocation = CLLocation()

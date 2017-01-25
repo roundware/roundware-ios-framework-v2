@@ -260,19 +260,19 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
         data.append("--\(boundary)--\r\n".data(using: String.Encoding.utf8, allowLossyConversion: false)!)
 
-        let uploadTask = session.uploadTaskWithRequest(request as URLRequest, fromData: data as Data, completionHandler: { (data: NSData?, response: URLResponse?, error: NSError?) -> Void in
+        let uploadTask = session.uploadTask(with: request as URLRequest, from: data as Data, completionHandler: { (data: Data?, response: URLResponse?, error: Error?) -> Void in
             if let errorResponse = error {
-                completion(data: nil, error: errorResponse)
-            } else if let httpResponse = response as? NSHTTPURLResponse {
+                completion(nil, errorResponse as NSError?)
+            } else if let httpResponse = response as? HTTPURLResponse {
                 if httpResponse.statusCode == 200 {
-                    completion(data: data, error: nil)
+                    completion(data as NSData?, nil)
                 } else {
                     let error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
-                    completion(data: data, error: error)
+                    completion(data as NSData?, error)
                 }
             } else {
                 let error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
-                completion(data: nil, error: error)
+                completion(nil, error)
             }
         })
         uploadTask.resume()
@@ -297,19 +297,19 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
             body += "\(key)=\(value)&"
         }
         request.httpBody = body.data( using: String.Encoding.utf8, allowLossyConversion: false)
-        let loadDataTask = session.dataTaskWithRequest(request as URLRequest, completionHandler: { (data: NSData?, response: URLResponse?, error: NSError?) -> Void in
+        let loadDataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data: Data?, response: URLResponse?, error: Error?) -> Void in
             if let errorResponse = error {
-                completion(data: nil, error: errorResponse)
-            } else if let httpResponse = response as? NSHTTPURLResponse {
+                completion(nil, errorResponse as NSError?)
+            } else if let httpResponse = response as? HTTPURLResponse {
                 if httpResponse.statusCode == 200 {
-                    completion(data: data, error: nil)
+                    completion(data as NSData?, nil)
                 } else {
                     let error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
-                    completion(data: data, error: error)
+                    completion(data as NSData?, error)
                 }
             } else {
                 let error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
-                completion(data: nil, error: error)
+                completion(nil, error)
             }
         })
         loadDataTask.resume()
@@ -337,22 +337,23 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
         request.httpBody = body.data( using: String.Encoding.utf8, allowLossyConversion: false)
         
-        let loadDataTask = session.dataTaskWithRequest(request as URLRequest, completionHandler: { (data: NSData?, response: URLResponse?, error: NSError?) -> Void in
+        let loadDataTask = session.dataTask(with:
+            request as URLRequest, completionHandler: { (data: Data?, response: URLResponse?, error: Error?) -> Void in
             if let errorResponse = error {
-                completion(data: nil, error: errorResponse)
-            } else if let httpResponse = response as? NSHTTPURLResponse {
+                completion(nil, errorResponse as NSError?)
+            } else if let httpResponse = response as? HTTPURLResponse {
                 if httpResponse.statusCode == 200 {
-                    completion(data: data, error: nil)
+                    completion(data as NSData?, nil)
                 } else {
                     let error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
                     //let's see those error messages
                     //let dict = JSON(data: data!)
                     //self.println(dict)
-                    completion(data: data, error: error)
+                    completion(data as NSData?, error)
                 }
             } else {
                 let error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
-                completion(data: nil, error: error)
+                completion(nil, error)
             }
         })
         loadDataTask.resume()
@@ -371,19 +372,19 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
             request.addValue("token \(token)", forHTTPHeaderField: "Authorization")
         }
 
-        let loadDataTask = session.dataTaskWithRequest(request as URLRequest, completionHandler: { (data: NSData?, response: URLResponse?, error: NSError?) -> Void in
+        let loadDataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data: Data?, response: URLResponse?, error: Error?) -> Void in
             if let errorResponse = error {
-                completion(data: nil, error: errorResponse)
-            } else if let httpResponse = response as? NSHTTPURLResponse {
+                completion(nil, errorResponse as NSError?)
+            } else if let httpResponse = response as? HTTPURLResponse {
                 if httpResponse.statusCode == 200 {
-                    completion(data: data, error: nil)
+                    completion(data as NSData?, nil)
                 } else {
                     let error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
-                    completion(data: data, error: error)
+                    completion(data as NSData?, error)
                 }
             } else {
                 let error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
-                completion(data: nil, error: error)
+                completion(nil, error)
             }
         })
         loadDataTask.resume()
@@ -396,19 +397,19 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         println(object: "loadDataFromURL: " + url.absoluteString!)
 
         let session = URLSession.shared
-        let loadDataTask = session.dataTaskWithURL(url as URL, completionHandler: { (data: NSData?, response: URLResponse?, error: NSError?) -> Void in
+        let loadDataTask = session.dataTask(with: url as URL, completionHandler: { (data: Data?, response: URLResponse?, error: Error?) -> Void in
             if let errorResponse = error {
-                completion(data: nil, error: errorResponse)
-            } else if let httpResponse = response as? NSHTTPURLResponse {
+                completion(nil, errorResponse as NSError?)
+            } else if let httpResponse = response as? HTTPURLResponse {
                 if httpResponse.statusCode == 200 {
-                    completion(data: data, error: nil)
+                    completion(data as NSData?, nil)
                 } else {
                     let error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
-                    completion(data: nil, error: error)
+                    completion(nil, error)
                 }
             } else {
                 let error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
-                completion(data: nil, error: error)
+                completion(nil, error)
             }
         })
         loadDataTask.resume()

@@ -99,12 +99,12 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 
 // MARK: - UIImagePickerControllerDelegate
 
-    public func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
+    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
         let mediaType = info[UIImagePickerControllerMediaType] as! String
         if mediaType == kUTTypeImage as String {
-            handleImageMediaType(info: info as [NSObject : AnyObject])
+            handleImageMediaType(info: info as [String : AnyObject])
         } else if mediaType == kUTTypeMovie as String {
-            handleMovieMediaType(info: info as [NSObject : AnyObject])
+            handleMovieMediaType(info: info as [String : AnyObject])
         } else {
             imagePickerControllerDidCancel(picker: picker)
         }
@@ -116,7 +116,7 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 
 // MARK: - delegate stubs
 
-    func _rwImagePickerControllerDidFinishPickingMedia(info: [NSObject : AnyObject], path: String) {
+    func _rwImagePickerControllerDidFinishPickingMedia(info: [String : AnyObject], path: String) {
         finishPreflightGeoImage()
         if let keyWindow = UIApplication.shared.keyWindow,
             let rootViewController = keyWindow.rootViewController {
@@ -138,25 +138,25 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 
 // MARK: - Utilities
 
-    func handleImageMediaType(info: [NSObject : AnyObject]) {
+    func handleImageMediaType(info: [String : AnyObject]) {
 
         func imageWithImage(image: UIImage, newSize: CGSize) -> UIImage {
             UIGraphicsBeginImageContextWithOptions(newSize, false, 0.0)
-            let rect = CGRectMake(0, 0, newSize.width, newSize.height)
+            let rect = CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height)
             image.draw(in: rect)
             let newImage = UIGraphicsGetImageFromCurrentImageContext()
             UIGraphicsEndImageContext()
             return newImage!
         }
-
-        if let image: UIImage? = info[UIImagePickerControllerOriginalImage] as? UIImage {
-            let q = DispatchQueue("com.roundware.image_resize_queue", nil)
-            q.asynchronously(execute: { () -> Void in
+        if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
+//        if let image: UIImage? = info[UIImagePickerControllerOriginalImage] as? UIImage {
+            let q = DispatchQueue(label: "com.roundware.image_resize_queue")
+            q.async(execute: { () -> Void in
                 var imageToDisplay: UIImage?
 
                 // Size
                 let image_minimum_side = CGFloat(RWFrameworkConfig.getConfigValueAsNumber(key: "image_minimum_side").floatValue)
-                var size = image!.size
+                var size = image.size
 
                 if (size.height > image_minimum_side || size.width > image_minimum_side) {
                     if (size.height > image_minimum_side && size.height < size.width) {
@@ -169,29 +169,29 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
                         size.width = image_minimum_side;
                         size.height = size.height * factor;
                     }
-                    imageToDisplay = imageWithImage(image: image!, newSize: size)
+                    imageToDisplay = imageWithImage(image: image, newSize: size)
                 } else {
                     imageToDisplay = image;
                 }
 
                 // Compression
                 let image_jpeg_compression = CGFloat(RWFrameworkConfig.getConfigValueAsNumber(key: "image_jpeg_compression").floatValue)
-                if let imageData = UIImageJPEGRepresentation(image!, image_jpeg_compression) {
+                if let imageData = UIImageJPEGRepresentation(image, image_jpeg_compression) {
 
                     // Write
                     let r = arc4random()
                     let image_file_name = RWFrameworkConfig.getConfigValueAsString(key: "image_file_name")
                     let imageFileName = "\(r)_\(image_file_name)"
-                    let imageFilePath = (NSTemporaryDirectory() as NSString).stringByAppendingPathComponent(imageFileName)
+                    let imageFilePath = (NSTemporaryDirectory() as NSString).appendingPathComponent(imageFileName)
 
-                    let success = imageData.writeToFile(imageFilePath, atomically: false)
-                    if success == false {
+                    do {
+                        let success = try imageData.write(to: URL(string: imageFilePath)!, options: [.
+                        atomic])
+                        let keyPath = self.addImage(string: imageFilePath)
+                        self._rwImagePickerControllerDidFinishPickingMedia(info: info, path: keyPath!)
+                    } catch _ as NSError {
                         self.println(object: "RWFramework - Couldn't write the image to disk")
                         self._rwImagePickerControllerDidCancel()
-                    } else {
-                        // Success
-                        let keyPath = self.addImage(imageFilePath)
-                        self._rwImagePickerControllerDidFinishPickingMedia(info, path: keyPath!)
                     }
                 } else {
                     self._rwImagePickerControllerDidCancel()
@@ -202,7 +202,7 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
         }
     }
 
-    func handleMovieMediaType(info: [NSObject : AnyObject]) {
+    func handleMovieMediaType(info: [String : AnyObject]) {
         if let originalMovieURL: NSURL? = info[UIImagePickerControllerMediaURL] as? NSURL {
             let originalMoviePath = originalMovieURL!.path
 

@@ -17,24 +17,24 @@ extension RWFramework {
         var key: String? = nil
 
         let r = arc4random()
-        let text_file_name = RWFrameworkConfig.getConfigValueAsString("text_file_name")
-        let textFilePath = (NSTemporaryDirectory() as NSString).stringByAppendingPathComponent("\(r)_\(text_file_name)")
+        let text_file_name = RWFrameworkConfig.getConfigValueAsString(key: "text_file_name")
+        let textFilePath = (NSTemporaryDirectory() as NSString).appendingPathComponent("\(r)_\(text_file_name)")
 
         var error: NSError?
         var success: Bool
         do {
-                try string.writeToFile(textFilePath, atomically: false, encoding: NSUTF8StringEncoding)
+                try string.write(toFile: textFilePath, atomically: false, encoding: String.Encoding.utf8)
                 success = true
         } catch let error1 as NSError {
                 error = error1
                 success = false
         }
         if let _ = error {
-            println("RWFramework - Couldn't write text to file \(error)")
+            println(object: "RWFramework - Couldn't write text to file \(error)")
         } else if success == false {
-            println("RWFramework - Couldn't write text to file for an unknown reason")
+            println(object: "RWFramework - Couldn't write text to file for an unknown reason")
         } else {
-            addMedia(MediaType.Text, string: textFilePath, description: description)
+            addMedia(mediaType: MediaType.Text, string: textFilePath, description: description)
             key = textFilePath
         }
 
@@ -43,12 +43,12 @@ extension RWFramework {
 
     /// Set a description on an already added text, pass the path returned from addText as the string parameter
     public func setTextDescription(string: String, description: String) {
-        setMediaDescription(MediaType.Text, string: string, description: description)
+        setMediaDescription(mediaType: MediaType.Text, string: string, description: description)
     }
 
     /// Remove a string of text, pass the path returned from addText as the string parameter
     public func removeText(string: String) {
-        removeMedia(MediaType.Text, string: string)
+        removeMedia(mediaType: MediaType.Text, string: string)
     }
 
 }

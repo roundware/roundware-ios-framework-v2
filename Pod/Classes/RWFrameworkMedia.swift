@@ -60,6 +60,7 @@ extension RWFramework {
     }
 
     class Media: NSObject, NSCoding {
+
         var mediaType: MediaType = MediaType.None
         var mediaStatus: MediaStatus = MediaStatus.None
         var string: String = ""     // plain text for MediaType.Text, file path for MediaType.Audio, MediaType.Image and MediaType.Movie
@@ -74,8 +75,8 @@ extension RWFramework {
             self.mediaType = mediaType
             self.mediaStatus = MediaStatus.Hold
             self.string = string
-            self.latitude = NSNumber(location.coordinate.latitude)
-            self.longitude = NSNumber(location.coordinate.longitude)
+            self.latitude = location.coordinate.latitude as NSNumber
+            self.longitude = location.coordinate.longitude as NSNumber
 
         }
 
@@ -84,8 +85,8 @@ extension RWFramework {
             self.mediaStatus = MediaStatus.Hold
             self.string = string
             self.desc = description
-            self.latitude = NSNumber(location.coordinate.latitude)
-            self.longitude = NSNumber(location.coordinate.longitude)
+            self.latitude = location.coordinate.latitude as NSNumber
+            self.longitude = location.coordinate.longitude as NSNumber
 
         }
 
@@ -100,8 +101,8 @@ extension RWFramework {
             envelopeID = aDecoder.decodeObject(forKey: "envelopeID") as! NSNumber
             retryCount = aDecoder.decodeObject(forKey: "retryCount") as! NSNumber
         }
+        public func encode(with aCoder: NSCoder) {
 
-        func encodeWithCoder(aCoder: NSCoder) {
             aCoder.encode(MediaType.allValues.index(of: mediaType)!, forKey: "mediaType")
             aCoder.encode(MediaStatus.allValues.index(of: mediaStatus)!, forKey: "mediaStatus")
             aCoder.encode(string, forKey: "string")
@@ -120,7 +121,7 @@ extension RWFramework {
         //NOTE I think this might accidentally load images from old sessions in simulator even if the media is not there
         if let mediaArrayData: NSData? = RWFrameworkConfig.getConfigValue(key: "mediaArray", group: RWFrameworkConfig.ConfigGroup.Client) as? NSData {
             if (mediaArrayData != nil) {
-                if let a: AnyObject? = NSKeyedUnarchiver.unarchiveObjectWithData(mediaArrayData!) {
+                if let a: AnyObject? = NSKeyedUnarchiver.unarchiveObject(with: mediaArrayData! as Data ) as AnyObject?? {
                     let b = a as! Array<Media>
                     println(object: "loadMediaArray loaded \(b.count) items")
                     return b
@@ -139,7 +140,7 @@ extension RWFramework {
         apiPostEnvelopes(success: { (envelopeID: Int) -> Void in
             for media: Media in self.mediaArray {
                 if media.mediaStatus == MediaStatus.Hold {
-                    media.envelopeID = NSNumber(envelopeID)
+                    media.envelopeID =  envelopeID as NSNumber
                     media.tagIDs = tagIdsAsString
                     media.mediaStatus = MediaStatus.Ready
                 }

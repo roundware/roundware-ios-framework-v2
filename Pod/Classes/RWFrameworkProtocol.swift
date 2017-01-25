@@ -111,7 +111,7 @@ import CoreLocation
 // MARK: Image Picker
 
     /// Sent when the imagePickerController is dismissed after picking media
-    @objc optional func rwImagePickerControllerDidFinishPickingMedia(info: [NSObject : AnyObject], path: String)
+    @objc optional func rwImagePickerControllerDidFinishPickingMedia(info: [String : AnyObject], path: String)
     /// Sent when the imagePickerController is dismissed after cancelling
     @objc optional func rwImagePickerControllerDidCancel()
 
@@ -159,13 +159,13 @@ extension RWFramework {
 
     /// Add a delegate to the list of delegates
     public func addDelegate(object: AnyObject) {
-        delegates.addObject(object)
+        delegates.add(object)
         println(object: "addDelegate: \(delegates)")
     }
 
     /// Remove a delegate from the list of delegates (if it is a delegate)
     public func removeDelegate(object: AnyObject) {
-        delegates.removeObject(object)
+        delegates.remove(object)
         println(object: "removeDelegate: \(delegates)")
     }
 
@@ -177,7 +177,7 @@ extension RWFramework {
 
     /// Return true if the object is currently a delegate, false otherwise
     public func isDelegate(object: AnyObject) -> Bool {
-        return delegates.containsObject(object)
+        return delegates.contains(object)
     }
 
 // MARK: dam
@@ -194,7 +194,7 @@ extension RWFramework {
     /// Utility function to call method with AnyObject param on valid delegates
     func protocaller(param: AnyObject? = nil, completion:(_ rwfp: RWFrameworkProtocol, _ param: AnyObject?) -> Void) {
         let enumerator = delegates.objectEnumerator()
-        while let d: AnyObject = enumerator.nextObject() {
+        while let d: AnyObject = enumerator.nextObject() as AnyObject? {
             if let dd = d as? RWFrameworkProtocol {
                 completion(dd, param)
             }
@@ -486,7 +486,7 @@ extension RWFramework {
 
 // MARK: Image Picker
 
-    func rwImagePickerControllerDidFinishPickingMedia(info: [NSObject : AnyObject], path: String) {
+    func rwImagePickerControllerDidFinishPickingMedia(info: [String : AnyObject], path: String) {
         protocaller { (rwfp, _) -> Void in
             self.dam { rwfp.rwImagePickerControllerDidFinishPickingMedia?(info: info, path: path) }
         }
@@ -566,13 +566,13 @@ extension RWFramework {
 
     func rwLocationManager(manager: CLLocationManager!, didUpdateLocations locations: [AnyObject]!) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwLocationManager?(manager, didUpdateLocations: locations) }
+            self.dam { rwfp.rwLocationManager?(manager: manager, didUpdateLocations: locations) }
         }
     }
 
     func rwLocationManager(manager: CLLocationManager!, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwLocationManager?(manager, didChangeAuthorizationStatus: status) }
+            self.dam { rwfp.rwLocationManager?(manager: manager, didChangeAuthorizationStatus: status) }
         }
     }
 

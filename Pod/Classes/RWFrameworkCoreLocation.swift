@@ -20,7 +20,7 @@ extension RWFramework: CLLocationManagerDelegate {
             }
         }
 
-        rwLocationManager(manager, didChangeAuthorizationStatus: status)
+        rwLocationManager(manager: manager, didChangeAuthorizationStatus: status)
     }
 
     /// Called by the CLLocationManager when location has been updated
@@ -45,7 +45,7 @@ extension RWFramework: CLLocationManagerDelegate {
             }
         }
 
-        rwLocationManager(manager, didUpdateLocations: locations)
+        rwLocationManager(manager: manager, didUpdateLocations: locations)
     }
 
     /// Called by the CLLocationManager when location update has failed
