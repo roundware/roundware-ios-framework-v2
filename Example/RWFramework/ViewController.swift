@@ -23,17 +23,17 @@ class ViewController: UIViewController {
     @IBOutlet var listenCurrentButton: UIButton!
     
     
-    @IBAction func listenPlay(sender: UIButton) {
+    @IBAction func listenPlay(_ sender: UIButton) {
         let rwf = RWFramework.sharedInstance
         rwf.isPlaying ? rwf.stop() : rwf.play()
         listenPlayButton.setTitle(rwf.isPlaying ? "Stop" : "Play", for: UIControlState.normal)
     }
     
-    @IBAction func listenNext(sender: UIButton) {
+    @IBAction func listenNext(_ sender: UIButton) {
         RWFramework.sharedInstance.next()
     }
     
-    @IBAction func listenCurrent(sender: UIButton) {
+    @IBAction func listenCurrent(_ sender: UIButton) {
         RWFramework.sharedInstance.current()
     }
     
@@ -43,16 +43,16 @@ class ViewController: UIViewController {
     @IBOutlet var speakPlayButton: UIButton!
     @IBOutlet var speakSubmitButton: UIButton!
     
-    @IBAction func speakUpload(sender: UIButton) {
+    @IBAction func speakUpload(_ sender: UIButton) {
         RWFramework.sharedInstance.uploadAllMedia(tagIdsAsString: "")
     }
     
-    @IBAction func speakTags(sender: UIButton) {
+    @IBAction func speakTags(_ sender: UIButton) {
         //TODO show tags available
         //RWFramework.sharedInstance.editSpeakTags()
     }
     
-    @IBAction func speakRecord(sender: UIButton) {
+    @IBAction func speakRecord(_ sender: UIButton) {
         speakProgress.setProgress(0, animated: false)
         let rwf = RWFramework.sharedInstance
         rwf.stop()
@@ -60,7 +60,7 @@ class ViewController: UIViewController {
         speakRecordButton.setTitle(rwf.isRecording() ? "Stop" : "Record", for: UIControlState.normal)
     }
     
-    @IBAction func speakPlay(sender: UIButton) {
+    @IBAction func speakPlay(_ sender: UIButton) {
         speakProgress.setProgress(0, animated: false)
         let rwf = RWFramework.sharedInstance
         rwf.stop()
@@ -68,32 +68,32 @@ class ViewController: UIViewController {
         speakPlayButton.setTitle(rwf.isPlayingBack() ? "Stop" : "Play", for: UIControlState.normal)
     }
     
-    @IBAction func speakSubmit(sender: UIButton) {
+    @IBAction func speakSubmit(_ sender: UIButton) {
         let rwf = RWFramework.sharedInstance
         rwf.addRecording(description: "This is my recording!")
     }
     
-    @IBAction func speakImage(sender: UIButton) {
+    @IBAction func speakImage(_ sender: UIButton) {
         let rwf = RWFramework.sharedInstance
         rwf.doImage()
     }
     
-    @IBAction func speakPhotoLibrary(sender: UIButton) {
+    @IBAction func speakPhotoLibrary(_ sender: UIButton) {
         let rwf = RWFramework.sharedInstance
         rwf.doPhotoLibrary(mediaTypes: [kUTTypeImage as String])
     }
     
-    @IBAction func speakMovie(sender: UIButton) {
+    @IBAction func speakMovie(_ sender: UIButton) {
         let rwf = RWFramework.sharedInstance
         rwf.doMovie()
     }
     
-    @IBAction func speakText(sender: UIButton) {
+    @IBAction func speakText(_ sender: UIButton) {
         let rwf = RWFramework.sharedInstance
         rwf.addText(string: "Hello, world!")
     }
     
-    @IBAction func speakDelete(sender: UIButton) {
+    @IBAction func speakDelete(_ sender: UIButton) {
         let rwf = RWFramework.sharedInstance
         rwf.deleteRecording()
     }
@@ -135,7 +135,8 @@ class ViewController: UIViewController {
 }
 
 extension ViewController: RWFrameworkProtocol {
-    
+
+    //deprecated presently
     func rwUpdateStatus(message: String) {
         self.statusTextView.text = self.statusTextView.text + "\r\n" + message
         self.statusTextView.scrollRangeToVisible(NSMakeRange(self.statusTextView.text.lengthOfBytes(using: String.Encoding.utf8), 0))
@@ -150,6 +151,7 @@ extension ViewController: RWFrameworkProtocol {
         let path = Bundle.main.path(forResource: "RWFramework", ofType: "plist")
         let info  = NSDictionary(contentsOfFile: path!) as! [String:AnyObject?]
         rwf.setProjectId(project_id: String(describing: info["project_id"]))
+        print("delegate working!")
 
     }
 
@@ -218,41 +220,45 @@ extension ViewController: RWFrameworkProtocol {
     }
     
     func rwRecordingProgress(percentage: Double, maxDuration: TimeInterval, peakPower: Float, averagePower: Float) {
+        print("Recording progress")
         speakProgress.setProgress(Float(percentage), animated: true)
     }
     
     func rwPlayingBackProgress(percentage: Double, duration: TimeInterval, peakPower: Float, averagePower: Float) {
+        print("Playback progress")
         speakProgress.setProgress(Float(percentage), animated: true)
     }
     
     func rwAudioRecorderDidFinishRecording() {
         let rwf = RWFramework.sharedInstance
+        print("Finished recording")
         speakRecordButton.setTitle(rwf.isRecording() ? "Stop" : "Record", for: UIControlState.normal)
         speakProgress.setProgress(0, animated: false)
     }
     
     func rwAudioPlayerDidFinishPlaying() {
         let rwf = RWFramework.sharedInstance
+        print("Finished playing")
         speakPlayButton.setTitle(rwf.isPlayingBack() ? "Stop" : "Play", for: UIControlState.normal)
         speakProgress.setProgress(0, animated: false)
     }
     
     func rwGetProjectsIdTagsSuccess(data: NSData?) {
-        rwUpdateStatus(message: "Tags received")
+        print("Tags received")
         let dict = JSON(data: data! as Data)
         let tagsArray = dict["tags"]
         for (_, dict): (String, JSON) in tagsArray {
             let value = dict["value"]
-            rwUpdateStatus(message: "\(value)")
+            print("\(value)")
         }
     }
     func rwGetProjectsIdUIGroupsSuccess(data: NSData?) {
-        rwUpdateStatus(message: "UI Groups received")
+        print("UI Groups received")
         let dict = JSON(data: data! as Data)
         let uiGroupsArray = dict["ui_groups"]
         for (_, dict): (String, JSON) in uiGroupsArray {
             let header_text_loc = dict["header_text_loc"]
-            rwUpdateStatus(message: "\(header_text_loc)")
+            print("\(header_text_loc)")
         }
     }
 }
