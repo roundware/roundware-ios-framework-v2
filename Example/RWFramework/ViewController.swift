@@ -145,9 +145,9 @@ extension ViewController: RWFrameworkProtocol {
     func rwUpdateApplicationIconBadgeNumber(count: Int) {
         UIApplication.shared.applicationIconBadgeNumber = count
     }
-    func rwPostSessionsFailure(data: NSData?) {
+    func rwPostSessionsFailure(error: NSError?) {
         print("fail")
-        dump(data)
+        dump(error)
     }
 
     func rwPostSessionsSuccess(data: NSData?) {

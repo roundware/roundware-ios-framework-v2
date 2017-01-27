@@ -11,11 +11,13 @@ import AVFoundation
 
 extension RWFramework {
 
+    //TODO consider http://blog.scottlogic.com/2015/02/11/swift-kvo-alternatives.html
     /// This is set in the self.player's willSet/didSet
-    public func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutableRawPointer) {
-        //println("keyPath: \(keyPath) object: \(object) change: \(change)")
 
-        rwObserveValueForKeyPath(keyPath: keyPath!, ofObject: object!, change: change! as [NSObject : AnyObject], context: context)
+    public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+
+        println(object: "keyPath: \(keyPath) object: \(object) change: \(change)")
+        rwObserveValueForKeyPath(keyPath: keyPath, ofObject: object as AnyObject?, change: change as [NSKeyValueChangeKey : AnyObject]?, context: context)
 
 //        if (keyPath == "timedMetadata") {
 //            let newChange = change["new"] as! NSArray // NB: change may be nil when backgrounding - TOFIX
