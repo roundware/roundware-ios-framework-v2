@@ -25,7 +25,7 @@ extension RWFramework {
     func startHeartbeatTimer() {
         DispatchQueue.main.async(execute: { () -> Void in
             let gps_idle_interval_in_seconds = RWFrameworkConfig.getConfigValueAsNumber(key: "gps_idle_interval_in_seconds").doubleValue
-            self.heartbeatTimer = Timer.scheduledTimer(timeInterval: gps_idle_interval_in_seconds, target:self, selector:Selector("heartbeatTimer:"), userInfo:nil, repeats:true)
+            self.heartbeatTimer = Timer.scheduledTimer(timeInterval: gps_idle_interval_in_seconds, target:self, selector:#selector(self.heartbeatTimer(timer:)), userInfo:nil, repeats:true)
         })
     }
 
@@ -62,7 +62,7 @@ extension RWFramework {
 
     func startAudioTimer() {
         DispatchQueue.main.async(execute: { () -> Void in
-            self.audioTimer = Timer.scheduledTimer(timeInterval: 0.1, target:self, selector:Selector("audioTimer:"), userInfo:nil, repeats:true)
+            self.audioTimer = Timer.scheduledTimer(timeInterval: 0.1, target:self, selector:#selector(self.audioTimer(timer:)), userInfo:nil, repeats:true)
         })
     }
 
@@ -74,7 +74,7 @@ extension RWFramework {
 
     func startUploadTimer() {
         DispatchQueue.main.async(execute: { () -> Void in
-            self.uploadTimer = Timer.scheduledTimer(timeInterval: 1.0, target:self, selector:Selector("uploadTimer:"), userInfo:nil, repeats:true)
+            self.uploadTimer = Timer.scheduledTimer(timeInterval: 1.0, target:self, selector:#selector(self.uploadTimer(timer:)), userInfo:nil, repeats:true)
         })
     }
 
