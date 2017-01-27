@@ -12,7 +12,7 @@ import AVFoundation
 extension RWFramework {
 
     /// This is set in the self.player's willSet/didSet
-    public func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+    public func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutableRawPointer) {
         //println("keyPath: \(keyPath) object: \(object) change: \(change)")
 
         rwObserveValueForKeyPath(keyPath: keyPath!, ofObject: object!, change: change! as [NSObject : AnyObject], context: context)

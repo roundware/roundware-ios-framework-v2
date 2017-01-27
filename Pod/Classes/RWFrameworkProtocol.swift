@@ -106,7 +106,7 @@ import CoreLocation
 // MARK: metadata
 
     /// Sent when metadata (and all other observed values) are found, sent synchronously on main thread
-    @objc optional func rwObserveValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutablePointer<Void>)
+    @objc optional func rwObserveValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutableRawPointer)
 
 // MARK: Image Picker
 
@@ -478,7 +478,7 @@ extension RWFramework {
 
 // MARK: metadata
 
-    func rwObserveValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutablePointer<Void>) {
+    func rwObserveValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutableRawPointer) {
         protocaller { (rwfp, _) -> Void in
             self.dam { rwfp.rwObserveValueForKeyPath?(keyPath: keyPath, ofObject: object, change: change, context: context) }
         }
