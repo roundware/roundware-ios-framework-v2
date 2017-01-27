@@ -17,70 +17,7 @@ import SystemConfiguration
 let _RWFrameworkSharedInstance = RWFramework()
 import Foundation
 
-#if swift(>=3.0)
-    typealias HashTable<ObjectType: AnyObject> = NSHashTable<ObjectType>
-#else
-    struct HashTable<ObjectType: AnyObject> {
-
-    private let _table = NSHashTable.weakObjectsHashTable()
-
-    static func weakObjects() -> HashTable<ObjectType> {
-    return HashTable<ObjectType>()
-    }
-
-    var count: Int {
-    return _table.count
-    }
-
-    func member(object: ObjectType?) -> ObjectType? {
-    return _table.member(object) as? ObjectType
-    }
-
-    func add(object: ObjectType?) {
-    _table.addObject(object)
-    }
-
-    func remove(object: ObjectType?) {
-    _table.removeObject(object)
-    }
-
-    func removeAllObjects() {
-    _table.removeAllObjects()
-    }
-
-    var allObjects: [ObjectType] {
-    return unsafeBitCast(_table.allObjects, [ObjectType].self)
-    }
-
-    var anyObject: ObjectType? {
-    return _table.anyObject as? ObjectType
-    }
-
-    func contains(object: ObjectType?) -> Bool {
-    return _table.containsObject(object)
-    }
-    }
-
-    extension HashTable: SequenceType {
-
-    func generate() -> NSFastGenerator {
-    return _table.objectEnumerator().generate()
-    }
-    }
-
-    extension HashTable: CustomStringConvertible {
-
-    var description: String {
-    var string = "\(self.dynamicType) {\n"
-    _table.allObjects.enumerate().forEach { idx, obj in
-    string += "[\(idx)] \(obj)\n"
-    }
-    string += "}"
-    return string
-    }
-    }
-#endif
-
+typealias HashTable<ObjectType: AnyObject> = NSHashTable<ObjectType>
 public class RWFramework: NSObject {
 
 // MARK: Properties
@@ -181,7 +118,6 @@ public class RWFramework: NSObject {
         #if DEBUG
             println("RWFramework is running in debug mode")
         #endif
-
         mediaArray = loadMediaArray()
         rwUpdateApplicationIconBadgeNumber(count: mediaArray.count)
 

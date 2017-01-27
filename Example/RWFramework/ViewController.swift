@@ -141,18 +141,28 @@ extension ViewController: RWFrameworkProtocol {
         self.statusTextView.text = self.statusTextView.text + "\r\n" + message
         self.statusTextView.scrollRangeToVisible(NSMakeRange(self.statusTextView.text.lengthOfBytes(using: String.Encoding.utf8), 0))
     }
-    
+
     func rwUpdateApplicationIconBadgeNumber(count: Int) {
         UIApplication.shared.applicationIconBadgeNumber = count
     }
-    func rwGetSessionsIdSuccess(data: NSData?) {
-        let rwf = RWFramework.sharedInstance
-        rwf.addDelegate(object: self)
-        let path = Bundle.main.path(forResource: "RWFramework", ofType: "plist")
-        let info  = NSDictionary(contentsOfFile: path!) as! [String:AnyObject?]
-        rwf.setProjectId(project_id: String(describing: info["project_id"]))
-        print("delegate working!")
+    func rwPostSessionsFailure(data: NSData?) {
+        print("fail")
+        dump(data)
+    }
 
+    func rwPostSessionsSuccess(data: NSData?) {
+        let rwf = RWFramework.sharedInstance
+        if let fileUrl = Bundle.main.url(forResource: "RWFramework", withExtension: "plist"),
+            let data = try? Data(contentsOf: fileUrl) {
+            if let result = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as! [String: Any] {
+                let id : String = "\(result["project_id"]!)"
+                rwf.setProjectId(project_id: id )
+            }
+        }
+        if let path = Bundle.main.path(forResource: "RWFramework", ofType: "plist"){
+            let info  = NSDictionary(contentsOfFile: path) as! [String:AnyObject?]
+
+        }
     }
 
     func rwGetProjectsIdSuccess(data: NSData?) {
