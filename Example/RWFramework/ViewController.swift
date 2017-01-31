@@ -19,7 +19,12 @@ class ViewController: UIViewController {
     @IBOutlet var statusTextView: UITextView!
     
     @IBOutlet var listenPlayButton: UIButton!
-    @IBOutlet var listenNextButton: UIButton!
+
+    @IBOutlet var listenSkipButton: UIButton!
+    @IBOutlet var listenPlayAssetButton: UIButton!
+    @IBOutlet var listenReplayAssetButton: UIButton!
+    @IBOutlet var listenPauseButton: UIButton!
+
     @IBOutlet var listenCurrentButton: UIButton!
     
     
@@ -29,10 +34,50 @@ class ViewController: UIViewController {
         listenPlayButton.setTitle(rwf.isPlaying ? "Stop" : "Play", for: UIControlState.normal)
     }
     
-    @IBAction func listenNext(_ sender: UIButton) {
-        RWFramework.sharedInstance.next()
+    @IBAction func listenSkip(_ sender: UIButton) {
+        RWFramework.sharedInstance.skip()
     }
-    
+
+    @IBAction func listenPlayAsset(_ sender: UIButton) {
+        RWFramework.sharedInstance.playAsset(asset_id: String(1))
+    }
+
+    @IBAction func listenReplayAsset(_ sender: UIButton) {
+        RWFramework.sharedInstance.replayAsset()
+    }
+
+    @IBAction func listenPause(_ sender: UIButton) {
+        RWFramework.sharedInstance.pause()
+    }
+    @IBAction func listenResume(_ sender: UIButton) {
+        RWFramework.sharedInstance.resume()
+    }
+
+    @IBAction func blockRecording(_ sender: UIButton) {
+        let assetID = String(1)
+        RWFramework.sharedInstance.apiPostAssetsIdVotes(asset_id: assetID, vote_type: "block_asset",
+        success: { (data) -> Void in
+        }, failure:  { (error) -> Void in
+        })
+    }
+
+    @IBAction func blockUser(_ sender: UIButton) {
+        let assetID = String(1)
+        RWFramework.sharedInstance.apiPostAssetsIdVotes(asset_id: assetID, vote_type: "block_user",
+                                                        success: { (data) -> Void in
+        }, failure:  { (error) -> Void in
+        })
+    }
+
+    @IBAction func flagRecording(_ sender: UIButton) {
+        let assetID = String(1)
+        RWFramework.sharedInstance.apiPostAssetsIdVotes(asset_id: assetID, vote_type: "flag",
+                                                        success: { (data) -> Void in
+        }, failure:  { (error) -> Void in
+        })
+    }
+
+
     @IBAction func listenCurrent(_ sender: UIButton) {
         RWFramework.sharedInstance.current()
     }
@@ -105,7 +150,7 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
         
         listenPlayButton.isEnabled = false
-        listenNextButton.isEnabled = false
+        listenSkipButton.isEnabled = false
         listenCurrentButton.isEnabled = false
         
         let rwf = RWFramework.sharedInstance
@@ -207,7 +252,7 @@ extension ViewController: RWFrameworkProtocol {
     func rwPostStreamsSuccess(data: NSData?) {
         DispatchQueue.main.async(execute: { () -> Void in
             self.listenPlayButton.isEnabled = true
-            self.listenNextButton.isEnabled = true
+            self.listenSkipButton.isEnabled = true
             self.listenCurrentButton.isEnabled = true
         })
     }

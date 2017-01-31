@@ -18,7 +18,7 @@ extension RWFramework {
 
 // MARK: Entry
 
-    /// Handles kicking off the upload of the next available item in the queue
+    /// Handles kicking off the upload of the skip available item in the queue
     func mediaUploader() {
         if (uploaderActive == false) { return }
         if (uploaderUploading == true) { return }
@@ -34,7 +34,7 @@ extension RWFramework {
 
 // MARK: Iterator
 
-    /// Return the next media item to process in the queue via completion routine, or nil
+    /// Return the skip media item to process in the queue via completion routine, or nil
     func getMediaToProcess() -> Media? {
         for media in mediaArray {
             if ((media.mediaStatus == MediaStatus.Ready) ||

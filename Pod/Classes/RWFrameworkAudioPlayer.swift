@@ -61,25 +61,43 @@ extension RWFramework {
     public func pause() {
         if (canPlay() == false) { return }
         player?.pause()
+        apiPostStreamsIdPause()
         isPlaying = (player?.rate == 1.0)
+    }
+
+    /// Resume audio
+    public func resume() {
+        if (canPlay() == false) { return }
+        player?.play()
+        apiPostStreamsIdResume()
     }
 
     /// Stop audio
     public func stop() {
         pause()
         destroyPlayer()
-        createPlayer()
+        //commented out because player shouldn't exist after a stop
+//        createPlayer()
         logToServer(event_type: "stop_listen")
     }
 
-    /// Next audio
-    public func next() {
-        apiPostStreamsIdNext()
+    /// Replay current asset
+    public func replayAsset() {
+        apiPostStreamsIdReplayAsset()
     }
 
-    /// Current audio
+    /// Skip to next asset
+    public func skip() {
+        apiPostStreamsIdSkip()
+    }
+
+    /// Play selected asset
+    public func playAsset(asset_id: String) {
+        apiPostStreamsIdPlayAsset(asset_id: asset_id)
+    }
+
+    /// Request info about current asset
     public func current() {
         apiGetStreamsIdCurrent()
     }
-
 }

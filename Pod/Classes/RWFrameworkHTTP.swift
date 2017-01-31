@@ -102,15 +102,55 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
-    func httpPostStreamsIdNext(stream_id: String, completion:@escaping (_ data: NSData?, _ error: NSError?) -> Void) {
-        if let url = NSURL(string: RWFrameworkURLFactory.postStreamsIdNextURL(stream_id: stream_id)) {
+    func httpPostStreamsIdSkip(stream_id: String, completion:@escaping (_ data: NSData?, _ error: NSError?) -> Void) {
+        if let url = NSURL(string: RWFrameworkURLFactory.postStreamsIdSkipURL(stream_id: stream_id)) {
             let postData = [:] as Dictionary<String, String>
             postDataToURL(url: url, postData: postData, completion: completion)
         } else {
-            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsIdNextURL unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsIdSkipURL unable to be created."])
             completion(nil, error)
         }
     }
+
+    func httpPostStreamsIdPlayAsset(stream_id: String, asset_id: String, completion:@escaping (_ data: NSData?, _ error: NSError?) -> Void) {
+        if let url = NSURL(string: RWFrameworkURLFactory.postStreamsIdPlayAssetURL(stream_id: stream_id)) {
+            let postData = ["asset_id": asset_id] as Dictionary<String, String>
+            postDataToURL(url: url, postData: postData, completion: completion)
+        } else {
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsIdPlayAssetURL unable to be created."])
+            completion(nil, error)
+        }
+    }
+
+    func httpPostStreamsIdReplayAsset(stream_id: String, completion:@escaping (_ data: NSData?, _ error: NSError?) -> Void) {       if let url = NSURL(string: RWFrameworkURLFactory.postStreamsIdReplayAssetURL(stream_id: stream_id)) {
+        let postData = [:] as Dictionary<String, String>
+        postDataToURL(url: url, postData: postData, completion: completion)
+    } else {
+        let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsIdReplayAssetURL unable to be created."])
+        completion(nil, error)
+        }
+    }
+
+    func httpPostStreamsIdPause(stream_id: String, completion:@escaping (_ data: NSData?, _ error: NSError?) -> Void) {
+        if let url = NSURL(string: RWFrameworkURLFactory.postStreamsIdPauseURL(stream_id: stream_id)) {
+            let postData = [:] as Dictionary<String, String>
+            postDataToURL(url: url, postData: postData, completion: completion)
+        } else {
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsIdPauseURL unable to be created."])
+            completion(nil, error)
+        }
+    }
+
+    func httpPostStreamsIdResume(stream_id: String, completion:@escaping (_ data: NSData?, _ error: NSError?) -> Void) {
+        if let url = NSURL(string: RWFrameworkURLFactory.postStreamsIdResumeURL(stream_id: stream_id)) {
+            let postData = [:] as Dictionary<String, String>
+            postDataToURL(url: url, postData: postData, completion: completion)
+        } else {
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsIdResumeURL unable to be created."])
+            completion(nil, error)
+        }
+    }
+
 
     func httpGetStreamsIdCurrent(stream_id: String, completion:@escaping (_ data: NSData?, _ error: NSError?) -> Void) {
         if let url = NSURL(string: RWFrameworkURLFactory.getStreamsIdCurrentURL(stream_id: stream_id)) {

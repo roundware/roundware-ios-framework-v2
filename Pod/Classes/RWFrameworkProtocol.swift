@@ -58,10 +58,21 @@ import CoreLocation
     /// Sent in the case that sending the heartbeat failed
     @objc optional func rwPostStreamsIdHeartbeatFailure(error: NSError?)
 
-    /// Sent after the server successfully advances to the next sound in the stream
-    @objc optional func rwPostStreamsIdNextSuccess(data: NSData?)
-    /// Sent in the case that advancing to the next sound in the stream fails
-    @objc optional func rwPostStreamsIdNextFailure(error: NSError?)
+    /// Sent after the server successfully advances to the next sound in the stream as per request
+    @objc optional func rwPostStreamsIdSkipSuccess(data: NSData?)
+    /// Sent in the case that advancing to the next sound in the stream, as per request,  fails
+    @objc optional func rwPostStreamsIdSkipFailure(error: NSError?)
+
+
+    @objc optional func rwPostStreamsIdPlayAssetSuccess(data: NSData?)
+    @objc optional func rwPostStreamsIdPlayAssetFailure(error: NSError?)
+    @objc optional func rwPostStreamsIdReplayAssetSuccess(data: NSData?)
+    @objc optional func rwPostStreamsIdReplayAssetFailure(error: NSError?)
+    @objc optional func rwPostStreamsIdPauseSuccess(data: NSData?)
+    @objc optional func rwPostStreamsIdPauseFailure(error: NSError?)
+    @objc optional func rwPostStreamsIdResumeSuccess(data: NSData?)
+    @objc optional func rwPostStreamsIdResumeFailure(error: NSError?)
+
 
     /// Sent after the server successfully gets the current asset ID in the stream
     @objc optional func rwGetStreamsIdCurrentSuccess(data: NSData?)
@@ -331,18 +342,83 @@ extension RWFramework {
         }
     }
 
-    func rwPostStreamsIdNextSuccess(data: NSData?) {
+    func rwPostStreamsIdSkipSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwPostStreamsIdNextSuccess?(data: data) }
+            self.dam { rwfp.rwPostStreamsIdSkipSuccess?(data: data) }
         }
     }
 
-    func rwPostStreamsIdNextFailure(error: NSError?) {
+    func rwPostStreamsIdSkipFailure(error: NSError?) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwPostStreamsIdNextFailure != nil) {
-                self.dam { rwfp.rwPostStreamsIdNextFailure?(error: error) }
+            if (rwfp.rwPostStreamsIdSkipFailure != nil) {
+                self.dam { rwfp.rwPostStreamsIdSkipFailure?(error: error) }
             } else {
-                self.alertOK(title: self.LS(key: "RWFramework - rwPostStreamsIdNextFailure"), message: error!.localizedDescription)
+                self.alertOK(title: self.LS(key: "RWFramework - rwPostStreamsIdSkipFailure"), message: error!.localizedDescription)
+            }
+        }
+    }
+
+    func rwPostStreamsIdPlayAssetSuccess(data: NSData?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwPostStreamsIdPlayAssetSuccess?(data: data) }
+        }
+    }
+
+    func rwPostStreamsIdPlayAssetFailure(error: NSError?) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwPostStreamsIdPlayAssetFailure != nil) {
+                self.dam { rwfp.rwPostStreamsIdPlayAssetFailure?(error: error) }
+            } else {
+                self.alertOK(title: self.LS(key: "RWFramework - rwPostStreamsIdPlayAssetFailure"), message: error!.localizedDescription)
+            }
+        }
+    }
+
+    func rwPostStreamsIdReplayAssetSuccess(data: NSData?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwPostStreamsIdReplayAssetSuccess?(data: data) }
+        }
+    }
+
+    func rwPostStreamsIdReplayAssetFailure(error: NSError?) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwPostStreamsIdReplayAssetFailure != nil) {
+                self.dam { rwfp.rwPostStreamsIdReplayAssetFailure?(error: error) }
+            } else {
+                self.alertOK(title: self.LS(key: "RWFramework - rwPostStreamsIdReplayAssetFailure"), message: error!.localizedDescription)
+            }
+        }
+    }
+
+    func rwPostStreamsIdPauseSuccess(data: NSData?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwPostStreamsIdPauseSuccess?(data: data) }
+        }
+    }
+
+    func rwPostStreamsIdPauseFailure(error: NSError?) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwPostStreamsIdPauseFailure != nil) {
+                self.dam { rwfp.rwPostStreamsIdPauseFailure?(error: error) }
+            } else {
+                self.alertOK(title: self.LS(key: "RWFramework - rwPostStreamsIdPauseFailure"), message: error!.localizedDescription)
+            }
+        }
+    }
+
+
+    func rwPostStreamsIdResumeSuccess(data: NSData?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwPostStreamsIdResumeSuccess?(data: data) }
+        }
+    }
+
+    func rwPostStreamsIdResumeFailure(error: NSError?) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwPostStreamsIdResumeFailure != nil) {
+                self.dam { rwfp.rwPostStreamsIdResumeFailure?(error: error) }
+            } else {
+                self.alertOK(title: self.LS(key: "RWFramework - rwPostStreamsIdResumeFailure"), message: error!.localizedDescription)
             }
         }
     }

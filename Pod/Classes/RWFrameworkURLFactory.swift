@@ -47,8 +47,24 @@ public class RWFrameworkURLFactory {
         return RWFrameworkConfig.getConfigValueAsString(key: "base_url") + api2() + "streams/" + stream_id + "/heartbeat/"
     }
 
-    class func postStreamsIdNextURL(stream_id: String) -> String {
-        return RWFrameworkConfig.getConfigValueAsString(key: "base_url") + api2() + "streams/" + stream_id + "/next/"
+    class func postStreamsIdSkipURL(stream_id: String) -> String {
+        return RWFrameworkConfig.getConfigValueAsString(key: "base_url") + api2() + "streams/" + stream_id + "/skip/"
+    }
+
+    class func postStreamsIdPlayAssetURL(stream_id: String) -> String {
+        return RWFrameworkConfig.getConfigValueAsString(key: "base_url") + api2() + "streams/" + stream_id + "/playasset/"
+    }
+
+    class func postStreamsIdReplayAssetURL(stream_id: String) -> String {
+        return RWFrameworkConfig.getConfigValueAsString(key: "base_url") + api2() + "streams/" + stream_id + "/replayasset/"
+    }
+
+    class func postStreamsIdPauseURL(stream_id: String) -> String {
+        return RWFrameworkConfig.getConfigValueAsString(key: "base_url") + api2() + "streams/" + stream_id + "/pause/"
+    }
+
+    class func postStreamsIdResumeURL(stream_id: String) -> String {
+        return RWFrameworkConfig.getConfigValueAsString(key: "base_url") + api2() + "streams/" + stream_id + "/resume/"
     }
 
     class func getStreamsIdCurrentURL(stream_id: String) -> String {
