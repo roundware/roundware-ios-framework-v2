@@ -19,7 +19,12 @@ class ViewController: UIViewController {
     @IBOutlet var statusTextView: UITextView!
     
     @IBOutlet var listenPlayButton: UIButton!
+
     @IBOutlet var listenSkipButton: UIButton!
+    @IBOutlet var listenPlayAssetButton: UIButton!
+    @IBOutlet var listenReplayAssetButton: UIButton!
+    @IBOutlet var listenPauseButton: UIButton!
+
     @IBOutlet var listenCurrentButton: UIButton!
     
     
@@ -32,7 +37,25 @@ class ViewController: UIViewController {
     @IBAction func listenSkip(_ sender: UIButton) {
         RWFramework.sharedInstance.skip()
     }
-    
+
+    @IBAction func listenPlayAsset(_ sender: UIButton) {
+        RWFramework.sharedInstance.playAsset()
+    }
+
+    @IBAction func listenReplayAsset(_ sender: UIButton) {
+        RWFramework.sharedInstance.replayAsset()
+    }
+
+    @IBAction func listenPause(_ sender: UIButton) {
+        RWFramework.sharedInstance.pause()
+    }
+    @IBAction func listenResume(_ sender: UIButton) {
+        RWFramework.sharedInstance.resume()
+    }
+
+
+
+
     @IBAction func listenCurrent(_ sender: UIButton) {
         RWFramework.sharedInstance.current()
     }

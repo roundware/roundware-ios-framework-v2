@@ -232,8 +232,8 @@ extension RWFramework {
     }
     
     
-    // MARK: POST streams
-    
+// MARK: POST streams
+
     func apiPostStreams() {
         if (requestStreamInProgress == true) { return }
         if (requestStreamSucceeded == true) { return }
@@ -380,10 +380,90 @@ extension RWFramework {
     }
 
 
-    // MARK: POST streams id play asset
+// MARK: POST streams id play asset
+    func apiPostStreamsIdPlayAsset() {
+        if (requestStreamSucceeded == false) { return }
+        if (self.streamID == 0) { return }
+
+        httpPostStreamsIdPlayAsset(stream_id: self.streamID.description, completion: { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                self.postStreamsIdPlayAssetSuccess(data: data!)
+                self.rwPostStreamsIdPlayAssetSuccess(data: data)
+            } else if (error != nil) {
+                self.rwPostStreamsIdPlayAssetFailure(error: error)
+                self.apiProcessError(data: data, error: error!, caller: "apiPostStreamsIdPlayAsset")
+            }
+        })
+    }
+
+    func postStreamsIdPlayAssetSuccess(data: NSData) {
+        let json = JSON(data: data as Data)
+        print(json)
+    }
+    
+
     // MARK: POST streams id replay asset
+    func apiPostStreamsIdReplayAsset() {
+        if (requestStreamSucceeded == false) { return }
+        if (self.streamID == 0) { return }
+
+        httpPostStreamsIdReplayAsset(stream_id: self.streamID.description, completion: { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                self.postStreamsIdReplayAssetSuccess(data: data!)
+                self.rwPostStreamsIdReplayAssetSuccess(data: data)
+            } else if (error != nil) {
+                self.rwPostStreamsIdReplayAssetFailure(error: error)
+                self.apiProcessError(data: data, error: error!, caller: "apiPostStreamsIdReplayAsset")
+            }
+        })
+    }
+
+    func postStreamsIdReplayAssetSuccess(data: NSData) {
+        let result = JSON(data: data as Data)
+        print(result)
+    }
+
     // MARK: POST streams id pause
+    func apiPostStreamsIdPause() {
+        if (requestStreamSucceeded == false) { return }
+        if (self.streamID == 0) { return }
+
+        httpPostStreamsIdPause(stream_id: self.streamID.description, completion: { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                self.postStreamsIdPauseSuccess(data: data!)
+                self.rwPostStreamsIdPauseSuccess(data: data)
+            } else if (error != nil) {
+                self.rwPostStreamsIdPauseFailure(error: error)
+                self.apiProcessError(data: data, error: error!, caller: "apiPostStreamsIdPause")
+            }
+        })
+    }
+
+    func postStreamsIdPauseSuccess(data: NSData) {
+        let result = JSON(data: data as Data)
+        print(result)
+    }
+
     // MARK: POST streams id resume
+    func apiPostStreamsIdResume() {
+        if (requestStreamSucceeded == false) { return }
+        if (self.streamID == 0) { return }
+
+        httpPostStreamsIdResume(stream_id: self.streamID.description, completion: { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                self.postStreamsIdResumeSuccess(data: data!)
+                self.rwPostStreamsIdResumeSuccess(data: data)
+            } else if (error != nil) {
+                self.rwPostStreamsIdResumeFailure(error: error)
+                self.apiProcessError(data: data, error: error!, caller: "apiPostStreamsIdResume")
+            }
+        })
+    }
+
+    func postStreamsIdResumeSuccess(data: NSData) {
+        let result = JSON(data: data as Data)
+        print(result)
+    }
 
 
 // MARK: GET streams id current
