@@ -72,9 +72,9 @@ extension RWFramework {
         logToServer(event_type: "stop_listen")
     }
 
-    /// Next audio
-    public func next() {
-        apiPostStreamsIdNext()
+    /// Skip audio
+    public func skip() {
+        apiPostStreamsIdSkip()
     }
 
     /// Current audio

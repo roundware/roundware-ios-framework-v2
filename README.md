@@ -91,7 +91,7 @@ Other methods regarding audio playback include:
 - `play()`
 - `pause()`
 - `stop()`
-- `next()`
+- `skip()`
 
 See `RWFrameworkAudioPlayer.swift`
 

@@ -356,28 +356,35 @@ extension RWFramework {
 
 // MARK: POST streams id next
 
-    func apiPostStreamsIdNext() {
+    func apiPostStreamsIdSkip() {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
 
-        httpPostStreamsIdNext(stream_id: self.streamID.description, completion: { (data, error) -> Void in
+        httpPostStreamsIdSkip(stream_id: self.streamID.description, completion: { (data, error) -> Void in
             if (data != nil) && (error == nil) {
-                self.postStreamsIdNextSuccess(data: data!)
-                self.rwPostStreamsIdNextSuccess(data: data)
+                self.postStreamsIdSkipSuccess(data: data!)
+                self.rwPostStreamsIdSkipSuccess(data: data)
             } else if (error != nil) {
-                self.rwPostStreamsIdNextFailure(error: error)
-                self.apiProcessError(data: data, error: error!, caller: "apiPostStreamsIdNext")
+                self.rwPostStreamsIdSkipFailure(error: error)
+                self.apiProcessError(data: data, error: error!, caller: "apiPostStreamsIdSkip")
             }
         })
     }
 
-    func postStreamsIdNextSuccess(data: NSData) {
+    func postStreamsIdSkipSuccess(data: NSData) {
         _ = JSON(data: data as Data)
 
 //        self.player!.replaceCurrentItemWithPlayerItem(nil)
 //        println(dict)
         // does nothing for now
     }
+
+
+    // MARK: POST streams id play asset
+    // MARK: POST streams id replay asset
+    // MARK: POST streams id pause
+    // MARK: POST streams id resume
+
 
 // MARK: GET streams id current
 

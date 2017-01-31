@@ -58,10 +58,10 @@ import CoreLocation
     /// Sent in the case that sending the heartbeat failed
     @objc optional func rwPostStreamsIdHeartbeatFailure(error: NSError?)
 
-    /// Sent after the server successfully advances to the next sound in the stream
-    @objc optional func rwPostStreamsIdNextSuccess(data: NSData?)
-    /// Sent in the case that advancing to the next sound in the stream fails
-    @objc optional func rwPostStreamsIdNextFailure(error: NSError?)
+    /// Sent after the server successfully advances to the next sound in the stream as per request
+    @objc optional func rwPostStreamsIdSkipSuccess(data: NSData?)
+    /// Sent in the case that advancing to the next sound in the stream, as per request,  fails
+    @objc optional func rwPostStreamsIdSkipFailure(error: NSError?)
 
     /// Sent after the server successfully gets the current asset ID in the stream
     @objc optional func rwGetStreamsIdCurrentSuccess(data: NSData?)
@@ -331,18 +331,18 @@ extension RWFramework {
         }
     }
 
-    func rwPostStreamsIdNextSuccess(data: NSData?) {
+    func rwPostStreamsIdSkipSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwPostStreamsIdNextSuccess?(data: data) }
+            self.dam { rwfp.rwPostStreamsIdSkipSuccess?(data: data) }
         }
     }
 
-    func rwPostStreamsIdNextFailure(error: NSError?) {
+    func rwPostStreamsIdSkipFailure(error: NSError?) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwPostStreamsIdNextFailure != nil) {
-                self.dam { rwfp.rwPostStreamsIdNextFailure?(error: error) }
+            if (rwfp.rwPostStreamsIdSkipFailure != nil) {
+                self.dam { rwfp.rwPostStreamsIdSkipFailure?(error: error) }
             } else {
-                self.alertOK(title: self.LS(key: "RWFramework - rwPostStreamsIdNextFailure"), message: error!.localizedDescription)
+                self.alertOK(title: self.LS(key: "RWFramework - rwPostStreamsIdSkipFailure"), message: error!.localizedDescription)
             }
         }
     }

@@ -19,7 +19,7 @@ class ViewController: UIViewController {
     @IBOutlet var statusTextView: UITextView!
     
     @IBOutlet var listenPlayButton: UIButton!
-    @IBOutlet var listenNextButton: UIButton!
+    @IBOutlet var listenSkipButton: UIButton!
     @IBOutlet var listenCurrentButton: UIButton!
     
     
@@ -29,8 +29,8 @@ class ViewController: UIViewController {
         listenPlayButton.setTitle(rwf.isPlaying ? "Stop" : "Play", for: UIControlState.normal)
     }
     
-    @IBAction func listenNext(_ sender: UIButton) {
-        RWFramework.sharedInstance.next()
+    @IBAction func listenSkip(_ sender: UIButton) {
+        RWFramework.sharedInstance.skip()
     }
     
     @IBAction func listenCurrent(_ sender: UIButton) {
@@ -105,7 +105,7 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
         
         listenPlayButton.isEnabled = false
-        listenNextButton.isEnabled = false
+        listenSkipButton.isEnabled = false
         listenCurrentButton.isEnabled = false
         
         let rwf = RWFramework.sharedInstance
@@ -207,7 +207,7 @@ extension ViewController: RWFrameworkProtocol {
     func rwPostStreamsSuccess(data: NSData?) {
         DispatchQueue.main.async(execute: { () -> Void in
             self.listenPlayButton.isEnabled = true
-            self.listenNextButton.isEnabled = true
+            self.listenSkipButton.isEnabled = true
             self.listenCurrentButton.isEnabled = true
         })
     }

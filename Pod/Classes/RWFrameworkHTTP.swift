@@ -102,12 +102,12 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
-    func httpPostStreamsIdNext(stream_id: String, completion:@escaping (_ data: NSData?, _ error: NSError?) -> Void) {
-        if let url = NSURL(string: RWFrameworkURLFactory.postStreamsIdNextURL(stream_id: stream_id)) {
+    func httpPostStreamsIdSkip(stream_id: String, completion:@escaping (_ data: NSData?, _ error: NSError?) -> Void) {
+        if let url = NSURL(string: RWFrameworkURLFactory.postStreamsIdSkipURL(stream_id: stream_id)) {
             let postData = [:] as Dictionary<String, String>
             postDataToURL(url: url, postData: postData, completion: completion)
         } else {
-            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsIdNextURL unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsIdSkipURL unable to be created."])
             completion(nil, error)
         }
     }
