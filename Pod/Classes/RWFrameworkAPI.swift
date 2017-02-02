@@ -381,11 +381,11 @@ extension RWFramework {
 
 
 // MARK: POST streams id play asset
-    func apiPostStreamsIdPlayAsset() {
+    func apiPostStreamsIdPlayAsset(asset_id: String) {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
 
-        httpPostStreamsIdPlayAsset(stream_id: self.streamID.description, completion: { (data, error) -> Void in
+        httpPostStreamsIdPlayAsset(stream_id: self.streamID.description, asset_id: asset_id, completion: { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.postStreamsIdPlayAssetSuccess(data: data!)
                 self.rwPostStreamsIdPlayAssetSuccess(data: data)

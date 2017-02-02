@@ -112,9 +112,9 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
-    func httpPostStreamsIdPlayAsset(stream_id: String, completion:@escaping (_ data: NSData?, _ error: NSError?) -> Void) {
+    func httpPostStreamsIdPlayAsset(stream_id: String, asset_id: String, completion:@escaping (_ data: NSData?, _ error: NSError?) -> Void) {
         if let url = NSURL(string: RWFrameworkURLFactory.postStreamsIdPlayAssetURL(stream_id: stream_id)) {
-            let postData = [:] as Dictionary<String, String>
+            let postData = ["asset_id": asset_id] as Dictionary<String, String>
             postDataToURL(url: url, postData: postData, completion: completion)
         } else {
             let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsIdPlayAssetURL unable to be created."])

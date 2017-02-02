@@ -39,7 +39,7 @@ class ViewController: UIViewController {
     }
 
     @IBAction func listenPlayAsset(_ sender: UIButton) {
-        RWFramework.sharedInstance.playAsset()
+        RWFramework.sharedInstance.playAsset(asset_id: String(1))
     }
 
     @IBAction func listenReplayAsset(_ sender: UIButton) {
@@ -52,6 +52,7 @@ class ViewController: UIViewController {
     @IBAction func listenResume(_ sender: UIButton) {
         RWFramework.sharedInstance.resume()
     }
+
 
 
 

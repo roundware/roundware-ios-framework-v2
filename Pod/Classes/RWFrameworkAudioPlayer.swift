@@ -79,8 +79,8 @@ extension RWFramework {
     }
 
     /// play asset
-    public func playAsset() {
-        apiPostStreamsIdPlayAsset()
+    public func playAsset(asset_id: String) {
+        apiPostStreamsIdPlayAsset(asset_id: asset_id)
     }
 
     /// replay asset
