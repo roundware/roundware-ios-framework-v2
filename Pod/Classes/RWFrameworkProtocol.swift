@@ -392,7 +392,7 @@ extension RWFramework {
 
     func rwPostStreamsIdPauseSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwPostStreamsIdSkipSuccess?(data: data) }
+            self.dam { rwfp.rwPostStreamsIdPauseSuccess?(data: data) }
         }
     }
 
