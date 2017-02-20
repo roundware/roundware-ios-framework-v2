@@ -99,18 +99,18 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 
 // MARK: - UIImagePickerControllerDelegate
 
-    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
+    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         let mediaType = info[UIImagePickerControllerMediaType] as! String
         if mediaType == kUTTypeImage as String {
             handleImageMediaType(info: info as [String : AnyObject])
         } else if mediaType == kUTTypeMovie as String {
             handleMovieMediaType(info: info as [String : AnyObject])
         } else {
-            imagePickerControllerDidCancel(picker: picker)
+            imagePickerControllerDidCancel(picker)
         }
     }
 
-    public func imagePickerControllerDidCancel(picker: UIImagePickerController) {
+    public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         _rwImagePickerControllerDidCancel()
     }
 
@@ -185,7 +185,7 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
                     let imageFilePath = (NSTemporaryDirectory() as NSString).appendingPathComponent(imageFileName)
 
                     do {
-                        let success = try imageData.write(to: URL(string: imageFilePath)!, options: [.
+                        try imageData.write(to: URL(string: imageFilePath)!, options: [.
                         atomic])
                         let keyPath = self.addImage(string: imageFilePath)
                         self._rwImagePickerControllerDidFinishPickingMedia(info: info, path: keyPath!)

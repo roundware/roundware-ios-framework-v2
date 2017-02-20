@@ -294,24 +294,24 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
 
 // MARK: AVAudioRecorderDelegate
 
-    public func audioRecorderDidFinishRecording(recorder: AVAudioRecorder, successfully flag: Bool) {
+    public func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
         println(object: "audioRecorderDidFinishRecording")
         rwAudioRecorderDidFinishRecording()
     }
 
-    public func audioRecorderEncodeErrorDidOccur(recorder: AVAudioRecorder, error: NSError?) {
+    public func audioRecorderEncodeErrorDidOccur(_ error: NSError?) {
         println(object: "audioRecorderEncodeErrorDidOccur \(error)")
         alertOK(title: "RWFramework - Audio Encode Error", message: error!.localizedDescription)
     }
 
 // MARK: AVAudioPlayerDelegate
 
-    public func audioPlayerDidFinishPlaying(player: AVAudioPlayer, successfully flag: Bool) {
+    public func audioPlayerDidFinishPlaying(_ successfully: Bool) {
         println(object: "audioPlayerDidFinishPlaying")
         rwAudioPlayerDidFinishPlaying()
     }
     
-    public func audioPlayerDecodeErrorDidOccur(player: AVAudioPlayer, error: NSError?) {
+    public func audioPlayerDecodeErrorDidOccur(_ error: NSError?) {
         println(object: "audioPlayerDecodeErrorDidOccur \(error)")
         alertOK(title: "RWFramework - Audio Decode Error", message: error!.localizedDescription)
     }

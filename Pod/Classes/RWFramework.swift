@@ -158,12 +158,7 @@ public class RWFramework: NSObject {
 
 // MARK: - AVAudioSession
 
-    func addAudioInterruptionNotification() {
-        NotificationCenter.default.addObserver(self,
-            selector: "handleAudioInterruption:",
-            name: NSNotification.Name.AVAudioSessionInterruption,
-            object: nil)
-    }
+
 
     func handleAudioInterruption(notification: NSNotification) {
         if notification.name != NSNotification.Name.AVAudioSessionInterruption
@@ -186,6 +181,14 @@ public class RWFramework: NSObject {
                 println(object: "handleAudioInterruption ended")
             }
         }
+    }
+
+
+    func addAudioInterruptionNotification() {
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(RWFramework.handleAudioInterruption(notification:)),
+                                               name: NSNotification.Name.AVAudioSessionInterruption,
+                                               object: nil)
     }
 
 // MARK: - Utilities

@@ -114,7 +114,7 @@ typedef enum {
 
 // Set the audio session to PlayAndRecord category, and get the preferred sample rate (after suggesting our own).
 
--(void)setupAudioSession:(bool)active {
+-(void)setupAudioSession:(BOOL)active {
     
     AVAudioSession *audioSession = [AVAudioSession sharedInstance];
     

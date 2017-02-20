@@ -12,7 +12,7 @@ import CoreLocation
 extension RWFramework: CLLocationManagerDelegate {
 
     /// This is called at framework startup and also after permission has changed
-    public func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
+    public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if status == CLAuthorizationStatus.authorizedAlways || status == CLAuthorizationStatus.authorizedWhenInUse {
             let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool(key: "geo_listen_enabled")
             if (geo_listen_enabled) {
@@ -24,7 +24,7 @@ extension RWFramework: CLLocationManagerDelegate {
     }
 
     /// Called by the CLLocationManager when location has been updated
-    public func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         // println("locationManager didUpdateLocations \(locations)")
         //TODO throttle?
 
@@ -49,7 +49,7 @@ extension RWFramework: CLLocationManagerDelegate {
     }
 
     /// Called by the CLLocationManager when location update has failed
-    public func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
+    public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         println(object: "locationManager didFailWithError \(error)")
     }
 
