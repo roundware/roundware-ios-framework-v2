@@ -360,7 +360,7 @@ extension RWFramework {
 
     func rwPostStreamsIdPlayAssetSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwPostStreamsIdSkipSuccess?(data: data) }
+            self.dam { rwfp.rwPostStreamsIdPlayAssetSuccess?(data: data) }
         }
     }
 
@@ -409,7 +409,7 @@ extension RWFramework {
 
     func rwPostStreamsIdResumeSuccess(data: NSData?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwPostStreamsIdSkipSuccess?(data: data) }
+            self.dam { rwfp.rwPostStreamsIdResumeSuccess?(data: data) }
         }
     }
 

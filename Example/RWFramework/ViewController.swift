@@ -53,8 +53,29 @@ class ViewController: UIViewController {
         RWFramework.sharedInstance.resume()
     }
 
+    @IBAction func blockRecording(_ sender: UIButton) {
+        let assetID = String(1)
+        RWFramework.sharedInstance.apiPostAssetsIdVotes(asset_id: assetID, vote_type: "block_asset",
+        success: { (data) -> Void in
+        }, failure:  { (error) -> Void in
+        })
+    }
 
+    @IBAction func blockUser(_ sender: UIButton) {
+        let assetID = String(1)
+        RWFramework.sharedInstance.apiPostAssetsIdVotes(asset_id: assetID, vote_type: "block_user",
+                                                        success: { (data) -> Void in
+        }, failure:  { (error) -> Void in
+        })
+    }
 
+    @IBAction func flagRecording(_ sender: UIButton) {
+        let assetID = String(1)
+        RWFramework.sharedInstance.apiPostAssetsIdVotes(asset_id: assetID, vote_type: "flag",
+                                                        success: { (data) -> Void in
+        }, failure:  { (error) -> Void in
+        })
+    }
 
 
     @IBAction func listenCurrent(_ sender: UIButton) {
