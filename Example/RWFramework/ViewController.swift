@@ -115,7 +115,7 @@ class ViewController: UIViewController {
     
     @IBAction func speakSubmit(_ sender: UIButton) {
         let rwf = RWFramework.sharedInstance
-        rwf.addRecording(description: "This is my recording!")
+        _ = rwf.addRecording(description: "This is my recording!")
     }
     
     @IBAction func speakImage(_ sender: UIButton) {
@@ -135,7 +135,7 @@ class ViewController: UIViewController {
     
     @IBAction func speakText(_ sender: UIButton) {
         let rwf = RWFramework.sharedInstance
-        rwf.addText(string: "Hello, world!")
+        _ = rwf.addText(string: "Hello, world!")
     }
     
     @IBAction func speakDelete(_ sender: UIButton) {
@@ -205,7 +205,7 @@ extension ViewController: RWFrameworkProtocol {
             }
         }
         if let path = Bundle.main.path(forResource: "RWFramework", ofType: "plist"){
-            let info  = NSDictionary(contentsOfFile: path) as! [String:AnyObject?]
+            _  = NSDictionary(contentsOfFile: path) as! [String:AnyObject?]
 
         }
     }
@@ -213,7 +213,7 @@ extension ViewController: RWFrameworkProtocol {
     func rwGetProjectsIdSuccess(data: NSData?) {
         
         let rwf = RWFramework.sharedInstance
-        rwf.requestWhenInUseAuthorizationForLocation()
+        _ = rwf.requestWhenInUseAuthorizationForLocation()
         
         // You can now access the project data
         if let projectData = RWFrameworkConfig.getConfigDataFromGroup(group: RWFrameworkConfig.ConfigGroup.Project) as? NSDictionary {
