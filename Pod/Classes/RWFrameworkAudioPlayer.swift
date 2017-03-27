@@ -61,14 +61,18 @@ extension RWFramework {
     public func pause() {
         if (canPlay() == false) { return }
         player?.pause()
-        apiPostStreamsIdPause()
         isPlaying = (player?.rate == 1.0)
+        apiPostStreamsIdPause()
     }
 
     /// Resume audio
     public func resume() {
         if (canPlay() == false) { return }
+        if (player == nil) {
+            createPlayer()
+        }
         player?.play()
+        isPlaying = (player?.rate == 1.0)
         apiPostStreamsIdResume()
     }
 
