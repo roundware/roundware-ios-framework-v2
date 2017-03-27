@@ -276,7 +276,6 @@ extension RWFramework {
             self.streamURL = NSURL(string: stream_url.stringValue)
             let stream_id = dict["stream_id"]
             self.streamID = stream_id.intValue
-            self.createPlayer()
             self.requestStreamSucceeded = true
         }
 
