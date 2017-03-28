@@ -102,7 +102,7 @@ extension RWFramework {
 
 
     func getProjectsIdSuccess(data: NSData, project_id: String, session_id: String) {
-        let dict = JSON(data: data as Data)
+//        _ = JSON(data: data as Data)
 
 
         // TODO check respect for and availability to API of
@@ -509,7 +509,7 @@ extension RWFramework {
 //        println(dict)
 
         let envelope_id = dict["envelope_id"]
-        if (envelope_id != nil) {
+        if (envelope_id != JSON.null) {
             success(envelope_id.int!)
         }
     }

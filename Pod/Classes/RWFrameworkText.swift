@@ -30,7 +30,7 @@ extension RWFramework {
                 success = false
         }
         if let _ = error {
-            println(object: "RWFramework - Couldn't write text to file \(error)")
+            println(object: "RWFramework - Couldn't write text to file \(String(describing: error))")
         } else if success == false {
             println(object: "RWFramework - Couldn't write text to file for an unknown reason")
         } else {

@@ -96,7 +96,7 @@ extension RWFramework {
             b = false
         }
         if let _ = error {
-            println(object: "RWFramework - Couldn't delete media file after successful upload \(error)")
+            println(object: "RWFramework - Couldn't delete media file after successful upload \(String(describing: error))")
         } else if (b == false) {
             println(object: "RWFramework - Couldn't delete media file after successful upload for an unknown reason")
         }

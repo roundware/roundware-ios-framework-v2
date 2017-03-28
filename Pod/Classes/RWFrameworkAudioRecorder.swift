@@ -34,7 +34,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
             success = false
         }
         if let _ = error {
-            println(object: "RWFramework - Couldn't move recorded file \(error)")
+            println(object: "RWFramework - Couldn't move recorded file \(String(describing: error))")
         } else if success == false {
             println(object: "RWFramework - Couldn't move recorded file for an unknown reason")
         } else {
@@ -117,13 +117,13 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
                 soundRecorder = nil
             }
             if let _ = error {
-                println(object: "RWFramework - Couldn't create AVAudioRecorder \(error)")
+                println(object: "RWFramework - Couldn't create AVAudioRecorder \(String(describing: error))")
             } else if (soundRecorder != nil) {
                 soundRecorder!.delegate = self
-                var bestTry = soundRecorder!.prepareToRecord()
+                _ = soundRecorder!.prepareToRecord()
                 soundRecorder!.isMeteringEnabled = true
                 let max_recording_length = RWFrameworkConfig.getConfigValueAsNumber(key: "max_recording_length")
-                bestTry = soundRecorder!.record(forDuration: max_recording_length.doubleValue)
+                _ = soundRecorder!.record(forDuration: max_recording_length.doubleValue)
                 logToServer(event_type: "start_record")
             } else {
                 println(object: "RWFramework - Couldn't create AVAudioRecorder for an unknown reason")
@@ -141,12 +141,9 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
 
             let soundFileURL = rwfar?.outputURL // caf file
             let outputURL = NSURL(fileURLWithPath: soundFilePath()) // soon to be m4a
-            var bestAttemptToDeletePreviousConversion: Bool
             do {
                 try FileManager.default.removeItem(atPath: soundFilePath())
-                bestAttemptToDeletePreviousConversion = true
             } catch _ {
-                bestAttemptToDeletePreviousConversion = false
             }
 
             let options = ["AVURLAssetPreferPreciseDurationAndTimingKey": true]
@@ -159,7 +156,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
                 if (exportSession!.status == AVAssetExportSessionStatus.completed) {
                     self.println(object: "file conversion success to \(outputURL)")
                 } else {
-                    self.println(object: "file conversion failure from \(soundFileURL)")
+                    self.println(object: "file conversion failure from \(String(describing: soundFileURL))")
                 }
             }
             //restore VoiceOver sample rate
@@ -193,12 +190,12 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
                 soundPlayer = nil
             }
             if let _ = error {
-                println(object: "RWFramework - Couldn't create AVAudioPlayer \(error)")
+                println(object: "RWFramework - Couldn't create AVAudioPlayer \(String(describing: error))")
             } else if (soundPlayer != nil) {
                 soundPlayer!.delegate = self
-                var bestTry = soundPlayer!.prepareToPlay()
+                _ = soundPlayer!.prepareToPlay()
                 soundPlayer!.isMeteringEnabled = true
-                bestTry = soundPlayer!.play()
+                _ = soundPlayer!.play()
             } else {
                 println(object: "RWFramework - Couldn't create AVAudioPlayer for an unknown reason")
             }
@@ -218,12 +215,12 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
                 soundPlayer = nil
             }
             if let _ = error {
-                println(object: "RWFramework - Couldn't create AVAudioPlayer \(error)")
+                println(object: "RWFramework - Couldn't create AVAudioPlayer \(String(describing: error))")
             } else if (soundPlayer != nil) {
                 soundPlayer!.delegate = self
-                var bestTry = soundPlayer!.prepareToPlay()
+                _ = soundPlayer!.prepareToPlay()
                 soundPlayer!.isMeteringEnabled = true
-                bestTry = soundPlayer!.play()
+                _ = soundPlayer!.play()
             } else {
                 println(object: "RWFramework - Couldn't create AVAudioPlayer for an unknown reason")
             }
@@ -286,7 +283,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
             b = false
         }
         if let _ = error {
-            println(object: "RWFramework - Couldn't delete recording \(error)")
+            println(object: "RWFramework - Couldn't delete recording \(String(describing: error))")
         } else if (b == false) {
             println(object: "RWFramework - Couldn't delete recording for an unknown reason")
         }
@@ -300,7 +297,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     }
 
     public func audioRecorderEncodeErrorDidOccur(_ error: NSError?) {
-        println(object: "audioRecorderEncodeErrorDidOccur \(error)")
+        println(object: "audioRecorderEncodeErrorDidOccur \(String(describing: error))")
         alertOK(title: "RWFramework - Audio Encode Error", message: error!.localizedDescription)
     }
 
@@ -312,7 +309,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     }
     
     public func audioPlayerDecodeErrorDidOccur(_ error: NSError?) {
-        println(object: "audioPlayerDecodeErrorDidOccur \(error)")
+        println(object: "audioPlayerDecodeErrorDidOccur \(String(describing: error))")
         alertOK(title: "RWFramework - Audio Decode Error", message: error!.localizedDescription)
     }
 
