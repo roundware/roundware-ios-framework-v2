@@ -36,3 +36,5 @@ fastlane/.env
 fastlane/report.xml
 fastlane/.env
 RWFramework_Example.app.dSYM.zip
+Podfile.lock
+Gemfile.lock
