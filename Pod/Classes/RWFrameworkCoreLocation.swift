@@ -36,7 +36,7 @@ extension RWFramework: CLLocationManagerDelegate {
             if (geo_listen_enabled && requestStreamInProgress == false && requestStreamSucceeded == false) {
                 #if DEBUG
                     let fakeLocation: CLLocation = CLLocation(latitude: 1.0, longitude: 1.0)
-                    apiPatchStreamsIdWithLocation(fakeLocation)
+                    apiPatchStreamsIdWithLocation(newLocation: fakeLocation)
                 #else
                     apiPatchStreamsIdWithLocation(newLocation: locations[0])
                 #endif

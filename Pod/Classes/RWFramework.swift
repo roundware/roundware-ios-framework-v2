@@ -116,7 +116,7 @@ public class RWFramework: NSObject {
         super.init()
 
         #if DEBUG
-            println("RWFramework is running in debug mode")
+            println(object: "RWFramework is running in debug mode")
         #endif
         mediaArray = loadMediaArray()
         rwUpdateApplicationIconBadgeNumber(count: mediaArray.count)
