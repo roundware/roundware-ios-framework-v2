@@ -123,7 +123,7 @@ typedef enum {
         
         AVAudioSession *audioSession = [AVAudioSession sharedInstance];
         [audioSession setPreferredSampleRate:self.sampleRate error:&error];
-        [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionDefaultToSpeaker error:&error];
+        [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:0 error:&error];
 
         [audioSession setActive:YES error:&error];
         
