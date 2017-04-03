@@ -16,7 +16,7 @@ extension RWFramework {
 
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
 
-        println(object: "keyPath: \(keyPath) object: \(object) change: \(change)")
+        println(object: "keyPath: \(String(describing: keyPath)) object: \(String(describing: object)) change: \(String(describing: change))")
         rwObserveValueForKeyPath(keyPath: keyPath, ofObject: object as AnyObject?, change: change as [NSKeyValueChangeKey : AnyObject]?, context: context)
 
 //        if (keyPath == "timedMetadata") {
