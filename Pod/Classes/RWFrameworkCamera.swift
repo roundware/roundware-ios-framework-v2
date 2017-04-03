@@ -152,7 +152,6 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 //        if let image: UIImage? = info[UIImagePickerControllerOriginalImage] as? UIImage {
             let q = DispatchQueue(label: "com.roundware.image_resize_queue")
             q.async(execute: { () -> Void in
-                var imageToDisplay: UIImage?
 
                 // Size
                 let image_minimum_side = CGFloat(RWFrameworkConfig.getConfigValueAsNumber(key: "image_minimum_side").floatValue)
@@ -169,9 +168,6 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
                         size.width = image_minimum_side;
                         size.height = size.height * factor;
                     }
-                    imageToDisplay = imageWithImage(image: image, newSize: size)
-                } else {
-                    imageToDisplay = image;
                 }
 
                 // Compression
@@ -203,8 +199,8 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
     }
 
     func handleMovieMediaType(info: [String : AnyObject]) {
-        if let originalMovieURL: NSURL? = info[UIImagePickerControllerMediaURL] as? NSURL {
-            let originalMoviePath = originalMovieURL!.path
+        if let originalMovieURL = info[UIImagePickerControllerMediaURL] as! NSURL? {
+            let originalMoviePath = originalMovieURL.path
 
             let r = arc4random()
             let movie_file_name = RWFrameworkConfig.getConfigValueAsString(key: "movie_file_name")
@@ -222,7 +218,7 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
                 success = false
             }
             if let _ = error {
-                println(object: "RWFramework - Couldn't move movie file \(error)")
+                println(object: "RWFramework - Couldn't move movie file \(String(describing: error))")
                 _rwImagePickerControllerDidCancel()
             } else if success == false {
                 println(object: "RWFramework - Couldn't move movie file for an unknown reason")
