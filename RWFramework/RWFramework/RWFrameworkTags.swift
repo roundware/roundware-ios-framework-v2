@@ -27,38 +27,38 @@ extension RWFramework {
 
     /// Returns an array of dictionaries of listen information
     public func getListenTags() -> AnyObject? {
-        return NSUserDefaults.standardUserDefaults().objectForKey("tags_listen")
+        return UserDefaults.standard.object(forKey: "tags_listen") as AnyObject?
     }
 
     /// Sets the array of dictionaries as listen information
-    public func setListenTags(value: AnyObject) {
-        NSUserDefaults.standardUserDefaults().setObject(value, forKey: "tags_listen")
+    public func setListenTags(_ value: AnyObject) {
+        UserDefaults.standard.set(value, forKey: "tags_listen")
     }
 
     /// Get the current values for the listen tags code
-    public func getListenTagsCurrent(code: String) -> AnyObject? {
+    public func getListenTagsCurrent(_ code: String) -> AnyObject? {
         let defaultsKeyName = "tags_listen_\(code)_current"
-        return NSUserDefaults.standardUserDefaults().objectForKey(defaultsKeyName)
+        return UserDefaults.standard.object(forKey: defaultsKeyName) as AnyObject?
     }
 
     /// Set the current values for the listen tags code
-    public func setListenTagsCurrent(code: String, value: AnyObject) {
+    public func setListenTagsCurrent(_ code: String, value: AnyObject) {
         let defaultsKeyName = "tags_listen_\(code)_current"
-        NSUserDefaults.standardUserDefaults().setObject(value, forKey: defaultsKeyName)
+        UserDefaults.standard.set(value, forKey: defaultsKeyName)
     }
 
     /// Get all the current values for the listen tags
     public func getAllListenTagsCurrent() -> AnyObject? {
         var allListenTagsCurrentArray = [AnyObject]()
-        if let listenTagsArray = getListenTags() as! NSArray? {
+        if let listenTagsArray = getListenTags() as! [[String:String]]? {
             for d in listenTagsArray {
-                let code = d["code"] as! String
-                if let tagsForCode = getListenTagsCurrent(code) as! [AnyObject]? {
+                let code = d["code"]
+                if let tagsForCode = getListenTagsCurrent(code!) as! [AnyObject]? {
                     allListenTagsCurrentArray += tagsForCode
                 }
             }
         }
-        return allListenTagsCurrentArray
+        return allListenTagsCurrentArray as AnyObject?
     }
 
     /// Get all the current values for the listen tags as a comma-separated string
@@ -67,7 +67,7 @@ extension RWFramework {
         if let allListenTagsArray = getAllListenTagsCurrent() as! NSArray? {
             for tag in allListenTagsArray {
                 if (tag_ids != "") { tag_ids += "," }
-                tag_ids += tag.description
+                tag_ids += (tag as AnyObject).description
             }
         }
         return tag_ids
@@ -77,38 +77,38 @@ extension RWFramework {
 
     /// Returns an array of dictionaries of speak information
     public func getSpeakTags() -> AnyObject? {
-        return NSUserDefaults.standardUserDefaults().objectForKey("tags_speak")
+        return UserDefaults.standard.object(forKey: "tags_speak") as AnyObject?
     }
 
     /// Sets the array of dictionaries of speak information
-    public func setSpeakTags(value: AnyObject) {
-        NSUserDefaults.standardUserDefaults().setObject(value, forKey: "tags_speak")
+    public func setSpeakTags(_ value: AnyObject) {
+        UserDefaults.standard.set(value, forKey: "tags_speak")
     }
 
     /// Get the current values for the speak tags code
-    public func getSpeakTagsCurrent(code: String) -> AnyObject? {
+    public func getSpeakTagsCurrent(_ code: String) -> AnyObject? {
         let defaultsKeyName = "tags_speak_\(code)_current"
-        return NSUserDefaults.standardUserDefaults().objectForKey(defaultsKeyName)
+        return UserDefaults.standard.object(forKey: defaultsKeyName) as AnyObject?
     }
 
     /// Set the current values for the speak tags code
-    public func setSpeakTagsCurrent(code: String, value: AnyObject) {
+    public func setSpeakTagsCurrent(_ code: String, value: AnyObject) {
         let defaultsKeyName = "tags_speak_\(code)_current"
-        NSUserDefaults.standardUserDefaults().setObject(value, forKey: defaultsKeyName)
+        UserDefaults.standard.set(value, forKey: defaultsKeyName)
     }
 
     /// Get all the current values for the speak tags
     public func getAllSpeakTagsCurrent() -> AnyObject? {
         var allSpeakTagsCurrentArray = [AnyObject]()
-        if let speakTagsArray = getSpeakTags() as! NSArray? {
+        if let speakTagsArray = getSpeakTags() as! [[String:String]]? {
             for d in speakTagsArray {
-                let code = d["code"] as! String
-                if let tagsForCode = getSpeakTagsCurrent(code) as! [AnyObject]? {
+                let code = d["code"]
+                if let tagsForCode = getSpeakTagsCurrent(code!) as! [AnyObject]? {
                     allSpeakTagsCurrentArray += tagsForCode
                 }
             }
         }
-        return allSpeakTagsCurrentArray
+        return allSpeakTagsCurrentArray as AnyObject?
     }
 
     /// Get all the current values for the speak tags as a comma-separated string
@@ -117,7 +117,7 @@ extension RWFramework {
             var tags = ""
             for tag in allSpeakTagsArray {
                 if (tags != "") { tags += "," }
-                tags += tag.description
+                tags += (tag as AnyObject).description
             }
             return tags
         }
@@ -145,7 +145,7 @@ extension RWFramework {
     }
 
     /// Edit the Listen or Speak tags in a web view
-    func editTags(type: String, title: String) {
+    func editTags(_ type: String, title: String) {
         println("editing tags not yet supported but coming soon via WKWebView")
     }
 

@@ -15,7 +15,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
 
     /// Add the current audio recording with optional description, returns a path (key) to the file that will ultimately be uploaded.
     /// NOTE: The audio recording is now queued for upload and can no longer be played back by the framework
-    public func addRecording(description: String = "") -> String? {
+    public func addRecording(_ description: String = "") -> String? {
         var key: String? = nil
 
         if (hasRecording() == false) { return key }
@@ -23,16 +23,16 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
         let r = arc4random()
         let recorded_file_name = RWFrameworkConfig.getConfigValueAsString("recorded_file_name")
 // TBD        let recordedFilePath = NSTemporaryDirectory().stringByAppendingPathComponent("\(r)_\(recorded_file_name)")
-        let recordedFilePath = NSURL(fileURLWithPath: NSTemporaryDirectory()).URLByAppendingPathComponent("\(r)_\(recorded_file_name)")?.absoluteString
+        let recordedFilePath = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("\(r)_\(recorded_file_name)").absoluteString
 
         do {
-            try NSFileManager.defaultManager().moveItemAtPath(soundFilePath(), toPath: recordedFilePath!)
-            addMedia(MediaType.Audio, string: recordedFilePath!, description: description)
+            try FileManager.default.moveItem(atPath: soundFilePath(), toPath: recordedFilePath)
+            addMedia(MediaType.Audio, string: recordedFilePath, description: description)
             key = recordedFilePath
 
             if useComplexRecordingMechanism {
                 let rwfar = RWFrameworkAudioRecorder.sharedInstance()
-                rwfar.deleteRecording()
+                rwfar?.deleteRecording()
             }
         }
         catch {
@@ -42,12 +42,12 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     }
 
     /// Set a description on an already added recording, pass the path returned from addRecording as the string parameter
-    public func setRecordingDescription(string: String, description: String) {
+    public func setRecordingDescription(_ string: String, description: String) {
         setMediaDescription(MediaType.Audio, string: string, description: description)
     }
 
     /// Remove an audio recording, pass the path returned from addRecording as the string parameter
-    public func removeRecording(string: String) {
+    public func removeRecording(_ string: String) {
         removeMedia(MediaType.Audio, string: string)
     }
 
@@ -57,9 +57,9 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     func soundFilePath() -> String {
         let recorded_file_name = RWFrameworkConfig.getConfigValueAsString("recorded_file_name")
 // TBD        let soundFilePath = NSTemporaryDirectory().stringByAppendingPathComponent(recorded_file_name)
-        let soundFilePath = NSURL(fileURLWithPath: NSTemporaryDirectory()).URLByAppendingPathComponent(recorded_file_name)
+        let soundFilePath = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(recorded_file_name)
         println(soundFilePath)
-        return (soundFilePath?.absoluteString)!
+        return (soundFilePath.absoluteString)
     }
 
     /// Return true if the framework can record audio
@@ -71,7 +71,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     public func preflightRecording() {
         if canRecord() && useComplexRecordingMechanism {
             let rwfar = RWFrameworkAudioRecorder.sharedInstance()
-            rwfar.setupAllCustomAudio()
+            rwfar?.setupAllCustomAudio()
         }
     }
 
@@ -87,25 +87,25 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
 
         if useComplexRecordingMechanism {
             let rwfar = RWFrameworkAudioRecorder.sharedInstance()
-            rwfar.startAudioGraph()
+            rwfar?.startAudioGraph()
             logToServer("start_record")
             // Recording will auto-stop via audioTimer function in RWFrameworkTimers.swift
         } else {
             soundRecorder = nil
-            let soundFileURL = NSURL(fileURLWithPath: soundFilePath())
+            let soundFileURL = URL(fileURLWithPath: soundFilePath())
             let recordSettings =
                 [AVSampleRateKey: 22050,
-                AVFormatIDKey: NSNumber(unsignedInt: kAudioFormatMPEG4AAC),
+                AVFormatIDKey: NSNumber(value: kAudioFormatMPEG4AAC as UInt32),
                 AVNumberOfChannelsKey: 1,
-                AVEncoderAudioQualityKey: AVAudioQuality.Max.rawValue]
+                AVEncoderAudioQualityKey: AVAudioQuality.max.rawValue] as [String : Any]
 
             do {
-                soundRecorder = try AVAudioRecorder(URL: soundFileURL, settings: recordSettings)
+                soundRecorder = try AVAudioRecorder(url: soundFileURL, settings: recordSettings)
                 soundRecorder!.delegate = self
                 _ = soundRecorder!.prepareToRecord()
-                soundRecorder!.meteringEnabled = true
+                soundRecorder!.isMeteringEnabled = true
                 let max_recording_length = RWFrameworkConfig.getConfigValueAsNumber("max_recording_length")
-                _ = soundRecorder!.recordForDuration(max_recording_length.doubleValue)
+                _ = soundRecorder!.record(forDuration: max_recording_length.doubleValue)
                 logToServer("start_record")
             }
             catch {
@@ -118,27 +118,27 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     public func stopRecording() {
         if useComplexRecordingMechanism {
             let rwfar = RWFrameworkAudioRecorder.sharedInstance()
-            if (rwfar.isRecording() == false) { return }
-            rwfar.stopAudioGraph()
+            if (rwfar?.isRecording() == false) { return }
+            rwfar?.stopAudioGraph()
             logToServer("stop_record")
 
-            let soundFileURL = rwfar.outputURL // caf file
-            let outputURL = NSURL(fileURLWithPath: soundFilePath()) // soon to be m4a
+            let soundFileURL = rwfar?.outputURL // caf file
+            let outputURL = URL(fileURLWithPath: soundFilePath()) // soon to be m4a
 
             do {
-                _ = try NSFileManager.defaultManager().removeItemAtPath(soundFilePath())
+                _ = try FileManager.default.removeItem(atPath: soundFilePath())
 
                 let options = ["AVURLAssetPreferPreciseDurationAndTimingKey": true]
-                let audioAsset = AVURLAsset(URL: soundFileURL, options: options)
+                let audioAsset = AVURLAsset(url: soundFileURL!, options: options)
                 let exportSession = AVAssetExportSession(asset: audioAsset, presetName: AVAssetExportPresetMediumQuality)
         
                 exportSession!.outputURL = outputURL
                 exportSession!.outputFileType = AVFileTypeQuickTimeMovie
-                exportSession!.exportAsynchronouslyWithCompletionHandler { () -> Void in
-                    if (exportSession!.status == AVAssetExportSessionStatus.Completed) {
+                exportSession!.exportAsynchronously { () -> Void in
+                    if (exportSession!.status == AVAssetExportSessionStatus.completed) {
                         self.println("file conversion success to \(outputURL)")
                     } else {
-                        self.println("file conversion failure from \(soundFileURL)")
+                        self.println("file conversion failure from \(String(describing: soundFileURL))")
                     }
                 }
             }
@@ -148,7 +148,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
 
         } else {
             if (soundRecorder == nil) { return }
-            if soundRecorder!.recording {
+            if soundRecorder!.isRecording {
                 soundRecorder!.stop()
                 logToServer("stop_record")
             }
@@ -161,13 +161,13 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
             stopPlayback()
 
             let rwfar = RWFrameworkAudioRecorder.sharedInstance()
-            let soundFileURL = rwfar.outputURL
+            let soundFileURL = rwfar?.outputURL
 
             do {
-                soundPlayer = try AVAudioPlayer(contentsOfURL: soundFileURL)
+                soundPlayer = try AVAudioPlayer(contentsOf: soundFileURL!)
                 soundPlayer!.delegate = self
                 _ = soundPlayer!.prepareToPlay()
-                soundPlayer!.meteringEnabled = true
+                soundPlayer!.isMeteringEnabled = true
                 _ = soundPlayer!.play()
             }
             catch {
@@ -179,13 +179,13 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
             stopPlayback()
             soundPlayer = nil
 
-            let soundFileURL = NSURL(fileURLWithPath: soundFilePath())
+            let soundFileURL = URL(fileURLWithPath: soundFilePath())
 
             do {
-                soundPlayer = try AVAudioPlayer(contentsOfURL: soundFileURL)
+                soundPlayer = try AVAudioPlayer(contentsOf: soundFileURL)
                 soundPlayer!.delegate = self
                 _ = soundPlayer!.prepareToPlay()
-                soundPlayer!.meteringEnabled = true
+                soundPlayer!.isMeteringEnabled = true
                 _ = soundPlayer!.play()
             }
             catch {
@@ -197,7 +197,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     /// Stop playing back the most recent audio recording
     public func stopPlayback() {
         if (soundPlayer == nil) { return }
-        if (soundPlayer!.playing) {
+        if (soundPlayer!.isPlaying) {
             soundPlayer!.stop()
         }
     }
@@ -205,17 +205,17 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     /// Returns true if currently playing back the most recent audio recording, false otherwise
     public func isPlayingBack() -> Bool {
         if (soundPlayer == nil) { return false }
-        return soundPlayer!.playing
+        return soundPlayer!.isPlaying
     }
 
     /// Returns true if currently recording, false otherwise
     public func isRecording() -> Bool {
         if useComplexRecordingMechanism {
             let rwfar = RWFrameworkAudioRecorder.sharedInstance()
-            return rwfar.isRecording()
+            return rwfar!.isRecording()
         } else {
             if (soundRecorder == nil) { return false }
-            return soundRecorder!.recording
+            return soundRecorder!.isRecording
         }
     }
 
@@ -223,9 +223,9 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     public func hasRecording() -> Bool {
         if useComplexRecordingMechanism {
             let rwfar = RWFrameworkAudioRecorder.sharedInstance()
-            return rwfar.hasRecording()
+            return rwfar!.hasRecording()
         } else {
-            return NSFileManager.defaultManager().fileExistsAtPath(soundFilePath())
+            return FileManager.default.fileExists(atPath: soundFilePath())
         }
     }
 
@@ -235,14 +235,14 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
         let filePathToDelete: String
         if useComplexRecordingMechanism {
             let rwfar = RWFrameworkAudioRecorder.sharedInstance()
-            filePathToDelete = rwfar.outputURL.path!
-            rwfar.deleteRecording()
+            filePathToDelete = rwfar!.outputURL.path
+            rwfar?.deleteRecording()
         } else {
             filePathToDelete = soundFilePath()
         }
 
         do {
-            _ = try NSFileManager.defaultManager().removeItemAtPath(filePathToDelete)
+            _ = try FileManager.default.removeItem(atPath: filePathToDelete)
         }
         catch {
             println("RWFramework - Couldn't delete recording \(error)")
@@ -251,25 +251,25 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
 
 // MARK: AVAudioRecorderDelegate
 
-    public func audioRecorderDidFinishRecording(recorder: AVAudioRecorder, successfully flag: Bool) {
+    public func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
         println("audioRecorderDidFinishRecording")
         rwAudioRecorderDidFinishRecording()
     }
 
-    public func audioRecorderEncodeErrorDidOccur(recorder: AVAudioRecorder, error: NSError?) {
-        println("audioRecorderEncodeErrorDidOccur \(error)")
+    public func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: Error?) {
+        println("audioRecorderEncodeErrorDidOccur \(String(describing: error))")
         alertOK("RWFramework - Audio Encode Error", message: error!.localizedDescription)
     }
 
 // MARK: AVAudioPlayerDelegate
 
-    public func audioPlayerDidFinishPlaying(player: AVAudioPlayer, successfully flag: Bool) {
+    public func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         println("audioPlayerDidFinishPlaying")
         rwAudioPlayerDidFinishPlaying()
     }
     
-    public func audioPlayerDecodeErrorDidOccur(player: AVAudioPlayer, error: NSError?) {
-        println("audioPlayerDecodeErrorDidOccur \(error)")
+    public func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: Error?) {
+        println("audioPlayerDecodeErrorDidOccur \(String(describing: error))")
         alertOK("RWFramework - Audio Decode Error", message: error!.localizedDescription)
     }
 

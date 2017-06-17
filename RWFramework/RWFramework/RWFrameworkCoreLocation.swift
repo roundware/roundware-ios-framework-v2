@@ -12,8 +12,8 @@ import CoreLocation
 extension RWFramework: CLLocationManagerDelegate {
 
     /// This is called at app startup and also after permission has changed
-    public func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
-        if status == CLAuthorizationStatus.AuthorizedAlways || status == CLAuthorizationStatus.AuthorizedWhenInUse {
+    public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        if status == CLAuthorizationStatus.authorizedAlways || status == CLAuthorizationStatus.authorizedWhenInUse {
             let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
             if (geo_listen_enabled) {
                 locationManager.startUpdatingLocation()
@@ -24,7 +24,7 @@ extension RWFramework: CLLocationManagerDelegate {
     }
 
     /// Called by the CLLocationManager when location has been updated
-    public func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         // println("locationManager didUpdateLocations \(locations)")
 
         captureLastRecordedLocation()
@@ -50,7 +50,7 @@ extension RWFramework: CLLocationManagerDelegate {
     }
 
     /// Called by the CLLocationManager when location update has failed
-    public func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
+    public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         println("locationManager didFailWithError \(error)")
     }
 
@@ -62,7 +62,7 @@ extension RWFramework: CLLocationManagerDelegate {
         let shouldMakeTheRequest = geo_listen_enabled || geo_speak_enabled || geo_image_enabled
         if (shouldMakeTheRequest) {
             locationManager.distanceFilter = RWFrameworkConfig.getConfigValueAsNumber("distance_filter_in_meters").doubleValue
-            if CLLocationManager.authorizationStatus() == .NotDetermined {
+            if CLLocationManager.authorizationStatus() == .notDetermined {
                 locationManager.requestWhenInUseAuthorization()
             }
         }

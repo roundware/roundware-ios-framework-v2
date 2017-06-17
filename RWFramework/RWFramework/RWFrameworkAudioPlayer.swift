@@ -12,11 +12,11 @@ import AVFoundation
 extension RWFramework {
 
     /// This is set in the self.player's willSet/didSet
-    public override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+    open override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         //println("keyPath: \(keyPath) object: \(object) change: \(change)")
 
-        if let _ = keyPath, _ = object, _ = change {
-            rwObserveValueForKeyPath(keyPath!, ofObject: object!, change: change!, context: context)
+        if let _ = keyPath, let _ = object, let _ = change {
+            rwObserveValueForKeyPath(keyPath!, ofObject: object! as AnyObject, change: change!, context: context!)
         }
 
 //        if (keyPath == "timedMetadata") {
@@ -37,7 +37,7 @@ extension RWFramework {
     /// Create an AVPlayer to play the stream
     func createPlayer() {
         if (streamURL == nil) { return }
-        player = AVPlayer(URL: streamURL!)
+        player = AVPlayer(url: streamURL! as URL)
     }
 
     /// Destroy the AVPlayer

@@ -12,7 +12,7 @@ extension RWFramework {
 
 // MARK: - Heartbeat
 
-    func heartbeatTimer(timer: NSTimer) {
+    func heartbeatTimer(_ timer: Timer) {
         if (requestStreamSucceeded == false) { return }
 
         let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
@@ -23,25 +23,25 @@ extension RWFramework {
     }
 
     func startHeartbeatTimer() {
-        dispatch_async(dispatch_get_main_queue(), { () -> Void in
+        DispatchQueue.main.async(execute: { () -> Void in
             let gps_idle_interval_in_seconds = RWFrameworkConfig.getConfigValueAsNumber("gps_idle_interval_in_seconds").doubleValue
-            self.heartbeatTimer = NSTimer.scheduledTimerWithTimeInterval(gps_idle_interval_in_seconds, target:self, selector:#selector(RWFramework.heartbeatTimer(_:)), userInfo:nil, repeats:true)
+            self.heartbeatTimer = Timer.scheduledTimer(timeInterval: gps_idle_interval_in_seconds, target:self, selector:#selector(RWFramework.heartbeatTimer(_:)), userInfo:nil, repeats:true)
         })
     }
 
 // MARK: - Audio
 
-    func audioTimer(timer: NSTimer) {
+    func audioTimer(_ timer: Timer) {
         var percentage: Double = 0
         if !useComplexRecordingMechanism && isRecording() {
             let max_recording_length = RWFrameworkConfig.getConfigValueAsNumber("max_recording_length").doubleValue
             percentage = soundRecorder!.currentTime/max_recording_length
             soundRecorder!.updateMeters()
-            rwRecordingProgress(percentage, maxDuration: max_recording_length, peakPower: soundRecorder!.peakPowerForChannel(0), averagePower: soundRecorder!.averagePowerForChannel(0))
+            rwRecordingProgress(percentage, maxDuration: max_recording_length, peakPower: soundRecorder!.peakPower(forChannel: 0), averagePower: soundRecorder!.averagePower(forChannel: 0))
         } else if useComplexRecordingMechanism && isRecording() {
             let max_recording_length = RWFrameworkConfig.getConfigValueAsNumber("max_recording_length").doubleValue
             let rwfar = RWFrameworkAudioRecorder.sharedInstance()
-            percentage = rwfar.currentTime()/max_recording_length
+            percentage = (rwfar?.currentTime())!/max_recording_length
 
             // TODO: Meters (kAudioUnitProperty_MeteringMode on a mixer in the AUGraph)
 
@@ -56,25 +56,25 @@ extension RWFramework {
         } else if isPlayingBack() {
             percentage = soundPlayer!.currentTime/soundPlayer!.duration
             soundPlayer!.updateMeters()
-            rwPlayingBackProgress(percentage, duration: soundPlayer!.duration, peakPower: soundPlayer!.peakPowerForChannel(0), averagePower: soundPlayer!.averagePowerForChannel(0))
+            rwPlayingBackProgress(percentage, duration: soundPlayer!.duration, peakPower: soundPlayer!.peakPower(forChannel: 0), averagePower: soundPlayer!.averagePower(forChannel: 0))
         }
     }
 
     func startAudioTimer() {
-        dispatch_async(dispatch_get_main_queue(), { () -> Void in
-            self.audioTimer = NSTimer.scheduledTimerWithTimeInterval(0.1, target:self, selector:#selector(RWFramework.audioTimer(_:)), userInfo:nil, repeats:true)
+        DispatchQueue.main.async(execute: { () -> Void in
+            self.audioTimer = Timer.scheduledTimer(timeInterval: 0.1, target:self, selector:#selector(RWFramework.audioTimer(_:)), userInfo:nil, repeats:true)
         })
     }
 
 // MARK: - Upload
 
-    func uploadTimer(timer: NSTimer) {
+    func uploadTimer(_ timer: Timer) {
         mediaUploader()
     }
 
     func startUploadTimer() {
-        dispatch_async(dispatch_get_main_queue(), { () -> Void in
-            self.uploadTimer = NSTimer.scheduledTimerWithTimeInterval(1.0, target:self, selector:#selector(RWFramework.uploadTimer(_:)), userInfo:nil, repeats:true)
+        DispatchQueue.main.async(execute: { () -> Void in
+            self.uploadTimer = Timer.scheduledTimer(timeInterval: 1.0, target:self, selector:#selector(RWFramework.uploadTimer(_:)), userInfo:nil, repeats:true)
         })
     }
 
