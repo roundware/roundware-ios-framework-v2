@@ -13,13 +13,13 @@ extension RWFramework {
 
 // MARK: POST users
 
-    func apiPostUsers(_ device_id: String, client_type: String) {
+    func apiPostUsers(_ device_id: String, client_type: String, client_system: String) {
         let token = RWFrameworkConfig.getConfigValueAsString("token", group: RWFrameworkConfig.ConfigGroup.client)
         if (token.lengthOfBytes(using: String.Encoding.utf8) > 0) {
             postUsersSucceeded = true
             apiPostSessions()
         } else {
-            httpPostUsers(device_id, client_type: client_type) { (data, error) -> Void in
+            httpPostUsers(device_id, client_type: client_type, client_system: client_system) { (data, error) -> Void in
                 if (data != nil) && (error == nil) {
                     self.postUsersSuccess(data!)
                     self.rwPostUsersSuccess(data)
@@ -39,10 +39,10 @@ extension RWFramework {
             if let dict = json as? [String:AnyObject] {
                 if let username = dict["username"] as? String {
                     RWFrameworkConfig.setConfigValue("username", value: username, group: RWFrameworkConfig.ConfigGroup.client)
-                }
+                } // TODO: Handle missing value
                 if let token = dict["token"] as? String {
                     RWFrameworkConfig.setConfigValue("token", value: token, group: RWFrameworkConfig.ConfigGroup.client)
-                }
+                } // TODO: Handle missing value
             }
 
             postUsersSucceeded = true
@@ -58,7 +58,7 @@ extension RWFramework {
 // MARK: POST sessions
 
     func apiPostSessions() {
-        let project_id = RWFrameworkConfig.getConfigValueAsNumber("project_id").stringValue
+        let project_id = RWFrameworkConfig.getConfigValueAsNumber("project_id")
         let client_system = clientSystem()
         let language = preferredLanguage()
 
@@ -81,17 +81,17 @@ extension RWFramework {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
 
-            var session_id : String = ""
+            var session_id : NSNumber = 0
             if let dict = json as? [String: AnyObject] {
-                if let _session_id = dict["session_id"] as? String {
+                if let _session_id = dict["session_id"] as? NSNumber {
                     session_id = _session_id
                     RWFrameworkConfig.setConfigValue("session_id", value: session_id, group: RWFrameworkConfig.ConfigGroup.client)
-                }
+                } // TODO: Handle missing value
             }
 
             postSessionsSucceeded = true
 
-            let project_id = RWFrameworkConfig.getConfigValueAsNumber("project_id").stringValue
+            let project_id = RWFrameworkConfig.getConfigValueAsNumber("project_id")
             apiGetProjectsId(project_id, session_id: session_id)
         }
         catch {
@@ -102,7 +102,7 @@ extension RWFramework {
 
 // MARK: GET projects id
 
-    func apiGetProjectsId(_ project_id: String, session_id: String) {
+    func apiGetProjectsId(_ project_id: NSNumber, session_id: NSNumber) {
         httpGetProjectsId(project_id, session_id: session_id) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.getProjectsIdSuccess(data!, project_id: project_id, session_id: session_id)
@@ -114,14 +114,12 @@ extension RWFramework {
         }
     }
 
-    func getProjectsIdSuccess(_ data: Data, project_id: String, session_id: String) {
+    func getProjectsIdSuccess(_ data: Data, project_id: NSNumber, session_id: NSNumber) {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
 
             if let dict = json as? [String: AnyObject] {
                 RWFrameworkConfig.setConfigDataAsDictionary(data, key: "project")
-
-                reverse_domain = RWFrameworkConfig.getConfigValueAsString("reverse_domain")
 
                 // TODO: where is this going to come from?
                 func configDisplayStartupMessage() {
@@ -165,7 +163,7 @@ extension RWFramework {
 
 // MARK: GET projects id tags
 
-    func apiGetProjectsIdTags(_ project_id: String, session_id: String) {
+    func apiGetProjectsIdTags(_ project_id: NSNumber, session_id: NSNumber) {
         httpGetProjectsIdTags(project_id, session_id: session_id) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.getProjectsIdTagsSuccess(data!, project_id: project_id, session_id: session_id)
@@ -177,7 +175,7 @@ extension RWFramework {
         }
     }
 
-    func getProjectsIdTagsSuccess(_ data: Data, project_id: String, session_id: String) {
+    func getProjectsIdTagsSuccess(_ data: Data, project_id: NSNumber, session_id: NSNumber) {
         do {
 
             let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
@@ -199,7 +197,7 @@ extension RWFramework {
                             UserDefaults.standard.set(defaults as Any, forKey: defaultsKeyName)
                         }
                     }
-                }
+                } // TODO: Handle missing value
 
                 // Speak
                 if let speakArray = dict["speak"] as? [String: AnyObject] {
@@ -215,7 +213,7 @@ extension RWFramework {
                             UserDefaults.standard.set(defaults as Any, forKey: defaultsKeyName)
                         }
                     }
-                }
+                } // TODO: Handle missing value
 
                 getProjectsIdTagsSucceeded = true
             }
@@ -234,7 +232,7 @@ extension RWFramework {
 
         requestStreamInProgress = true
 
-        let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client).stringValue
+        let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
 
         httpPostStreams(session_id) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
@@ -248,7 +246,7 @@ extension RWFramework {
         }
     }
 
-    func postStreamsSuccess(_ data: Data, session_id: String) {
+    func postStreamsSuccess(_ data: Data, session_id: NSNumber) {
         do {
 
             let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
@@ -391,7 +389,7 @@ extension RWFramework {
 // MARK: POST envelopes
 
     func apiPostEnvelopes(_ success:@escaping (_ envelopeID: Int) -> Void) {
-        let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client).stringValue
+        let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
 
         httpPostEnvelopes(session_id) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
@@ -404,7 +402,7 @@ extension RWFramework {
         }
     }
 
-    func postEnvelopesSuccess(_ data: Data, session_id: String, success:(_ envelopeID: Int) -> Void) {
+    func postEnvelopesSuccess(_ data: Data, session_id: NSNumber, success:(_ envelopeID: Int) -> Void) {
 
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
@@ -423,7 +421,7 @@ extension RWFramework {
 // MARK: PATCH envelopes id
 
     func apiPatchEnvelopesId(_ media: Media, success:@escaping () -> Void, failure:@escaping (_ error: NSError) -> Void) {
-        let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client).stringValue
+        let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
 
         httpPatchEnvelopesId(media, session_id: session_id) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
@@ -474,7 +472,7 @@ extension RWFramework {
 // MARK: POST assets id votes
 
     public func apiPostAssetsIdVotes(_ asset_id: String, vote_type: String, value: NSNumber = 0, success:@escaping (_ data: Data?) -> Void, failure:@escaping (_ error: NSError) -> Void) {
-        let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client).stringValue
+        let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
 
         httpPostAssetsIdVotes(asset_id, session_id: session_id, vote_type: vote_type, value: value) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
@@ -506,7 +504,7 @@ extension RWFramework {
 // MARK: POST events
 
     func apiPostEvents(_ event_type: String, data: String?, success:@escaping (_ data: Data?) -> Void, failure:@escaping (_ error: NSError) -> Void) {
-        let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client).stringValue
+        let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
         let latitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.latitude)
         let longitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.longitude)
 

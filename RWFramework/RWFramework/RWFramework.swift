@@ -142,7 +142,7 @@ private lazy var __once: () = { () -> Void in
         self.letFrameworkRequestWhenInUseAuthorizationForLocation = letFrameworkRequestWhenInUseAuthorizationForLocation
 
         println("start")
-        apiPostUsers(UIDevice().identifierForVendor!.uuidString, client_type: UIDevice().model)
+        apiPostUsers(UIDevice().identifierForVendor!.uuidString, client_type: UIDevice().model, client_system: clientSystem())
 
         preflightRecording()
     }
@@ -204,11 +204,11 @@ private lazy var __once: () = { () -> Void in
         return NSLocalizedString(key, comment: "")
     }
 
-    /// Return the client string as "iPhone OS-8.3" or similar
+    /// Return the client string as "iOS 8.3" or similar
     func clientSystem() -> String {
         let systemName = UIDevice().systemName
         let systemVersion = UIDevice().systemVersion
-        return "\(systemName)-\(systemVersion)"
+        return "\(systemName) \(systemVersion)"
     }
 
     /// Return the preferred language of the device

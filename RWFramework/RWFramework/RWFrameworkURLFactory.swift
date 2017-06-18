@@ -23,12 +23,12 @@ open class RWFrameworkURLFactory {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "sessions/"
     }
 
-    class func getProjectsIdURL(_ project_id: String, session_id: String) -> String {
-        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "projects/" + project_id + "/?session_id=" + session_id
+    class func getProjectsIdURL(_ project_id: NSNumber, session_id: NSNumber) -> String {
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "projects/" + project_id.stringValue + "/?session_id=" + session_id.stringValue
     }
 
-    class func getProjectsIdTagsURL(_ project_id: String, session_id: String) -> String {
-        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "projects/" + project_id + "/tags/?session_id=" + session_id
+    class func getProjectsIdTagsURL(_ project_id: NSNumber, session_id: NSNumber) -> String {
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "projects/" + project_id.stringValue + "/tags/?session_id=" + session_id.stringValue
     }
 
     class func postStreamsURL() -> String {

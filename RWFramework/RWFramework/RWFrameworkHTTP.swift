@@ -11,9 +11,9 @@ import MobileCoreServices
 
 extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDataDelegate /*, NSURLSessionDownloadDelegate */ {
 
-    func httpPostUsers(_ device_id: String, client_type: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    func httpPostUsers(_ device_id: String, client_type: String, client_system: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.postUsersURL()) {
-            let postData = ["device_id": device_id, "client_type": client_type]
+            let postData = ["device_id": device_id, "client_type": client_type, "client_system": client_system]
             postDataToURL(url, postData: postData, completion: completion)
         } else {
             let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postUsersURL unable to be created."])
@@ -21,9 +21,9 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
-    func httpPostSessions(_ project_id: String, timezone: String, client_system: String, language: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    func httpPostSessions(_ project_id: NSNumber, timezone: String, client_system: String, language: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.postSessionsURL()) {
-            let postData = ["project_id": project_id, "timezone": timezone, "client_system": client_system, "language": language]
+            let postData = ["project_id": project_id, "timezone": timezone, "client_system": client_system, "language": language] as [String : Any]
             postDataToURL(url, postData: postData, completion: completion)
         } else {
             let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postSessionsURL unable to be created."])
@@ -31,7 +31,7 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
-    func httpGetProjectsId(_ project_id: String, session_id: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    func httpGetProjectsId(_ project_id: NSNumber, session_id: NSNumber, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.getProjectsIdURL(project_id, session_id: session_id)) {
             getDataFromURL(url, completion: completion)
         } else {
@@ -40,7 +40,7 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
-    func httpGetProjectsIdTags(_ project_id: String, session_id: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    func httpGetProjectsIdTags(_ project_id: NSNumber, session_id: NSNumber, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.getProjectsIdTagsURL(project_id, session_id: session_id)) {
             getDataFromURL(url, completion: completion)
         } else {
@@ -49,7 +49,7 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
-    func httpPostStreams(_ session_id: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    func httpPostStreams(_ session_id: NSNumber, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.postStreamsURL()) {
             let postData = ["session_id": session_id]
             postDataToURL(url, postData: postData, completion: completion)
@@ -108,7 +108,7 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
-    func httpPostEnvelopes(_ session_id: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    func httpPostEnvelopes(_ session_id: NSNumber, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.postEnvelopesURL()) {
             let postData = ["session_id": session_id]
             postDataToURL(url, postData: postData, completion: completion)
@@ -118,10 +118,10 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
-    func httpPatchEnvelopesId(_ media: Media, session_id: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    func httpPatchEnvelopesId(_ media: Media, session_id: NSNumber, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.patchEnvelopesIdURL(media.envelopeID.stringValue)) {
             let serverMediaType = mapMediaTypeToServerMediaType(media.mediaType)
-            let postData = ["session_id": session_id, "media_type": serverMediaType.rawValue, "latitude": media.latitude.stringValue, "longitude": media.longitude.stringValue, "tag_ids": media.tagIDs, "description": media.desc]
+            let postData = ["session_id": session_id, "media_type": serverMediaType.rawValue, "latitude": media.latitude.stringValue, "longitude": media.longitude.stringValue, "tag_ids": media.tagIDs, "description": media.desc] as [String : Any]
             patchFileAndDataToURL(url, filePath: media.string, postData: postData, completion: completion)
         } else {
             let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "httpPatchEnvelopesId unable to be created."])
@@ -147,9 +147,9 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
-    func httpPostAssetsIdVotes(_ asset_id: String, session_id: String, vote_type: String, value: NSNumber = 0, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    func httpPostAssetsIdVotes(_ asset_id: String, session_id: NSNumber, vote_type: String, value: NSNumber = 0, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.postAssetsIdVotesURL(asset_id)) {
-            let postData = ["session_id": session_id, "vote_type": vote_type, "value": value.stringValue]
+            let postData = ["session_id": session_id, "vote_type": vote_type, "value": value.stringValue] as [String : Any]
             postDataToURL(url, postData: postData, completion: completion)
         } else {
             let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postAssetsIdVotesURL unable to be created."])
@@ -166,9 +166,9 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
-    func httpPostEvents(_ session_id: String, event_type: String, data: String?, latitude: String, longitude: String, client_time: String, tag_ids: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    func httpPostEvents(_ session_id: NSNumber, event_type: String, data: String?, latitude: String, longitude: String, client_time: String, tag_ids: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.postEventsURL()) {
-            let postData = ["session_id": session_id, "event_type": event_type, "data": data ?? "", "latitude": latitude, "longitude": longitude, "client_time": client_time, "tag_ids": tag_ids]
+            let postData = ["session_id": session_id, "event_type": event_type, "data": data ?? "", "latitude": latitude, "longitude": longitude, "client_time": client_time, "tag_ids": tag_ids] as [String : Any]
             postDataToURL(url, postData: postData, completion: completion)
         } else {
             let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postEventsURL unable to be created."])
@@ -179,7 +179,7 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
 // MARK: - Generic functions
 
     // Upload file and load data via PATCH and return in completion with or without error
-    func patchFileAndDataToURL(_ url: URL, filePath: String, postData: Dictionary<String,String>, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    func patchFileAndDataToURL(_ url: URL, filePath: String, postData: Dictionary<String,Any>, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         println("patchFileAndDataToURL: " + url.absoluteString + " filePath = " + filePath + " postData = " + postData.description)
 
         // Multipart/form-data boundary
@@ -238,7 +238,13 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         data.append(fileData)
         data.append("\r\n".data(using: String.Encoding.utf8, allowLossyConversion: false)!)
         for (key, value) in postData {
-            if (value.lengthOfBytes(using: String.Encoding.utf8) > 0) {
+            var v = ""
+            if let n = value as? NSNumber {
+                v = n.stringValue
+            } else {
+                v = value as! String
+            }
+            if (v.lengthOfBytes(using: String.Encoding.utf8) > 0) {
                 data.append("--\(boundary)\r\n".data(using: String.Encoding.utf8, allowLossyConversion: false)!)
                 data.append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n\(value)\r\n".data(using: String.Encoding.utf8, allowLossyConversion: false)!)
             }
@@ -264,7 +270,7 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
     }
 
     // Load data via PATCH and return in completion with or without error
-    func patchDataToURL(_ url: URL, postData: Dictionary<String,String>, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    func patchDataToURL(_ url: URL, postData: Dictionary<String,Any>, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         println("patchDataToURL: " + url.absoluteString + " postData = " + postData.description)
 
         let session = URLSession.shared
@@ -301,7 +307,7 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
     }
 
     // Load data via POST and return in completion with or without error
-    func postDataToURL(_ url: URL, postData: Dictionary<String,String>, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    func postDataToURL(_ url: URL, postData: Dictionary<String, Any>, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         println("postDataToURL: " + url.absoluteString + " postData = " + postData.description)
 
         let session = URLSession.shared
@@ -313,11 +319,18 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
             request.addValue("token \(token)", forHTTPHeaderField: "Authorization")
         }
 
+#if USE_AMPERSAND_EQUALS
         var body = ""
         for (key, value) in postData {
             body += "\(key)=\(value)&"
         }
         request.httpBody = body.data(using: String.Encoding.utf8, allowLossyConversion: false)
+#else
+        let jsonData = try? JSONSerialization.data(withJSONObject: postData)
+        request.httpBody = jsonData
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+#endif
+
         let loadDataTask = session.dataTask(with: request as URLRequest) { (data, response, error) -> Void in
             if let errorResponse = error {
                 completion(nil, errorResponse as NSError)

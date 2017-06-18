@@ -13,10 +13,11 @@ extension RWFramework {
 
     /// This is set in the self.player's willSet/didSet
     open override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        //println("keyPath: \(keyPath) object: \(object) change: \(change)")
+        //println("keyPath: \(String(describing: keyPath)) object: \(String(describing: object)) change: \(String(describing: change))")
 
         if let _ = keyPath, let _ = object, let _ = change {
-            rwObserveValueForKeyPath(keyPath!, ofObject: object! as AnyObject, change: change!, context: context!)
+            // TODO: Fix crash here
+            //rwObserveValueForKeyPath(keyPath!, ofObject: object! as AnyObject, change: change!, context: context!)
         }
 
 //        if (keyPath == "timedMetadata") {
