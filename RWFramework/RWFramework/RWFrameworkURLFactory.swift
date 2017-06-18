@@ -27,8 +27,12 @@ open class RWFrameworkURLFactory {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "projects/" + project_id.stringValue + "/?session_id=" + session_id.stringValue
     }
 
-    class func getProjectsIdTagsURL(_ project_id: NSNumber, session_id: NSNumber) -> String {
-        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "projects/" + project_id.stringValue + "/tags/?session_id=" + session_id.stringValue
+    class func getProjectsIdUIGroupsURL(_ project_id: NSNumber) -> String {
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "projects/" + project_id.stringValue + "/uigroups/"
+    }
+
+    class func getProjectsIdTagsURL(_ project_id: NSNumber) -> String {
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "projects/" + project_id.stringValue + "/tags/"
     }
 
     class func postStreamsURL() -> String {

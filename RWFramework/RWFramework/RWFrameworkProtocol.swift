@@ -34,6 +34,11 @@ import CoreLocation
     /// Sent when the server fails to send project information
     @objc optional func rwGetProjectsIdFailure(_ error: NSError?)
 
+    /// Sent when project uigroups have been received from the server
+    @objc optional func rwGetProjectsIdUIGroupsSuccess(_ data: Data?)
+    /// Sent when the server fails to send project uigroups
+    @objc optional func rwGetProjectsIdUIGroupsFailure(_ error: NSError?)
+
     /// Sent when project tags have been received from the server
     @objc optional func rwGetProjectsIdTagsSuccess(_ data: Data?)
     /// Sent when the server fails to send project tags
@@ -243,6 +248,22 @@ extension RWFramework {
                 self.dam { rwfp.rwGetProjectsIdFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwGetProjectsIdFailure"), message: error!.localizedDescription)
+            }
+        }
+    }
+
+    func rwGetProjectsIdUIGroupsSuccess(_ data: Data?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwGetProjectsIdUIGroupsSuccess?(data) }
+        }
+    }
+    
+    func rwGetProjectsIdUIGroupsFailure(_ error: NSError?) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwGetProjectsIdUIGroupsFailure != nil) {
+                self.dam { rwfp.rwGetProjectsIdUIGroupsFailure?(error) }
+            } else {
+                self.alertOK(self.LS("RWFramework - rwGetProjectsIdUIGroupsFailure"), message: error!.localizedDescription)
             }
         }
     }

@@ -152,7 +152,7 @@ extension RWFramework {
 
                 getProjectsIdSucceeded = true
 
-                apiGetProjectsIdTags(project_id, session_id: session_id)
+                apiGetProjectsIdTags(project_id)
             }
         }
         catch {
@@ -160,13 +160,39 @@ extension RWFramework {
         }
     }
 
+// MARK: GET projects id uigroups
+    
+    func apiGetProjectsIdUIGroups(_ project_id: NSNumber) {
+        httpGetProjectsIdUIGroups(project_id) { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                self.getProjectsIdUIGroupsSuccess(data!, project_id: project_id)
+                self.rwGetProjectsIdUIGroupsSuccess(data)
+            } else if (error != nil) {
+                self.rwGetProjectsIdUIGroupsFailure(error)
+                self.apiProcessError(data, error: error!, caller: "apiGetProjectsIdUIGroups")
+            }
+        }
+    }
+    
+    func getProjectsIdUIGroupsSuccess(_ data: Data, project_id: NSNumber) {
+        do {
+            
+            let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
+            
+            
+            getProjectsIdUIGroupsSucceeded = true
+        }
+        catch {
+            print(error)
+        }
+    }
 
 // MARK: GET projects id tags
 
-    func apiGetProjectsIdTags(_ project_id: NSNumber, session_id: NSNumber) {
-        httpGetProjectsIdTags(project_id, session_id: session_id) { (data, error) -> Void in
+    func apiGetProjectsIdTags(_ project_id: NSNumber) {
+        httpGetProjectsIdTags(project_id) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
-                self.getProjectsIdTagsSuccess(data!, project_id: project_id, session_id: session_id)
+                self.getProjectsIdTagsSuccess(data!, project_id: project_id)
                 self.rwGetProjectsIdTagsSuccess(data)
             } else if (error != nil) {
                 self.rwGetProjectsIdTagsFailure(error)
@@ -175,7 +201,7 @@ extension RWFramework {
         }
     }
 
-    func getProjectsIdTagsSuccess(_ data: Data, project_id: NSNumber, session_id: NSNumber) {
+    func getProjectsIdTagsSuccess(_ data: Data, project_id: NSNumber) {
         do {
 
             let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)

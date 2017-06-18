@@ -67,6 +67,7 @@ private lazy var __once: () = { () -> Void in
     var postUsersSucceeded = false
     var postSessionsSucceeded = false
     var getProjectsIdSucceeded = false
+    var getProjectsIdUIGroupsSucceeded = false
     var getProjectsIdTagsSucceeded = false {
         didSet {
             if getProjectsIdTagsSucceeded && requestStreamSucceeded {
