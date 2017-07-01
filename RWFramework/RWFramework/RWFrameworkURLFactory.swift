@@ -47,12 +47,8 @@ open class RWFrameworkURLFactory {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "streams/" + stream_id + "/heartbeat/"
     }
 
-    class func postStreamsIdNextURL(_ stream_id: String) -> String {
-        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "streams/" + stream_id + "/next/"
-    }
-
-    class func getStreamsIdCurrentURL(_ stream_id: String) -> String {
-        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "streams/" + stream_id + "/current/"
+    class func postStreamsIdSkipURL(_ stream_id: String) -> String {
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "streams/" + stream_id + "/skip/"
     }
 
     class func postEnvelopesURL() -> String {

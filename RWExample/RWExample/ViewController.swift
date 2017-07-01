@@ -18,8 +18,7 @@ class ViewController: UIViewController {
     @IBOutlet var statusTextView: UITextView!
 
     @IBOutlet var listenPlayButton: UIButton!
-    @IBOutlet var listenNextButton: UIButton!
-    @IBOutlet var listenCurrentButton: UIButton!
+    @IBOutlet var listenSkipButton: UIButton!
 
     @IBAction func listenTags(_ sender: UIButton) {
         RWFramework.sharedInstance.editListenTags()
@@ -31,12 +30,8 @@ class ViewController: UIViewController {
         listenPlayButton.setTitle(rwf.isPlaying ? "Stop" : "Play", for: UIControlState())
     }
 
-    @IBAction func listenNext(_ sender: UIButton) {
-        RWFramework.sharedInstance.next()
-    }
-
-    @IBAction func listenCurrent(_ sender: UIButton) {
-        RWFramework.sharedInstance.current()
+    @IBAction func listenSkip(_ sender: UIButton) {
+        RWFramework.sharedInstance.skip()
     }
 
     @IBOutlet var speakUpload: UIButton!
@@ -106,8 +101,7 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
 
         listenPlayButton.isEnabled = false
-        listenNextButton.isEnabled = false
-        listenCurrentButton.isEnabled = false
+        listenSkipButton.isEnabled = false
 
         let rwf = RWFramework.sharedInstance
         rwf.addDelegate(self)
@@ -180,16 +174,10 @@ extension ViewController: RWFrameworkProtocol {
         }
     }
 
-    func rwGetStreamsIdCurrentSuccess(_ data: Data?) {
-//        let d = JSON(data: data!)
-//        println(d)
-    }
-
     func rwPostStreamsSuccess(_ data: Data?) {
         DispatchQueue.main.async(execute: { () -> Void in
             self.listenPlayButton.isEnabled = true
-            self.listenNextButton.isEnabled = true
-            self.listenCurrentButton.isEnabled = true
+            self.listenSkipButton.isEnabled = true
         })
     }
 

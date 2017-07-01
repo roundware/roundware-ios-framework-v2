@@ -356,45 +356,24 @@ extension RWFramework {
 
     }
 
-// MARK: POST streams id next
+// MARK: POST streams id skip
 
-    func apiPostStreamsIdNext() {
+    func apiPostStreamsIdSkip() {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
 
-        httpPostStreamsIdNext(self.streamID.description, completion: { (data, error) -> Void in
+        httpPostStreamsIdSkip(self.streamID.description, completion: { (data, error) -> Void in
             if (data != nil) && (error == nil) {
-                self.postStreamsIdNextSuccess(data!)
-                self.rwPostStreamsIdNextSuccess(data)
+                self.postStreamsIdSkipSuccess(data!)
+                self.rwPostStreamsIdSkipSuccess(data)
             } else if (error != nil) {
-                self.rwPostStreamsIdNextFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiPostStreamsIdNext")
+                self.rwPostStreamsIdSkipFailure(error)
+                self.apiProcessError(data, error: error!, caller: "apiPostStreamsIdSkip")
             }
         })
     }
 
-    func postStreamsIdNextSuccess(_ data: Data) {
-
-    }
-
-// MARK: GET streams id current
-
-    func apiGetStreamsIdCurrent() {
-        if (requestStreamSucceeded == false) { return }
-        if (self.streamID == 0) { return }
-
-        httpGetStreamsIdCurrent(self.streamID.description, completion: { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                self.getStreamsIdCurrentSuccess(data!)
-                self.rwGetStreamsIdCurrentSuccess(data)
-            } else if (error != nil) {
-                self.rwGetStreamsIdCurrentFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiGetStreamsIdCurrent")
-            }
-        })
-    }
-
-    func getStreamsIdCurrentSuccess(_ data: Data) {
+    func postStreamsIdSkipSuccess(_ data: Data) {
 
     }
 

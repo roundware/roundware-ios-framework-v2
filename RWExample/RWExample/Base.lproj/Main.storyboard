@@ -40,8 +40,8 @@
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3uj-CA-HOv">
-                                <rect key="frame" x="16" y="101" width="32" height="30"/>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3uj-CA-HOv">
+                                <rect key="frame" x="16" y="101" width="78" height="30"/>
                                 <state key="normal" title="Tags">
                                     <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -163,24 +163,14 @@
                                     <action selector="speakImage:" destination="BYZ-38-t0r" eventType="touchUpInside" id="SFm-z4-heF"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Bsm-nB-r9k">
-                                <rect key="frame" x="54" y="139" width="32" height="30"/>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Bsm-nB-r9k" userLabel="Listen Skip Button">
+                                <rect key="frame" x="55" y="139" width="30" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Next">
+                                <state key="normal" title="Skip">
                                     <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
-                                    <action selector="listenNext:" destination="BYZ-38-t0r" eventType="touchUpInside" id="DGc-ku-mJe"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4Pm-xf-lja">
-                                <rect key="frame" x="94" y="139" width="52" height="30"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Current">
-                                    <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                </state>
-                                <connections>
-                                    <action selector="listenCurrent:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Gg2-XW-HWo"/>
+                                    <action selector="listenSkip:" destination="BYZ-38-t0r" eventType="touchUpInside" id="wIS-WE-sL6"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="n25-rj-QMu">
@@ -224,13 +214,13 @@
                             <constraint firstItem="Ci1-bL-ZAI" firstAttribute="trailing" secondItem="58o-Bg-1Pu" secondAttribute="trailing" id="V2Z-Qb-TBS"/>
                             <constraint firstItem="oVT-nW-viU" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Vgz-oF-KpC"/>
                             <constraint firstItem="ibc-xG-bwG" firstAttribute="baseline" secondItem="ajS-bX-X9h" secondAttribute="baseline" id="YAg-vo-MFG"/>
-                            <constraint firstItem="3uj-CA-HOv" firstAttribute="leading" secondItem="Mii-eB-pFC" secondAttribute="leading" id="YHh-cq-biW"/>
+                            <constraint firstItem="3uj-CA-HOv" firstAttribute="leading" secondItem="Mii-eB-pFC" secondAttribute="leading" constant="-4" id="YHh-cq-biW"/>
                             <constraint firstItem="ibc-xG-bwG" firstAttribute="top" secondItem="np4-gO-URg" secondAttribute="bottom" constant="8" symbolic="YES" id="aKy-jw-5hJ"/>
                             <constraint firstItem="58o-Bg-1Pu" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="bAe-EK-f2x"/>
                             <constraint firstItem="mwC-tT-PVR" firstAttribute="baseline" secondItem="3uj-CA-HOv" secondAttribute="baseline" id="bWZ-cg-73M"/>
                             <constraint firstItem="NkC-ov-32t" firstAttribute="trailing" secondItem="np4-gO-URg" secondAttribute="trailing" id="cEJ-6A-sTk"/>
                             <constraint firstItem="Ci1-bL-ZAI" firstAttribute="leading" secondItem="Mii-eB-pFC" secondAttribute="leading" id="cg6-RX-t6j"/>
-                            <constraint firstItem="3uj-CA-HOv" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="dIM-7r-0LE"/>
+                            <constraint firstItem="3uj-CA-HOv" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="-4" id="dIM-7r-0LE"/>
                             <constraint firstItem="ZXV-bM-4VU" firstAttribute="baseline" secondItem="zBe-9D-KCL" secondAttribute="baseline" id="dsD-wK-S50"/>
                             <constraint firstItem="np4-gO-URg" firstAttribute="leading" secondItem="DKM-HO-TJd" secondAttribute="leading" id="f1t-59-yDz"/>
                             <constraint firstItem="xFe-0H-3dO" firstAttribute="baseline" secondItem="DKM-HO-TJd" secondAttribute="baseline" id="fEO-EQ-Lok"/>
@@ -260,9 +250,8 @@
                     </view>
                     <connections>
                         <outlet property="heartbeatButton" destination="LuL-PX-Cj1" id="dmk-0o-O4b"/>
-                        <outlet property="listenCurrentButton" destination="4Pm-xf-lja" id="3Ge-bu-FKw"/>
-                        <outlet property="listenNextButton" destination="Bsm-nB-r9k" id="0WJ-LN-pMK"/>
                         <outlet property="listenPlayButton" destination="Mii-eB-pFC" id="dKi-X9-j2l"/>
+                        <outlet property="listenSkipButton" destination="Bsm-nB-r9k" id="BHw-4D-O5w"/>
                         <outlet property="speakPlayButton" destination="xFe-0H-3dO" id="e1F-Ap-2wk"/>
                         <outlet property="speakProgress" destination="np4-gO-URg" id="vyw-lA-hla"/>
                         <outlet property="speakRecordButton" destination="DKM-HO-TJd" id="4V0-sr-o1K"/>

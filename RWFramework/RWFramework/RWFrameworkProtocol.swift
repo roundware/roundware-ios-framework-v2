@@ -60,9 +60,9 @@ import CoreLocation
     @objc optional func rwPostStreamsIdHeartbeatFailure(_ error: NSError?)
 
     /// Sent after the server successfully advances to the next sound in the stream
-    @objc optional func rwPostStreamsIdNextSuccess(_ data: Data?)
+    @objc optional func rwPostStreamsIdSkipSuccess(_ data: Data?)
     /// Sent in the case that advancing to the next sound in the stream fails
-    @objc optional func rwPostStreamsIdNextFailure(_ error: NSError?)
+    @objc optional func rwPostStreamsIdSkipFailure(_ error: NSError?)
 
     /// Sent after the server successfully gets the current asset ID in the stream
     @objc optional func rwGetStreamsIdCurrentSuccess(_ data: Data?)
@@ -332,34 +332,18 @@ extension RWFramework {
         }
     }
 
-    func rwPostStreamsIdNextSuccess(_ data: Data?) {
+    func rwPostStreamsIdSkipSuccess(_ data: Data?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwPostStreamsIdNextSuccess?(data) }
+            self.dam { rwfp.rwPostStreamsIdSkipSuccess?(data) }
         }
     }
 
-    func rwPostStreamsIdNextFailure(_ error: NSError?) {
+    func rwPostStreamsIdSkipFailure(_ error: NSError?) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwPostStreamsIdNextFailure != nil) {
-                self.dam { rwfp.rwPostStreamsIdNextFailure?(error) }
+            if (rwfp.rwPostStreamsIdSkipFailure != nil) {
+                self.dam { rwfp.rwPostStreamsIdSkipFailure?(error) }
             } else {
-                self.alertOK(self.LS("RWFramework - rwPostStreamsIdNextFailure"), message: error!.localizedDescription)
-            }
-        }
-    }
-
-    func rwGetStreamsIdCurrentSuccess(_ data: Data?) {
-        protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwGetStreamsIdCurrentSuccess?(data) }
-        }
-    }
-
-    func rwGetStreamsIdCurrentFailure(_ error: NSError?) {
-        protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwGetStreamsIdCurrentFailure != nil) {
-                self.dam { rwfp.rwGetStreamsIdCurrentFailure?(error) }
-            } else {
-                self.alertOK(self.LS("RWFramework - rwGetStreamsIdCurrentFailure"), message: error!.localizedDescription)
+                self.alertOK(self.LS("RWFramework - rwPostStreamsIdSkipFailure"), message: error!.localizedDescription)
             }
         }
     }

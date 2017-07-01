@@ -74,13 +74,8 @@ extension RWFramework {
     }
 
     /// Next audio
-    public func next() {
-        apiPostStreamsIdNext()
-    }
-
-    /// Current audio
-    public func current() {
-        apiGetStreamsIdCurrent()
+    public func skip() {
+        apiPostStreamsIdSkip()
     }
 
 }

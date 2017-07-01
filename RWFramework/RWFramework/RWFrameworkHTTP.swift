@@ -98,21 +98,12 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
-    func httpPostStreamsIdNext(_ stream_id: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
-        if let url = URL(string: RWFrameworkURLFactory.postStreamsIdNextURL(stream_id)) {
+    func httpPostStreamsIdSkip(_ stream_id: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        if let url = URL(string: RWFrameworkURLFactory.postStreamsIdSkipURL(stream_id)) {
             let postData = [:] as Dictionary<String, String>
             postDataToURL(url, postData: postData, completion: completion)
         } else {
-            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsIdNextURL unable to be created."])
-            completion(nil, error)
-        }
-    }
-
-    func httpGetStreamsIdCurrent(_ stream_id: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
-        if let url = URL(string: RWFrameworkURLFactory.getStreamsIdCurrentURL(stream_id)) {
-            getDataFromURL(url, completion: completion)
-        } else {
-            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "getStreamsIdCurrentURL unable to be created."])
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsIdSkipURL unable to be created."])
             completion(nil, error)
         }
     }
