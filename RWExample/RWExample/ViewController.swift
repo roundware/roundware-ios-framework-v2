@@ -157,7 +157,7 @@ extension ViewController: RWFrameworkProtocol {
 
 
             // Get all assets for the project, can filter by adding other keys to dict as documented for GET api/2/assets/
-            let project_id = projectData["project_id"] as! NSNumber
+            let project_id = projectData["id"] as! NSNumber
             let dict: [String:String] = ["project_id": project_id.stringValue]
             rwf.apiGetAssets(dict, success: { (data) -> Void in
                 if (data != nil) {

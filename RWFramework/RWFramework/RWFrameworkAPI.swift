@@ -160,33 +160,6 @@ extension RWFramework {
         }
     }
 
-// MARK: GET projects id uigroups
-    
-    func apiGetProjectsIdUIGroups(_ project_id: NSNumber) {
-        httpGetProjectsIdUIGroups(project_id) { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                self.getProjectsIdUIGroupsSuccess(data!, project_id: project_id)
-                self.rwGetProjectsIdUIGroupsSuccess(data)
-            } else if (error != nil) {
-                self.rwGetProjectsIdUIGroupsFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiGetProjectsIdUIGroups")
-            }
-        }
-    }
-    
-    func getProjectsIdUIGroupsSuccess(_ data: Data, project_id: NSNumber) {
-        do {
-            
-            let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
-            
-            
-            getProjectsIdUIGroupsSucceeded = true
-        }
-        catch {
-            print(error)
-        }
-    }
-
 // MARK: GET projects id tags
 
     func apiGetProjectsIdTags(_ project_id: NSNumber) {
@@ -242,6 +215,8 @@ extension RWFramework {
                 } // TODO: Handle missing value
 
                 getProjectsIdTagsSucceeded = true
+                
+                apiGetProjectsIdUIGroups(project_id)
             }
         }
         catch {
@@ -249,6 +224,25 @@ extension RWFramework {
         }
     }
 
+    // MARK: GET projects id uigroups
+    
+    func apiGetProjectsIdUIGroups(_ project_id: NSNumber) {
+        httpGetProjectsIdUIGroups(project_id) { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                self.getProjectsIdUIGroupsSuccess(data!, project_id: project_id)
+                self.rwGetProjectsIdUIGroupsSuccess(data)
+            } else if (error != nil) {
+                self.rwGetProjectsIdUIGroupsFailure(error)
+                self.apiProcessError(data, error: error!, caller: "apiGetProjectsIdUIGroups")
+            }
+        }
+    }
+    
+    func getProjectsIdUIGroupsSuccess(_ data: Data, project_id: NSNumber) {
+        UserDefaults.standard.set(data, forKey: "ui_groups")
+        getProjectsIdUIGroupsSucceeded = true
+    }
+    
 // MARK: POST streams
 
     func apiPostStreams() {
@@ -338,9 +332,7 @@ extension RWFramework {
     }
 
     func patchStreamsIdSuccess(_ data: Data) {
-        //let dict = JSON(data: data)
-//        println(dict)
-        // does nothing for now
+
     }
 
 // MARK: POST streams id heartbeat
@@ -361,9 +353,7 @@ extension RWFramework {
     }
 
     func postStreamsIdHeartbeatSuccess(_ data: Data) {
-        //let dict = JSON(data: data)
-//        println(dict)
-        // does nothing for now
+
     }
 
 // MARK: POST streams id next
@@ -384,9 +374,7 @@ extension RWFramework {
     }
 
     func postStreamsIdNextSuccess(_ data: Data) {
-        //let dict = JSON(data: data)
-//        println(dict)
-        // does nothing for now
+
     }
 
 // MARK: GET streams id current
@@ -407,9 +395,7 @@ extension RWFramework {
     }
 
     func getStreamsIdCurrentSuccess(_ data: Data) {
-        //let dict = JSON(data: data)
-//        println(dict)
-        // does nothing for now
+
     }
 
 // MARK: POST envelopes

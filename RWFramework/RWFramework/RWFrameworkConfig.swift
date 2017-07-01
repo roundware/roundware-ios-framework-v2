@@ -157,8 +157,8 @@ open class RWFrameworkConfig {
 
         // If nothing found, use local defaults
         if let defaults = self.defaults {
-            if let value: AnyObject = defaults.value(forKey: key) as? AnyObject {
-                return value
+            if let value = defaults.value(forKey: key) {
+                return value as AnyObject
             } else {
                 return nil
             }
