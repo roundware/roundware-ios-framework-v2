@@ -164,7 +164,7 @@ private lazy var __once: () = { () -> Void in
             object: nil)
     }
 
-    func handleAudioInterruption(_ notification: Notification) {
+    @objc func handleAudioInterruption(_ notification: Notification) {
         if notification.name != NSNotification.Name.AVAudioSessionInterruption
             || notification.userInfo == nil {
             return

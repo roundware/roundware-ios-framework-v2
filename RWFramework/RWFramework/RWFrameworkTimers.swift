@@ -12,7 +12,7 @@ extension RWFramework {
 
 // MARK: - Heartbeat
 
-    func heartbeatTimer(_ timer: Timer) {
+    @objc func heartbeatTimer(_ timer: Timer) {
         if (requestStreamSucceeded == false) { return }
 
         let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
@@ -31,7 +31,7 @@ extension RWFramework {
 
 // MARK: - Audio
 
-    func audioTimer(_ timer: Timer) {
+    @objc func audioTimer(_ timer: Timer) {
         var percentage: Double = 0
         if !useComplexRecordingMechanism && isRecording() {
             let max_recording_length = RWFrameworkConfig.getConfigValueAsNumber("max_recording_length").doubleValue
@@ -68,7 +68,7 @@ extension RWFramework {
 
 // MARK: - Upload
 
-    func uploadTimer(_ timer: Timer) {
+    @objc func uploadTimer(_ timer: Timer) {
         mediaUploader()
     }
 

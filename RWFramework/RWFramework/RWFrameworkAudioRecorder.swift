@@ -143,7 +143,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
                 let exportSession = AVAssetExportSession(asset: audioAsset, presetName: AVAssetExportPresetMediumQuality)
         
                 exportSession!.outputURL = outputURL
-                exportSession!.outputFileType = AVFileTypeQuickTimeMovie
+                exportSession!.outputFileType = AVFileType.mov
                 exportSession!.exportAsynchronously { () -> Void in
                     if (exportSession!.status == AVAssetExportSessionStatus.completed) {
                         self.println("file conversion success to \(outputURL)")
