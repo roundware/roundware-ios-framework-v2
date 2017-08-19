@@ -229,7 +229,6 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
         if let keyWindow = UIApplication.shared.keyWindow,
             let rootViewController = keyWindow.rootViewController {
             rootViewController.present(picker, animated: true, completion: { () -> Void in
-                UIApplication.shared.setStatusBarHidden(true, with: UIStatusBarAnimation.none)
             })
         }
     }
