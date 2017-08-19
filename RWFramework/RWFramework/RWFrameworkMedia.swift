@@ -59,7 +59,7 @@ extension RWFramework {
         static let allValues = [None, Hold, Ready, Uploading, UploadFailed, UploadCompleted]
     }
 
-    class Media: NSObject, NSCoding {
+    @objc(RWMedia)class Media: NSObject, NSCoding {
         var mediaType: MediaType = MediaType.None
         var mediaStatus: MediaStatus = MediaStatus.None
         var string: String = ""     // plain text for MediaType.Text, file path for MediaType.Audio, MediaType.Image and MediaType.Movie
