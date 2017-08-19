@@ -251,9 +251,9 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
         data.append("--\(boundary)--\r\n".data(using: String.Encoding.utf8, allowLossyConversion: false)!)
 
-        let uploadTask = session.uploadTask(with: request as URLRequest, from: data as Data, completionHandler: { (data: Data?, response: URLResponse?, error: NSError?) -> Void in
+        let uploadTask = session.uploadTask(with: request as URLRequest, from: data as Data) { (data: Data?, response: URLResponse?, error: Error?) in
             if let errorResponse = error {
-                completion(nil, errorResponse)
+                completion(nil, errorResponse as NSError)
             } else if let httpResponse = response as? HTTPURLResponse {
                 if httpResponse.statusCode == 200 {
                     completion(data, nil)
@@ -265,7 +265,7 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
                 let error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
                 completion(nil, error)
             }
-        } as! (Data?, URLResponse?, Error?) -> Void)
+        }
         uploadTask.resume()
     }
 
@@ -276,18 +276,25 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         let session = URLSession.shared
         let request = NSMutableURLRequest(url: url)
         request.httpMethod = "PATCH"
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "content-type")
 
         let token = RWFrameworkConfig.getConfigValueAsString("token", group: RWFrameworkConfig.ConfigGroup.client)
         if token.lengthOfBytes(using: String.Encoding.utf8) > 0 {
             request.addValue("token \(token)", forHTTPHeaderField: "Authorization")
         }
 
+#if USE_AMPERSAND_EQUALS
         var body = ""
         for (key, value) in postData {
             body += "\(key)=\(value)&"
         }
         request.httpBody = body.data(using: String.Encoding.utf8, allowLossyConversion: false)
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+#else
+        let jsonData = try? JSONSerialization.data(withJSONObject: postData)
+        request.httpBody = jsonData
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+#endif
+
         let loadDataTask = session.dataTask(with: request as URLRequest) { (data, response, error) -> Void in
             if let errorResponse = error {
                 completion(nil, errorResponse as NSError)
@@ -325,6 +332,7 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
             body += "\(key)=\(value)&"
         }
         request.httpBody = body.data(using: String.Encoding.utf8, allowLossyConversion: false)
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
 #else
         let jsonData = try? JSONSerialization.data(withJSONObject: postData)
         request.httpBody = jsonData

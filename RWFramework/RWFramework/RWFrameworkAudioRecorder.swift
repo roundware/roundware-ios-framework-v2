@@ -23,7 +23,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
         let r = arc4random()
         let recorded_file_name = RWFrameworkConfig.getConfigValueAsString("recorded_file_name")
 // TBD        let recordedFilePath = NSTemporaryDirectory().stringByAppendingPathComponent("\(r)_\(recorded_file_name)")
-        let recordedFilePath = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("\(r)_\(recorded_file_name)").absoluteString
+        let recordedFilePath = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("\(r)_\(recorded_file_name)").path
 
         do {
             try FileManager.default.moveItem(atPath: soundFilePath(), toPath: recordedFilePath)
@@ -56,10 +56,18 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     /// Return the path to the recorded sound file
     func soundFilePath() -> String {
         let recorded_file_name = RWFrameworkConfig.getConfigValueAsString("recorded_file_name")
-// TBD        let soundFilePath = NSTemporaryDirectory().stringByAppendingPathComponent(recorded_file_name)
+        // TBD        let soundFilePath = NSTemporaryDirectory().stringByAppendingPathComponent(recorded_file_name)
         let soundFilePath = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(recorded_file_name)
         println(soundFilePath)
-        return (soundFilePath.absoluteString)
+        return (soundFilePath.path)
+    }
+
+    func soundFilePathURL() -> URL {
+        let recorded_file_name = RWFrameworkConfig.getConfigValueAsString("recorded_file_name")
+        // TBD        let soundFilePath = NSTemporaryDirectory().stringByAppendingPathComponent(recorded_file_name)
+        let soundFileURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(recorded_file_name)
+        println(soundFileURL)
+        return (soundFileURL)
     }
 
     /// Return true if the framework can record audio
@@ -123,10 +131,12 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
             logToServer("stop_record")
 
             let soundFileURL = rwfar?.outputURL // caf file
-            let outputURL = URL(fileURLWithPath: soundFilePath()) // soon to be m4a
+            let outputURL = soundFilePathURL() // soon to be m4a
 
             do {
-                _ = try FileManager.default.removeItem(atPath: soundFilePath())
+                if (FileManager.default.fileExists(atPath: soundFilePath())) {
+                    _ = try FileManager.default.removeItem(atPath: soundFilePath())
+                }
 
                 let options = ["AVURLAssetPreferPreciseDurationAndTimingKey": true]
                 let audioAsset = AVURLAsset(url: soundFileURL!, options: options)
@@ -162,7 +172,8 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
 
             let rwfar = RWFrameworkAudioRecorder.sharedInstance()
             let soundFileURL = rwfar?.outputURL
-
+            if (soundFileURL == nil) { return }
+            
             do {
                 soundPlayer = try AVAudioPlayer(contentsOf: soundFileURL!)
                 soundPlayer!.delegate = self
