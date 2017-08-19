@@ -111,8 +111,8 @@ class ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        let rwf = RWFramework.sharedInstance
-        print(rwf.debugInfo())
+        //let rwf = RWFramework.sharedInstance
+        //print(rwf.debugInfo())
     }
 
     override func didReceiveMemoryWarning() {
