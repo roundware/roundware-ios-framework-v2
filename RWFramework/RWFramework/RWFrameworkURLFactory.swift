@@ -9,9 +9,9 @@
 import Foundation
 import CoreLocation
 
-public class RWFrameworkURLFactory {
+open class RWFrameworkURLFactory {
 
-    private class func api2() -> String {
+    fileprivate class func api2() -> String {
         return "api/2/"
     }
 
@@ -23,43 +23,43 @@ public class RWFrameworkURLFactory {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "sessions/"
     }
 
-    class func getProjectsIdURL(project_id: String, session_id: String) -> String {
-        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "projects/" + project_id + "/?session_id=" + session_id
+    class func getProjectsIdURL(_ project_id: NSNumber, session_id: NSNumber) -> String {
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "projects/" + project_id.stringValue + "/?session_id=" + session_id.stringValue
     }
 
-    class func getProjectsIdTagsURL(project_id: String, session_id: String) -> String {
-        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "projects/" + project_id + "/tags/?session_id=" + session_id
+    class func getProjectsIdTagsURL(_ project_id: NSNumber) -> String {
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "projects/" + project_id.stringValue + "/tags/"
+    }
+    
+    class func getProjectsIdUIGroupsURL(_ project_id: NSNumber) -> String {
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "projects/" + project_id.stringValue + "/uigroups/"
     }
 
     class func postStreamsURL() -> String {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "streams/"
     }
 
-    class func patchStreamsIdURL(stream_id: String) -> String {
+    class func patchStreamsIdURL(_ stream_id: String) -> String {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "streams/" + stream_id + "/"
     }
 
-    class func postStreamsIdHeartbeatURL(stream_id: String) -> String {
+    class func postStreamsIdHeartbeatURL(_ stream_id: String) -> String {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "streams/" + stream_id + "/heartbeat/"
     }
 
-    class func postStreamsIdNextURL(stream_id: String) -> String {
-        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "streams/" + stream_id + "/next/"
-    }
-
-    class func getStreamsIdCurrentURL(stream_id: String) -> String {
-        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "streams/" + stream_id + "/current/"
+    class func postStreamsIdSkipURL(_ stream_id: String) -> String {
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "streams/" + stream_id + "/skip/"
     }
 
     class func postEnvelopesURL() -> String {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "envelopes/"
     }
 
-    class func patchEnvelopesIdURL(envelope_id: String) -> String {
+    class func patchEnvelopesIdURL(_ envelope_id: String) -> String {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "envelopes/" + envelope_id + "/"
     }
 
-    class func getAssetsURL(dict: [String:String]) -> String {
+    class func getAssetsURL(_ dict: [String:String]) -> String {
         var url = RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "assets/"
         if (dict.count > 0) {
             url += "?"
@@ -70,15 +70,15 @@ public class RWFrameworkURLFactory {
         return url
     }
 
-    class func getAssetsIdURL(asset_id: String) -> String {
+    class func getAssetsIdURL(_ asset_id: String) -> String {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "assets/" + asset_id + "/"
     }
 
-    class func postAssetsIdVotesURL(asset_id: String) -> String {
+    class func postAssetsIdVotesURL(_ asset_id: String) -> String {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "assets/" + asset_id + "/votes/"
     }
 
-    class func getAssetsIdVotesURL(asset_id: String) -> String {
+    class func getAssetsIdVotesURL(_ asset_id: String) -> String {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "assets/" + asset_id + "/votes/"
     }
 

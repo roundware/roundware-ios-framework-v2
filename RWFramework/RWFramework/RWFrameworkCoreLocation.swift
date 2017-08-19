@@ -12,9 +12,9 @@ import CoreLocation
 extension RWFramework: CLLocationManagerDelegate {
 
     /// This is called at app startup and also after permission has changed
-    public func locationManager(manager: CLLocationManager!, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
-        if status == CLAuthorizationStatus.AuthorizedAlways || status == CLAuthorizationStatus.AuthorizedWhenInUse {
-            var geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
+    public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        if status == CLAuthorizationStatus.authorizedAlways || status == CLAuthorizationStatus.authorizedWhenInUse {
+            let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
             if (geo_listen_enabled) {
                 locationManager.startUpdatingLocation()
             }
@@ -24,12 +24,12 @@ extension RWFramework: CLLocationManagerDelegate {
     }
 
     /// Called by the CLLocationManager when location has been updated
-    public func locationManager(manager: CLLocationManager!, didUpdateLocations locations: [AnyObject]!) {
+    public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         // println("locationManager didUpdateLocations \(locations)")
 
         captureLastRecordedLocation()
 
-        var listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
+        let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
         if (listen_enabled) {
             let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
             if (geo_listen_enabled && requestStreamInProgress == false && requestStreamSucceeded == false) {
@@ -50,11 +50,11 @@ extension RWFramework: CLLocationManagerDelegate {
     }
 
     /// Called by the CLLocationManager when location update has failed
-    public func locationManager(manager: CLLocationManager!, didFailWithError error: NSError!) {
+    public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         println("locationManager didFailWithError \(error)")
     }
 
-    /// If you pass false for letFrameworkRequestWhenInUseAuthorizationForLocation in the framework's start() method then you can call method this anytime after rwGetProjectsIdSuccess is called in roder to request in use location authorization from the user. This method returns true if the request will be made, false otherwise.
+    /// If you pass false for letFrameworkRequestWhenInUseAuthorizationForLocation in the framework's start() method then you can call method this anytime after rwGetProjectsIdSuccess is called in order to request in use location authorization from the user. This method returns true if the request will be made, false otherwise.
     public func requestWhenInUseAuthorizationForLocation() -> Bool {
         let geo_image_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_image_enabled")
         let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
@@ -62,7 +62,7 @@ extension RWFramework: CLLocationManagerDelegate {
         let shouldMakeTheRequest = geo_listen_enabled || geo_speak_enabled || geo_image_enabled
         if (shouldMakeTheRequest) {
             locationManager.distanceFilter = RWFrameworkConfig.getConfigValueAsNumber("distance_filter_in_meters").doubleValue
-            if CLLocationManager.authorizationStatus() == .NotDetermined {
+            if CLLocationManager.authorizationStatus() == .notDetermined {
                 locationManager.requestWhenInUseAuthorization()
             }
         }
@@ -75,7 +75,7 @@ extension RWFramework: CLLocationManagerDelegate {
             let fakeLocation: CLLocation = CLLocation(latitude: 1.0, longitude: 1.0)
             lastRecordedLocation = fakeLocation
         #else
-            lastRecordedLocation = locationManager.location
+            lastRecordedLocation = locationManager.location!
         #endif
     }
 }

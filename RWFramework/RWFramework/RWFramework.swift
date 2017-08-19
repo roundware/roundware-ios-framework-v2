@@ -15,12 +15,17 @@ import SystemConfiguration
 
 private let _RWFrameworkSharedInstance = RWFramework()
 
-public class RWFramework: NSObject {
+open class RWFramework: NSObject {
+
+private lazy var __once: () = { () -> Void in
+                    self.println("Submitting Listen Tags (timeToSendTheListenTags)")
+                    self.submitListenTags()
+                }()
 
 // MARK: Properties
 
     /// A list of delegates that conform to RWFrameworkProtocol (see RWFrameworkProtocol.swift)
-    public var delegates: NSHashTable = NSHashTable.weakObjectsHashTable()
+    open var delegates: NSHashTable<AnyObject> = NSHashTable.weakObjects()
 
     // Location (see RWFrameworkCoreLocation.swift)
     let locationManager: CLLocationManager = CLLocationManager()
@@ -28,18 +33,18 @@ public class RWFramework: NSObject {
     var letFrameworkRequestWhenInUseAuthorizationForLocation = true
 
     // Audio - Stream (see RWFrameworkAudioPlayer.swift)
-    var streamURL: NSURL? = nil
+    var streamURL: URL? = nil
     var streamID = 0
     var player: AVPlayer? = nil {
         willSet {
             self.player?.currentItem?.removeObserver(self, forKeyPath: "timedMetadata")
         }
         didSet {
-            self.player?.currentItem?.addObserver(self, forKeyPath: "timedMetadata", options: NSKeyValueObservingOptions.New, context: nil)
+            self.player?.currentItem?.addObserver(self, forKeyPath: "timedMetadata", options: NSKeyValueObservingOptions.new, context: nil)
         }
     }
     /// True if the player (streamer) is currently playing (streaming)
-    public var isPlaying = false
+    open var isPlaying = false
 
     // Audio - Record (see RWFrameworkAudioRecorder.swift)
     /// RWFrameworkAudioRecorder.swift calls code in RWFrameworkAudioRecorder.m to perform recording when true
@@ -50,8 +55,8 @@ public class RWFramework: NSObject {
     // Media - Audio/Text/Image/Movie (see RWFrameworkMedia.swift)
     var mediaArray: Array<Media> = Array<Media>() {
         willSet {
-            let data = NSKeyedArchiver.archivedDataWithRootObject(newValue)
-            RWFrameworkConfig.setConfigValue("mediaArray", value: data, group: RWFrameworkConfig.ConfigGroup.Client)
+            let data = NSKeyedArchiver.archivedData(withRootObject: newValue)
+            RWFrameworkConfig.setConfigValue("mediaArray", value: data as AnyObject, group: RWFrameworkConfig.ConfigGroup.client)
         }
         didSet {
             rwUpdateApplicationIconBadgeNumber(mediaArray.count)
@@ -69,6 +74,7 @@ public class RWFramework: NSObject {
             }
         }
     }
+    var getProjectsIdUIGroupsSucceeded = false
     var requestStreamInProgress = false
     var requestStreamSucceeded = false {
         didSet {
@@ -77,22 +83,19 @@ public class RWFramework: NSObject {
             }
         }
     }
-    var timeToSendTheListenTagsOnceToken: dispatch_once_t = 0
+    var timeToSendTheListenTagsOnceToken: Int = 0
     var timeToSendTheListenTags = false {
         didSet {
             if timeToSendTheListenTags {
-                dispatch_once(&timeToSendTheListenTagsOnceToken, { () -> Void in
-                    self.println("Submitting Listen Tags (timeToSendTheListenTags)")
-                    self.submitListenTags()
-                })
+                _ = self.__once
             }
         }
     }
 
     // Timers (see RWFrameworkTimers.swift)
-    var heartbeatTimer: NSTimer? = nil
-    var audioTimer: NSTimer? = nil
-    var uploadTimer: NSTimer? = nil
+    var heartbeatTimer: Timer? = nil
+    var audioTimer: Timer? = nil
+    var uploadTimer: Timer? = nil
 
     // Media - Upload (see RWFrameworkMediaUploader.swift)
     var uploaderActive: Bool = true
@@ -104,11 +107,11 @@ public class RWFramework: NSObject {
 // MARK: - Main
 
     /// Returns the shared instance of the framework
-    public class var sharedInstance: RWFramework {
+    open class var sharedInstance: RWFramework {
         return _RWFrameworkSharedInstance
     }
 
-    private override init() {
+    fileprivate override init() {
         super.init()
 
         #if DEBUG
@@ -121,7 +124,7 @@ public class RWFramework: NSObject {
         locationManager.delegate = self
         locationManager.distanceFilter = kCLDistanceFilterNone // This is updated later once getProjectsIdSuccess is called
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.activityType = CLActivityType.Fitness
+        locationManager.activityType = CLActivityType.fitness
         locationManager.pausesLocationUpdatesAutomatically = true
 
         addAudioInterruptionNotification()
@@ -133,20 +136,20 @@ public class RWFramework: NSObject {
 
     /// Start kicks everything else off - call this to start the framework running.
     /// Pass false for letFrameworkRequestWhenInUseAuthorizationForLocation if the caller would rather call requestWhenInUseAuthorizationForLocation() any time after rwGetProjectsIdSuccess is called.
-    public func start(letFrameworkRequestWhenInUseAuthorizationForLocation: Bool = true) {
+    open func start(_ letFrameworkRequestWhenInUseAuthorizationForLocation: Bool = true) {
         if (!compatibleOS()) { println("RWFramework requires iOS 8 or later"); return }
         if (!hostIsReachable()) { println("RWFramework requires network connectivity"); return }
 
         self.letFrameworkRequestWhenInUseAuthorizationForLocation = letFrameworkRequestWhenInUseAuthorizationForLocation
 
         println("start")
-        apiPostUsers(UIDevice().identifierForVendor.UUIDString, client_type: UIDevice().model)
+        apiPostUsers(UIDevice().identifierForVendor!.uuidString, client_type: UIDevice().model, client_system: clientSystem())
 
         preflightRecording()
     }
 
     /// Call this if you know you are done with the framework
-    public func end() {
+    open func end() {
         removeAllDelegates()
         println("end")
     }
@@ -155,14 +158,14 @@ public class RWFramework: NSObject {
 // MARK: - AVAudioSession
 
     func addAudioInterruptionNotification() {
-        NSNotificationCenter.defaultCenter().addObserver(self,
-            selector: "handleAudioInterruption:",
-            name: AVAudioSessionInterruptionNotification,
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(RWFramework.handleAudioInterruption(_:)),
+            name: NSNotification.Name.AVAudioSessionInterruption,
             object: nil)
     }
 
-    func handleAudioInterruption(notification: NSNotification) {
-        if notification.name != AVAudioSessionInterruptionNotification
+    @objc func handleAudioInterruption(_ notification: Notification) {
+        if notification.name != NSNotification.Name.AVAudioSessionInterruption
             || notification.userInfo == nil {
             return
         }
@@ -171,13 +174,13 @@ public class RWFramework: NSObject {
         (info[AVAudioSessionInterruptionTypeKey] as! NSValue).getValue(&intValue)
         if let type = AVAudioSessionInterruptionType(rawValue: intValue) {
             switch type {
-            case .Began:
+            case .began:
                 // interruption began
                 println("handleAudioInterruption began")
                 pause()
                 stopPlayback()
                 stopRecording()
-            case .Ended:
+            case .ended:
                 // interruption ended
                 println("handleAudioInterruption ended")
             }
@@ -188,49 +191,49 @@ public class RWFramework: NSObject {
 
     /// Returns true if the framework is running on a compatible OS
     func compatibleOS() -> Bool {
-        var iOS8OrLater: Bool = NSProcessInfo().isOperatingSystemAtLeastVersion(NSOperatingSystemVersion(majorVersion: 8, minorVersion: 0, patchVersion: 0))
+        let iOS8OrLater: Bool = ProcessInfo().isOperatingSystemAtLeast(OperatingSystemVersion(majorVersion: 8, minorVersion: 0, patchVersion: 0))
         return iOS8OrLater
     }
 
     /// This method will try to call through to the delegate first, if not it will fall back (via rwUpdateStatus) to displaying an alert
-    func alertOK(title: String, message: String) {
+    func alertOK(_ title: String, message: String) {
         rwUpdateStatus(title + ": " + message)
     }
 
     /// Shorthand for NSLocalizedString
-    func LS(key: String) -> String {
+    func LS(_ key: String) -> String {
         return NSLocalizedString(key, comment: "")
     }
 
-    /// Return the client string as "iPhone OS-8.3" or similar
+    /// Return the client string as "iOS 8.3" or similar
     func clientSystem() -> String {
         let systemName = UIDevice().systemName
         let systemVersion = UIDevice().systemVersion
-        return "\(systemName)-\(systemVersion)"
+        return "\(systemName) \(systemVersion)"
     }
 
     /// Return the preferred language of the device
     func preferredLanguage() -> String {
-        return NSLocale.preferredLanguages()[0] as! String
+        return Locale.preferredLanguages[0] 
     }
 
     /// Convert a Double to a String but return an empty string if the Double is 0
-    func doubleToStringWithZeroAsEmptyString(d: Double) -> String {
+    func doubleToStringWithZeroAsEmptyString(_ d: Double) -> String {
         return (d == 0) ? "" : d.description
     }
 
     /// println when debugging
-    func println(object: Any) {
-        debugPrintln(object)
+    func println(_ object: Any) {
+        debugPrint(object)
     }
 
     /// Generic logging method
-    func log<T>(object: T) {
+    func log<T>(_ object: T) {
         println(object)
     }
 
     /// Log to server
-    public func logToServer(event_type: String, data: String? = "") {
+    open func logToServer(_ event_type: String, data: String? = "") {
         apiPostEvents(event_type, data: data, success: { (data) -> Void in
             self.println("LOGGED TO SERVER: \(event_type)")
         }) { (error) -> Void in
@@ -239,25 +242,27 @@ public class RWFramework: NSObject {
     }
 
     /// Return true if we have a network connection
-    func hostIsReachable(ip_address: String = "8.8.8.8") -> Bool {
-        if let host_name = ip_address.cStringUsingEncoding(NSASCIIStringEncoding) {
-            let reachability  = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, host_name).takeRetainedValue()
-            var flags: SCNetworkReachabilityFlags = 0
-            if SCNetworkReachabilityGetFlags(reachability, &flags) == 0 {
-                return false
-            }
-            let isReachable = (flags & UInt32(kSCNetworkFlagsReachable)) != 0
-            let needsConnection = (flags & UInt32(kSCNetworkFlagsConnectionRequired)) != 0
-            return (isReachable && !needsConnection)
-        }
-        return false
+    func hostIsReachable(_ ip_address: String = "8.8.8.8") -> Bool {
+        return true
+// TODO: FIX
+//        if let host_name = ip_address.cStringUsingEncoding(NSASCIIStringEncoding) {
+//            let reachability  = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, host_name).takeRetainedValue()
+//            var flags: SCNetworkReachabilityFlags = 0
+//            if SCNetworkReachabilityGetFlags(reachability, &flags) == 0 {
+//                return false
+//            }
+//            let isReachable = (flags & UInt32(kSCNetworkFlagsReachable)) != 0
+//            let needsConnection = (flags & UInt32(kSCNetworkFlagsConnectionRequired)) != 0
+//            return (isReachable && !needsConnection)
+//        }
+//        return false
     }
 
     /// Return debug information as plain text
-    public func debugInfo() -> String {
+    open func debugInfo() -> String {
         var s = ""
 
-        let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.Client).stringValue
+        let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client).stringValue
         let latitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.latitude)
         let longitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.longitude)
 

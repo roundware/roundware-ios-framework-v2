@@ -12,10 +12,13 @@ import AVFoundation
 extension RWFramework {
 
     /// This is set in the self.player's willSet/didSet
-    public override func observeValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutablePointer<Void>) {
-        //println("keyPath: \(keyPath) object: \(object) change: \(change)")
+    open override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        //println("keyPath: \(String(describing: keyPath)) object: \(String(describing: object)) change: \(String(describing: change))")
 
-        rwObserveValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
+        if let _ = keyPath, let _ = object, let _ = change {
+            // TODO: Fix crash here
+            //rwObserveValueForKeyPath(keyPath!, ofObject: object! as AnyObject, change: change!, context: context!)
+        }
 
 //        if (keyPath == "timedMetadata") {
 //            let newChange = change["new"] as! NSArray // NB: change may be nil when backgrounding - TOFIX
@@ -35,7 +38,7 @@ extension RWFramework {
     /// Create an AVPlayer to play the stream
     func createPlayer() {
         if (streamURL == nil) { return }
-        player = AVPlayer.playerWithURL(streamURL!) as? AVPlayer
+        player = AVPlayer(url: streamURL! as URL)
     }
 
     /// Destroy the AVPlayer
@@ -71,13 +74,8 @@ extension RWFramework {
     }
 
     /// Next audio
-    public func next() {
-        apiPostStreamsIdNext()
-    }
-
-    /// Current audio
-    public func current() {
-        apiGetStreamsIdCurrent()
+    public func skip() {
+        apiPostStreamsIdSkip()
     }
 
 }

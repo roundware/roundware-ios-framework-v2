@@ -167,13 +167,13 @@ extension JSON: SequenceType{
     
     :returns: Return a *generator* over the elements of this *sequence*.
     */
-    public func generate() -> GeneratorOf <(String, JSON)> {
+    public func generate() -> AnyGenerator <(String, JSON)> {
         switch self.type {
         case .Array:
             let array_ = object as! [AnyObject]
             var generate_ = array_.generate()
             var index_: Int = 0
-            return GeneratorOf<(String, JSON)> {
+            return AnyGenerator<(String, JSON)> {
                 if let element_: AnyObject = generate_.next() {
                     return ("\(index_++)", JSON(element_))
                 } else {
@@ -183,7 +183,7 @@ extension JSON: SequenceType{
         case .Dictionary:
             let dictionary_ = object as! [String : AnyObject]
             var generate_ = dictionary_.generate()
-            return GeneratorOf<(String, JSON)> {
+            return AnyGenerator<(String, JSON)> {
                 if let (key_: String, value_: AnyObject) = generate_.next() {
                     return (key_, JSON(value_))
                 } else {
@@ -191,7 +191,7 @@ extension JSON: SequenceType{
                 }
             }
         default:
-            return GeneratorOf<(String, JSON)> {
+            return AnyGenerator<(String, JSON)> {
                 return nil
             }
         }
@@ -212,7 +212,7 @@ extension String: SubscriptType {}
 extension JSON {
     
     /// If `type` is `.Array`, return json which's object is `array[index]`, otherwise return null json with error.
-    private subscript(#index: Int) -> JSON {
+    private subscript(,#index: Int) -> JSON {
         get {
             
             if self.type != .Array {
@@ -243,7 +243,7 @@ extension JSON {
     }
 
     /// If `type` is `.Dictionary`, return json which's object is `dictionary[key]` , otherwise return null json with error.
-    private subscript(#key: String) -> JSON {
+    private subscript(,#key: String) -> JSON {
         get {
             var returnJSON = JSON.nullJSON
             if self.type == .Dictionary {
@@ -267,7 +267,7 @@ extension JSON {
     }
     
     /// If `sub` is `Int`, return `subscript(index:)`; If `sub` is `String`,  return `subscript(key:)`.
-    private subscript(#sub: SubscriptType) -> JSON {
+    private subscript(,#sub: SubscriptType) -> JSON {
         get {
             if sub is String {
                 return self[key:sub as! String]
@@ -432,7 +432,7 @@ extension JSON: RawRepresentable {
 		return self.object
 	}
 
-    public func rawData(options opt: NSJSONWritingOptions = NSJSONWritingOptions(0), error: NSErrorPointer = nil) -> NSData? {
+    public func rawData(options opt: NSJSONWritingOptions = NSJSONWritingOptions(rawValue: 0), error: NSErrorPointer = nil) -> NSData? {
         return NSJSONSerialization.dataWithJSONObject(self.object, options: opt, error:error)
     }
     
@@ -460,7 +460,7 @@ extension JSON: RawRepresentable {
 
 // MARK: - Printable, DebugPrintable
 
-extension JSON: Printable, DebugPrintable {
+extension JSON: CustomStringConvertible, CustomDebugStringConvertible {
     
     public var description: String {
         if let string = self.rawString(options:.PrettyPrinted) {
@@ -1173,160 +1173,160 @@ public func >=(lhs: NSNumber, rhs: NSNumber) -> Bool {
 
 //MARK:- Unavailable
 
-@availability(*, unavailable, renamed="JSON")
+@available(*, unavailable, renamed="JSON")
 public typealias JSONValue = JSON
 
 extension JSON {
     
-    @availability(*, unavailable, message="use 'init(_ object:AnyObject)' instead")
+    @available(*, unavailable, message="use 'init(_ object:AnyObject)' instead")
     public init(object: AnyObject) {
         self = JSON(object)
     }
     
-    @availability(*, unavailable, renamed="dictionaryObject")
+    @available(*, unavailable, renamed="dictionaryObject")
     public var dictionaryObjects: [String : AnyObject]? {
         get { return self.dictionaryObject }
     }
     
-    @availability(*, unavailable, renamed="arrayObject")
+    @available(*, unavailable, renamed="arrayObject")
     public var arrayObjects: [AnyObject]? {
         get { return self.arrayObject }
     }
     
-    @availability(*, unavailable, renamed="int8")
+    @available(*, unavailable, renamed="int8")
     public var char: Int8? {
         get {
             return self.number?.charValue
         }
     }
     
-    @availability(*, unavailable, renamed="int8Value")
+    @available(*, unavailable, renamed="int8Value")
     public var charValue: Int8 {
         get {
             return self.numberValue.charValue
         }
     }
     
-    @availability(*, unavailable, renamed="uInt8")
+    @available(*, unavailable, renamed="uInt8")
     public var unsignedChar: UInt8? {
         get{
             return self.number?.unsignedCharValue
         }
     }
     
-    @availability(*, unavailable, renamed="uInt8Value")
+    @available(*, unavailable, renamed="uInt8Value")
     public var unsignedCharValue: UInt8 {
         get{
             return self.numberValue.unsignedCharValue
         }
     }
     
-    @availability(*, unavailable, renamed="int16")
+    @available(*, unavailable, renamed="int16")
     public var short: Int16? {
         get{
             return self.number?.shortValue
         }
     }
     
-    @availability(*, unavailable, renamed="int16Value")
+    @available(*, unavailable, renamed="int16Value")
     public var shortValue: Int16 {
         get{
             return self.numberValue.shortValue
         }
     }
     
-    @availability(*, unavailable, renamed="uInt16")
+    @available(*, unavailable, renamed="uInt16")
     public var unsignedShort: UInt16? {
         get{
             return self.number?.unsignedShortValue
         }
     }
     
-    @availability(*, unavailable, renamed="uInt16Value")
+    @available(*, unavailable, renamed="uInt16Value")
     public var unsignedShortValue: UInt16 {
         get{
             return self.numberValue.unsignedShortValue
         }
     }
     
-    @availability(*, unavailable, renamed="int")
+    @available(*, unavailable, renamed="int")
     public var long: Int? {
         get{
             return self.number?.longValue
         }
     }
     
-    @availability(*, unavailable, renamed="intValue")
+    @available(*, unavailable, renamed="intValue")
     public var longValue: Int {
         get{
             return self.numberValue.longValue
         }
     }
     
-    @availability(*, unavailable, renamed="uInt")
+    @available(*, unavailable, renamed="uInt")
     public var unsignedLong: UInt? {
         get{
             return self.number?.unsignedLongValue
         }
     }
     
-    @availability(*, unavailable, renamed="uIntValue")
+    @available(*, unavailable, renamed="uIntValue")
     public var unsignedLongValue: UInt {
         get{
             return self.numberValue.unsignedLongValue
         }
     }
     
-    @availability(*, unavailable, renamed="int64")
+    @available(*, unavailable, renamed="int64")
     public var longLong: Int64? {
         get{
             return self.number?.longLongValue
         }
     }
     
-    @availability(*, unavailable, renamed="int64Value")
+    @available(*, unavailable, renamed="int64Value")
     public var longLongValue: Int64 {
         get{
             return self.numberValue.longLongValue
         }
     }
     
-    @availability(*, unavailable, renamed="uInt64")
+    @available(*, unavailable, renamed="uInt64")
     public var unsignedLongLong: UInt64? {
         get{
             return self.number?.unsignedLongLongValue
         }
     }
     
-    @availability(*, unavailable, renamed="uInt64Value")
+    @available(*, unavailable, renamed="uInt64Value")
     public var unsignedLongLongValue: UInt64 {
         get{
             return self.numberValue.unsignedLongLongValue
         }
     }
     
-    @availability(*, unavailable, renamed="int")
+    @available(*, unavailable, renamed="int")
     public var integer: Int? {
         get {
             return self.number?.integerValue
         }
     }
     
-    @availability(*, unavailable, renamed="intValue")
+    @available(*, unavailable, renamed="intValue")
     public var integerValue: Int {
         get {
             return self.numberValue.integerValue
         }
     }
     
-    @availability(*, unavailable, renamed="uInt")
+    @available(*, unavailable, renamed="uInt")
     public var unsignedInteger: Int? {
         get {
             return self.number?.unsignedIntegerValue
         }
     }
     
-    @availability(*, unavailable, renamed="uIntValue")
+    @available(*, unavailable, renamed="uIntValue")
     public var unsignedIntegerValue: Int {
         get {
             return self.numberValue.unsignedIntegerValue
