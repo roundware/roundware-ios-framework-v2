@@ -205,9 +205,6 @@ extension RWFramework {
 
     func getProjectsIdTagsSuccess(_ data: Data, project_id: NSNumber) {
         do {
-            let reset_tag_defaults_on_startup = RWFrameworkConfig.getConfigValueAsBool("reset_tag_defaults_on_startup")
-            println("TODO: honor reset_tag_defaults_on_startup once uigroups are processed ("+reset_tag_defaults_on_startup.description+")")
-            
             // Save data to UserDefaults for later access
             UserDefaults.standard.set(data, forKey: "tags")
 
@@ -274,6 +271,9 @@ extension RWFramework {
             let decoder = JSONDecoder()
             let uiGroupsList = try decoder.decode(UIGroupsList.self, from: data)
             print("uiGroupsList.uiGroups.count = \(uiGroupsList.ui_groups.count)")
+
+            let reset_tag_defaults_on_startup = RWFrameworkConfig.getConfigValueAsBool("reset_tag_defaults_on_startup")
+            println("TODO: honor reset_tag_defaults_on_startup = \(reset_tag_defaults_on_startup.description)")
 
             getProjectsIdUIGroupsSucceeded = true
         }
