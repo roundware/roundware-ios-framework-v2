@@ -12,18 +12,18 @@ extension RWFramework {
 
     // Tags
     
-    struct Relationship: Codable {
+    public struct Relationship: Codable {
         var id: Int?
         var tag_id: Int?
         var parent_id: Int?
     }
     
-    struct Location: Codable {
+    public struct Location: Codable {
         var type: String?
         // TODO
     }
     
-    struct Tag: Codable {
+    public struct Tag: Codable {
         var id: Int
         var value: String?
         var description: String?
@@ -43,7 +43,7 @@ extension RWFramework {
 
     // UIGroups
     
-    struct UIItem: Codable {
+    public struct UIItem: Codable {
         var id: Int
         var index: Int
         var `default`: Bool // default is a keyword so include in `` to have it seen as not so
@@ -53,7 +53,7 @@ extension RWFramework {
         var parent_id: Int?
     }
     
-    struct UIGroup: Codable {
+    public struct UIGroup: Codable {
         var id: Int
         var name: String?
         var ui_mode: String?
@@ -102,8 +102,45 @@ extension RWFramework {
         return nil
     }
 
+    public func getTags(_ ui_mode: String) -> [Tag]? {
+        // Get tags and groups
+        if let uigroupslist = getUIGroupsList(), let taglist = getTagList() {
+            
+            // Create an empty array of tags that will be filled with all listen tags
+            var tags = [Tag]()
+            
+            // Iterate groups for ui_mode of the passed in parameter
+            for group in uigroupslist.ui_groups where group.ui_mode == ui_mode {
+                
+                // Verify that there are ui_items defined for any found group
+                guard let ui_items = group.ui_items else { continue }
+                
+                // Iterate the ui_items
+                for ui_item in ui_items {
+                    
+                    // Verify that there is a tag_id set for any found item
+                    if let tag_id = ui_item.tag_id {
+                        
+                        // Find the tag with that tag_id
+                        if let tag = taglist.tags.filter({$0.id == tag_id}).first {
+                            tags.append(tag)
+                        }
+                    }
+                }
+            }
+            guard tags.count > 0 else { return nil }
+            return tags
+        }
+        return nil
+    }
+
 // MARK: Listen Tags
 
+    public func getListenTags() -> [Tag]? {
+        return getTags("listen")
+    }
+    
+    
 //    /// Returns an array of dictionaries of listen information
 //    public func getListenTags() -> AnyObject? {
 //        return UserDefaults.standard.object(forKey: "tags_listen") as AnyObject?
@@ -154,6 +191,10 @@ extension RWFramework {
     }
 
 // MARK: Speak Tags
+
+    public func getSpeakTags() -> [Tag]? {
+        return getTags("speak")
+    }
 
 //    /// Returns an array of dictionaries of speak information
 //    public func getSpeakTags() -> AnyObject? {
