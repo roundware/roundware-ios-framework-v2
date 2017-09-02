@@ -133,6 +133,38 @@ extension RWFramework {
         }
         return nil
     }
+    
+    public func getDefaultTags(_ ui_mode: String) -> [Tag]? {
+        // Get tags and groups
+        if let uigroupslist = getUIGroupsList(), let taglist = getTagList() {
+            
+            // Create an empty array of tags that will be filled with all listen tags
+            var tags = [Tag]()
+            
+            // Iterate groups for ui_mode of the passed in parameter
+            for group in uigroupslist.ui_groups where group.ui_mode == ui_mode {
+                
+                // Verify that there are ui_items defined for any found group
+                guard let ui_items = group.ui_items else { continue }
+                
+                // Iterate the ui_items
+                for ui_item in ui_items {
+                    
+                    // Verify that there is a tag_id set for any found item and that it is set to be a default
+                    if let tag_id = ui_item.tag_id, ui_item.default == true {
+                        
+                        // Find the tag with that tag_id
+                        if let tag = taglist.tags.filter({$0.id == tag_id}).first {
+                            tags.append(tag)
+                        }
+                    }
+                }
+            }
+            guard tags.count > 0 else { return nil }
+            return tags
+        }
+        return nil
+    }
 
 // MARK: Listen Tags
 
@@ -140,7 +172,11 @@ extension RWFramework {
         return getTags("listen")
     }
     
+    public func getDefaultListenTags() -> [Tag]? {
+        return getDefaultTags("listen")
+    }
     
+
 //    /// Returns an array of dictionaries of listen information
 //    public func getListenTags() -> AnyObject? {
 //        return UserDefaults.standard.object(forKey: "tags_listen") as AnyObject?
@@ -194,6 +230,10 @@ extension RWFramework {
 
     public func getSpeakTags() -> [Tag]? {
         return getTags("speak")
+    }
+
+    public func getDefaultSpeakTags() -> [Tag]? {
+        return getDefaultTags("speak")
     }
 
 //    /// Returns an array of dictionaries of speak information

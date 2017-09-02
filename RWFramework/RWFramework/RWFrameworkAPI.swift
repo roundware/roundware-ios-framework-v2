@@ -200,6 +200,9 @@ extension RWFramework {
         // Save data to UserDefaults for later access
         UserDefaults.standard.set(data, forKey: "ui_groups")
         
+        let t = getDefaultListenTags()
+        println(t)
+        
         let reset_tag_defaults_on_startup = RWFrameworkConfig.getConfigValueAsBool("reset_tag_defaults_on_startup")
         println("TODO: honor reset_tag_defaults_on_startup = \(reset_tag_defaults_on_startup.description)")
 
