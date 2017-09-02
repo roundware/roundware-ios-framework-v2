@@ -175,21 +175,11 @@ extension RWFramework {
     }
     
     func getProjectsIdTagsSuccess(_ data: Data, project_id: NSNumber) {
-        do {
-            // Save data to UserDefaults for later access
-            UserDefaults.standard.set(data, forKey: "tags")
-
-            // Parse JSON to TagList
-            let decoder = JSONDecoder()
-            let taglist = try decoder.decode(TagList.self, from: data)
-            print("taglist.tags.count = \(taglist.tags.count)")
-            
-            getProjectsIdTagsSucceeded = true
-            apiGetProjectsIdUIGroups(project_id)
-        }
-        catch {
-            print(error)
-        }
+        // Save data to UserDefaults for later access
+        UserDefaults.standard.set(data, forKey: "tags")
+        
+        getProjectsIdTagsSucceeded = true
+        apiGetProjectsIdUIGroups(project_id)
     }
 
     // MARK: GET projects id uigroups
@@ -207,23 +197,13 @@ extension RWFramework {
     }
     
     func getProjectsIdUIGroupsSuccess(_ data: Data, project_id: NSNumber) {
-        do {
-            // Save data to UserDefaults for later access
-            UserDefaults.standard.set(data, forKey: "ui_groups")
-            
-            // Parse JSON to UIGroupsList
-            let decoder = JSONDecoder()
-            let uiGroupsList = try decoder.decode(UIGroupsList.self, from: data)
-            print("uiGroupsList.uiGroups.count = \(uiGroupsList.ui_groups.count)")
+        // Save data to UserDefaults for later access
+        UserDefaults.standard.set(data, forKey: "ui_groups")
+        
+        let reset_tag_defaults_on_startup = RWFrameworkConfig.getConfigValueAsBool("reset_tag_defaults_on_startup")
+        println("TODO: honor reset_tag_defaults_on_startup = \(reset_tag_defaults_on_startup.description)")
 
-            let reset_tag_defaults_on_startup = RWFrameworkConfig.getConfigValueAsBool("reset_tag_defaults_on_startup")
-            println("TODO: honor reset_tag_defaults_on_startup = \(reset_tag_defaults_on_startup.description)")
-
-            getProjectsIdUIGroupsSucceeded = true
-        }
-        catch {
-            print(error)
-        }
+        getProjectsIdUIGroupsSucceeded = true
     }
     
 // MARK: POST streams

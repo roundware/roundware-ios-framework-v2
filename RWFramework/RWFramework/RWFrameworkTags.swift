@@ -37,7 +37,7 @@ extension RWFramework {
         var relationships: [Relationship]?
     }
     
-    struct TagList : Codable {
+    public struct TagList : Codable {
         let tags: [Tag]
     }
 
@@ -66,22 +66,41 @@ extension RWFramework {
         var ui_items: [UIItem]?
     }
     
-    struct UIGroupsList : Codable {
+    public struct UIGroupsList : Codable {
         let ui_groups: [UIGroup]
     }
 
-// MARK: get/set tags/values
-/*
-        var a: AnyObject? = getListenTags() // if needed to get various codes, etc.
-        var b: AnyObject? = getListenTagsCurrent("gender")
-        var ba = (b as? NSArray) as Array?
-        if (ba != nil) {
-            ba!.append(5)
-            setListenTagsCurrent("gender", value: ba!)
+// MARK: UIGroups
+
+    public func getUIGroupsList() -> UIGroupsList? {
+        do {
+            if let data = UserDefaults.standard.object(forKey: "ui_groups") {
+                let decoder = JSONDecoder()
+                let uigroupslist = try decoder.decode(UIGroupsList.self, from: data as! Data)
+                return uigroupslist
+            }
         }
-        var c: AnyObject? = getListenTagsCurrent("gender")
-        println("\(b) \(c)")
-*/
+        catch {
+            print(error)
+        }
+        return nil
+    }
+
+// MARK: Tags
+
+    public func getTagList() -> TagList? {
+        do {
+            if let data = UserDefaults.standard.object(forKey: "tags") {
+                let decoder = JSONDecoder()
+                let taglist = try decoder.decode(TagList.self, from: data as! Data)
+                return taglist
+            }
+        }
+        catch {
+            print(error)
+        }
+        return nil
+    }
 
 // MARK: Listen Tags
 
