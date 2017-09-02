@@ -173,51 +173,51 @@ extension RWFramework {
             }
         }
     }
+    
+    struct Relationship: Codable {
+        var id: Int?
+        var tag_id: Int?
+        var parent_id: Int?
+    }
+    
+    struct Location: Codable {
+        var type: String?
+
+    }
+    
+    struct Tag: Codable {
+        var id: Int
+        var value: String?
+        var description: String?
+        var data: String?
+        var filter: String?
+        //var location: [Location]?
+        var project_id: Int
+        var tag_category_id: Int
+        var description_loc: String?
+        var msg_loc: String?
+        var relationships: [Relationship]?
+    }
+
+    struct TagList : Codable {
+        let tags: [Tag]
+    }
 
     func getProjectsIdTagsSuccess(_ data: Data, project_id: NSNumber) {
         do {
+            let reset_tag_defaults_on_startup = RWFrameworkConfig.getConfigValueAsBool("reset_tag_defaults_on_startup")
+            println("TODO: honor reset_tag_defaults_on_startup once uigroups are processed ("+reset_tag_defaults_on_startup.description+")")
+            
+            // Save data to UserDefaults for later access
+            UserDefaults.standard.set(data, forKey: "tags")
 
-            let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
-
-            if let dict = json as? [String: AnyObject] {
-                let reset_tag_defaults_on_startup = RWFrameworkConfig.getConfigValueAsBool("reset_tag_defaults_on_startup")
-
-                // Listen
-                if let listenArray = dict["listen"] as? [String: AnyObject] {
-                    UserDefaults.standard.set(listenArray, forKey: "tags_listen")
-
-                    // Save defaults as "current settings" for listen tags if they are not already set
-                    for (_, value) in listenArray {
-                        let code = value["code"]
-                        let defaults = value["defaults"]
-                        let defaultsKeyName = "tags_listen_\(String(describing: code))_current"
-                        let current: AnyObject? = UserDefaults.standard.object(forKey: defaultsKeyName) as AnyObject
-                        if (current == nil || reset_tag_defaults_on_startup) {
-                            UserDefaults.standard.set(defaults as Any, forKey: defaultsKeyName)
-                        }
-                    }
-                } // TODO: Handle missing value
-
-                // Speak
-                if let speakArray = dict["speak"] as? [String: AnyObject] {
-                    UserDefaults.standard.set(speakArray, forKey: "tags_speak")
-
-                    // Save defaults as "current settings" for speak tags if they are not already set
-                    for (_, value) in speakArray {
-                        let code = value["code"]
-                        let defaults = value["defaults"]
-                        let defaultsKeyName = "tags_speak_\(String(describing: code))_current"
-                        let current: AnyObject? = UserDefaults.standard.object(forKey: defaultsKeyName) as AnyObject
-                        if (current == nil || reset_tag_defaults_on_startup) {
-                            UserDefaults.standard.set(defaults as Any, forKey: defaultsKeyName)
-                        }
-                    }
-                } // TODO: Handle missing value
-
-                getProjectsIdTagsSucceeded = true
-                
-                apiGetProjectsIdUIGroups(project_id)
-            }
+            // Parse JSON to TagList
+            let decoder = JSONDecoder()
+            let taglist = try decoder.decode(TagList.self, from: data)
+            print("taglist.tags.count = \(taglist.tags.count)")
+            
+            getProjectsIdTagsSucceeded = true
+            apiGetProjectsIdUIGroups(project_id)
         }
         catch {
             print(error)
@@ -238,9 +238,39 @@ extension RWFramework {
         }
     }
     
+    struct UIGroups: Codable {
+//        var id: Int
+//        var value: String?
+//        var description: String?
+//        var data: String?
+//        var filter: String?
+//        //var location: [Location]?
+//        var project_id: Int
+//        var tag_category_id: Int
+//        var description_loc: String?
+//        var msg_loc: String?
+//        var relationships: [Relationship]?
+    }
+    
+    struct UIGroupsList : Codable {
+        let uiGroups: [UIGroups]
+    }
+
     func getProjectsIdUIGroupsSuccess(_ data: Data, project_id: NSNumber) {
-        UserDefaults.standard.set(data, forKey: "ui_groups")
-        getProjectsIdUIGroupsSucceeded = true
+        do {
+            // Save data to UserDefaults for later access
+            UserDefaults.standard.set(data, forKey: "ui_groups")
+            
+            // Parse JSON to UIGroupsList
+            let decoder = JSONDecoder()
+            let uiGroupsList = try decoder.decode(UIGroupsList.self, from: data)
+            print("uiGroupsList.uiGroups.count = \(uiGroupsList.uiGroups.count)")
+
+            getProjectsIdUIGroupsSucceeded = true
+        }
+        catch {
+            print(error)
+        }
     }
     
 // MARK: POST streams
