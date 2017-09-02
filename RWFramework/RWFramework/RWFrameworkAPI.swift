@@ -238,22 +238,31 @@ extension RWFramework {
         }
     }
     
+    struct UIItems: Codable {
+        var id: Int
+        var index: Int
+        var `default`: Bool // default is a keyword so include in `` to have it seen as not so
+        var active: Bool
+        var ui_group_id: Int?
+        var tag_id: Int?
+        var parent_id: Int?
+    }
+    
     struct UIGroups: Codable {
-//        var id: Int
-//        var value: String?
-//        var description: String?
-//        var data: String?
-//        var filter: String?
-//        //var location: [Location]?
-//        var project_id: Int
-//        var tag_category_id: Int
-//        var description_loc: String?
-//        var msg_loc: String?
-//        var relationships: [Relationship]?
+        var id: Int
+        var name: String?
+        var ui_mode: String?
+        var select: String?
+        var active: Bool
+        var index: Int
+        var header_text_loc: String?
+        var tag_category_id: Int
+        var project_id: Int
+        var ui_items: [UIItems]?
     }
     
     struct UIGroupsList : Codable {
-        let uiGroups: [UIGroups]
+        let ui_groups: [UIGroups]
     }
 
     func getProjectsIdUIGroupsSuccess(_ data: Data, project_id: NSNumber) {
@@ -264,7 +273,7 @@ extension RWFramework {
             // Parse JSON to UIGroupsList
             let decoder = JSONDecoder()
             let uiGroupsList = try decoder.decode(UIGroupsList.self, from: data)
-            print("uiGroupsList.uiGroups.count = \(uiGroupsList.uiGroups.count)")
+            print("uiGroupsList.uiGroups.count = \(uiGroupsList.ui_groups.count)")
 
             getProjectsIdUIGroupsSucceeded = true
         }
