@@ -176,6 +176,23 @@ extension RWFramework {
         return getDefaultTags("listen")
     }
     
+    public func getAllListenTagsCurrent() -> [Tag]? {
+        return getDefaultListenTags()
+    }
+    
+    public func getAllListenTagsCurrentAsString() -> String {
+        var s = ""
+        if let tags = getAllListenTagsCurrent() {
+            for tag in tags {
+                if s.characters.count > 0 {
+                    s += ","
+                }
+                s += "\(tag.id)"
+            }
+        }
+        return s
+    }
+
 
 //    /// Returns an array of dictionaries of listen information
 //    public func getListenTags() -> AnyObject? {
@@ -214,7 +231,7 @@ extension RWFramework {
 //    }
 //
 //    /// Get all the current values for the listen tags as a comma-separated string
-    public func getAllListenTagsCurrentAsString() -> String {
+//    public func getAllListenTagsCurrentAsString() -> String {
 //        var tag_ids = ""
 //        if let allListenTagsArray = getAllListenTagsCurrent() as! NSArray? {
 //            for tag in allListenTagsArray {
@@ -223,8 +240,8 @@ extension RWFramework {
 //            }
 //        }
 //        return tag_ids
-        return ""
-    }
+//        return ""
+//    }
 
 // MARK: Speak Tags
 
@@ -234,6 +251,23 @@ extension RWFramework {
 
     public func getDefaultSpeakTags() -> [Tag]? {
         return getDefaultTags("speak")
+    }
+
+    public func getAllSpeakTagsCurrent() -> [Tag]? {
+        return getDefaultSpeakTags()
+    }
+    
+    public func getAllSpeakTagsCurrentAsString() -> String {
+        var s = ""
+        if let tags = getAllSpeakTagsCurrent() {
+            for tag in tags {
+                if s.characters.count > 0 {
+                    s += ","
+                }
+                s += "\(tag.id)"
+            }
+        }
+        return s
     }
 
 //    /// Returns an array of dictionaries of speak information
@@ -273,7 +307,7 @@ extension RWFramework {
 //    }
 //
 //    /// Get all the current values for the speak tags as a comma-separated string
-    public func getAllSpeakTagsCurrentAsString() -> String {
+//    public func getAllSpeakTagsCurrentAsString() -> String {
 //        if let allSpeakTagsArray = getAllSpeakTagsCurrent() as! NSArray? {
 //            var tags = ""
 //            for tag in allSpeakTagsArray {
@@ -282,8 +316,8 @@ extension RWFramework {
 //            }
 //            return tags
 //        }
-        return ""
-    }
+//        return ""
+//    }
 
 // MARK: submit tags
 
