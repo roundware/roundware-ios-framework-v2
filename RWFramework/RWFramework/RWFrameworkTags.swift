@@ -323,8 +323,8 @@ extension RWFramework {
 
     /// Submit all current listen tags to the server
     public func submitListenTags() {
-//        let tag_ids = getAllListenTagsCurrentAsString()
-//        apiPatchStreamsIdWithTags(tag_ids)
+        let tag_ids = getAllListenTagsCurrentAsString()
+        apiPatchStreamsIdWithTags(tag_ids)
     }
 
 // MARK: edit tags
