@@ -15,6 +15,8 @@ class ViewController: UIViewController, MKMapViewDelegate {
 
     // MARK: Actions and Outlets
 
+    @IBOutlet var listenButton: UIButton!
+    @IBOutlet var speakButton: UIButton!
     @IBOutlet var heartbeatButton: UIButton!
     @IBOutlet var map: MKMapView!
 
@@ -115,7 +117,7 @@ class ViewController: UIViewController, MKMapViewDelegate {
     // MARK: -
     
     func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
-        let span = MKCoordinateSpanMake(0.3, 0.3)
+        let span = MKCoordinateSpanMake(0.01, 0.01)
         let region = MKCoordinateRegionMake(mapView.userLocation.coordinate, span)
         mapView.setRegion(region, animated: true)
     }
@@ -146,20 +148,27 @@ extension ViewController: RWFrameworkProtocol {
 
         // You can now access the project data
         if let projectData = RWFrameworkConfig.getConfigDataFromGroup(RWFrameworkConfig.ConfigGroup.project) as? NSDictionary {
-//            println(projectData)
-
-
-            // Get all assets for the project, can filter by adding other keys to dict as documented for GET api/2/assets/
-            let project_id = projectData["id"] as! NSNumber
-            let dict: [String:String] = ["project_id": project_id.stringValue]
-            rwf.apiGetAssets(dict, success: { (data) -> Void in
-                if (data != nil) {
-//                    let d = JSON(data: data!)
-//                    println(d)
-                }
-            }) { (error) -> Void in
-                print(error)
+            let listen_enabled = projectData["listen_enabled"] as! Bool
+            if (listen_enabled) {
+                self.listenButton.isEnabled = true
             }
+            
+            let speak_enabled = projectData["speak_enabled"] as! Bool
+            if (speak_enabled) {
+                self.speakButton.isEnabled = true
+            }
+            
+            // Get all assets for the project, can filter by adding other keys to dict as documented for GET api/2/assets/
+//            let project_id = projectData["id"] as! NSNumber
+//            let dict: [String:String] = ["project_id": project_id.stringValue]
+//            rwf.apiGetAssets(dict, success: { (data) -> Void in
+//                if (data != nil) {
+////                    let d = JSON(data: data!)
+////                    println(d)
+//                }
+//            }) { (error) -> Void in
+//                print(error)
+//            }
 
 //            // Get specific asset info
 //            rwf.apiGetAssetsId("99", success: { (data) -> Void in
@@ -174,20 +183,15 @@ extension ViewController: RWFrameworkProtocol {
     }
 
     func rwPostStreamsSuccess(_ data: Data?) {
-//        DispatchQueue.main.async(execute: { () -> Void in
-//            self.listenPlayButton.isEnabled = true
-//            self.listenSkipButton.isEnabled = true
-//        })
+
     }
 
     func rwPostStreamsIdHeartbeatSuccess(_ data: Data?) {
-//        DispatchQueue.main.async(execute: { () -> Void in
-            UIView.animate(withDuration: 0.5, animations: { () -> Void in
-                self.heartbeatButton.alpha = 0.0
-            }, completion: { (Bool) -> Void in
-                self.heartbeatButton.alpha = 1.0
-            })
-//        })
+        UIView.animate(withDuration: 0.5, animations: { () -> Void in
+            self.heartbeatButton.alpha = 0.0
+        }, completion: { (Bool) -> Void in
+            self.heartbeatButton.alpha = 1.0
+        })
     }
 
 //    func rwImagePickerControllerDidFinishPickingMedia(_ info: [AnyHashable: Any], path: String) {
