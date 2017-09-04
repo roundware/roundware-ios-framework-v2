@@ -25,3 +25,17 @@ class ListenViewController: UIViewController {
     }
 
 }
+
+//    @IBAction func listenTags(_ sender: UIButton) {
+//        RWFramework.sharedInstance.editListenTags()
+//    }
+//
+//    @IBAction func listenPlay(_ sender: UIButton) {
+//        let rwf = RWFramework.sharedInstance
+//        rwf.isPlaying ? rwf.stop() : rwf.play()
+//        listenPlayButton.setTitle(rwf.isPlaying ? "Stop" : "Play", for: UIControlState())
+//    }
+//
+//    @IBAction func listenSkip(_ sender: UIButton) {
+//        RWFramework.sharedInstance.skip()
+//    }
