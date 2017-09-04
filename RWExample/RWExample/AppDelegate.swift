@@ -19,8 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         initializeAudioSession()
         
-        let rwf = RWFramework.sharedInstance
-        rwf.addDelegate(self)
+        RWFramework.sharedInstance.addDelegate(self)
 
         return true
     }
@@ -69,7 +68,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             print("RWExample - Couldn't setup audio session \(error)")
         }
     }
-    
-
 }
+
+extension AppDelegate: RWFrameworkProtocol {
+    
+    func rwUpdateStatus(_ message: String) {
+        print(message)
+    }
+    
+    func rwUpdateApplicationIconBadgeNumber(_ count: Int) {
+        UIApplication.shared.applicationIconBadgeNumber = count
+    }
+    
+    func rwGetProjectsIdSuccess(_ data: Data?) {
+        _ = RWFramework.sharedInstance.requestWhenInUseAuthorizationForLocation()
+    }
+}
+
 

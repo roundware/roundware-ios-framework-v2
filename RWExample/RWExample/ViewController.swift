@@ -7,8 +7,8 @@
 //
 
 import UIKit
+import Foundation
 import RWFramework
-import MobileCoreServices
 import MapKit
 
 class ViewController: UIViewController, MKMapViewDelegate {
@@ -96,24 +96,17 @@ class ViewController: UIViewController, MKMapViewDelegate {
 
         self.map.delegate = self
         
-        let rwf = RWFramework.sharedInstance
-        rwf.addDelegate(self)
-        rwf.start(false)
+        RWFramework.sharedInstance.start(false) // You may choose to call this in the AppDelegate
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        NotificationCenter.default.removeObserver(self)
-    }
-
-    override var shouldAutorotate : Bool {
-        return false
+    override func viewWillAppear(_ animated: Bool) {
+        RWFramework.sharedInstance.addDelegate(self)
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        RWFramework.sharedInstance.removeDelegate(self)
+    }
+
     // MARK: -
     
     func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
@@ -133,20 +126,9 @@ class ViewController: UIViewController, MKMapViewDelegate {
 
 extension ViewController: RWFrameworkProtocol {
 
-    func rwUpdateStatus(_ message: String) {
-        print(message)
-    }
-
-    func rwUpdateApplicationIconBadgeNumber(_ count: Int) {
-        UIApplication.shared.applicationIconBadgeNumber = count
-    }
-
     func rwGetProjectsIdSuccess(_ data: Data?) {
 
-        let rwf = RWFramework.sharedInstance
-        _ = rwf.requestWhenInUseAuthorizationForLocation()
-
-        // You can now access the project data
+        // You can now access the project information
         if let projectData = RWFrameworkConfig.getConfigDataFromGroup(RWFrameworkConfig.ConfigGroup.project) as? NSDictionary {
             let listen_enabled = projectData["listen_enabled"] as! Bool
             if (listen_enabled) {
@@ -157,33 +139,7 @@ extension ViewController: RWFrameworkProtocol {
             if (speak_enabled) {
                 self.speakButton.isEnabled = true
             }
-            
-            // Get all assets for the project, can filter by adding other keys to dict as documented for GET api/2/assets/
-//            let project_id = projectData["id"] as! NSNumber
-//            let dict: [String:String] = ["project_id": project_id.stringValue]
-//            rwf.apiGetAssets(dict, success: { (data) -> Void in
-//                if (data != nil) {
-////                    let d = JSON(data: data!)
-////                    println(d)
-//                }
-//            }) { (error) -> Void in
-//                print(error)
-//            }
-
-//            // Get specific asset info
-//            rwf.apiGetAssetsId("99", success: { (data) -> Void in
-//                if (data != nil) {
-//                    let d = JSON(data: data!)
-////                    println(d)
-//                }
-//            }) { (error) -> Void in
-//                println(error)
-//            }
         }
-    }
-
-    func rwPostStreamsSuccess(_ data: Data?) {
-
     }
 
     func rwPostStreamsIdHeartbeatSuccess(_ data: Data?) {

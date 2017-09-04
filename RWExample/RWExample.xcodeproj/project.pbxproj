@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7514200E1F5DAEAB00BF7864 /* ListenViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7514200D1F5DAEAB00BF7864 /* ListenViewController.swift */; };
+		751420111F5DB59300BF7864 /* SpeakViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751420101F5DB59300BF7864 /* SpeakViewController.swift */; };
 		75A7D2A81A745B5300E662A8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A7D2A71A745B5300E662A8 /* AppDelegate.swift */; };
 		75A7D2AA1A745B5300E662A8 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A7D2A91A745B5300E662A8 /* ViewController.swift */; };
 		75A7D2AD1A745B5300E662A8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75A7D2AB1A745B5300E662A8 /* Main.storyboard */; };
@@ -72,6 +74,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7514200D1F5DAEAB00BF7864 /* ListenViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListenViewController.swift; sourceTree = "<group>"; };
+		751420101F5DB59300BF7864 /* SpeakViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakViewController.swift; sourceTree = "<group>"; };
 		75A7D2A21A745B5300E662A8 /* RWExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RWExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		75A7D2A61A745B5300E662A8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		75A7D2A71A745B5300E662A8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -132,6 +136,8 @@
 			children = (
 				75A7D2A71A745B5300E662A8 /* AppDelegate.swift */,
 				75A7D2A91A745B5300E662A8 /* ViewController.swift */,
+				7514200D1F5DAEAB00BF7864 /* ListenViewController.swift */,
+				751420101F5DB59300BF7864 /* SpeakViewController.swift */,
 				75A7D2AB1A745B5300E662A8 /* Main.storyboard */,
 				75A7D2AE1A745B5300E662A8 /* Images.xcassets */,
 				75A7D2B01A745B5300E662A8 /* LaunchScreen.xib */,
@@ -314,6 +320,8 @@
 			files = (
 				75A7D2AA1A745B5300E662A8 /* ViewController.swift in Sources */,
 				75A7D2A81A745B5300E662A8 /* AppDelegate.swift in Sources */,
+				7514200E1F5DAEAB00BF7864 /* ListenViewController.swift in Sources */,
+				751420111F5DB59300BF7864 /* SpeakViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

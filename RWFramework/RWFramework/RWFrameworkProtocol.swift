@@ -160,6 +160,7 @@ extension RWFramework {
 
     /// Add a delegate to the list of delegates
     public func addDelegate(_ object: AnyObject) {
+        delegates.remove(object) // To ensure we only have this object in the table once, try to remove it first
         delegates.add(object)
         println("addDelegate: \(delegates)")
     }
