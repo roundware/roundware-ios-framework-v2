@@ -123,9 +123,7 @@ class ViewController: UIViewController, MKMapViewDelegate {
     // MARK: -
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-//        let destinationNavigationController = segue.destination as! UINavigationController
-//        let targetController = destinationNavigationController.topViewController
-//        print(targetController?.description)
+        print(segue)
     }
     
 
