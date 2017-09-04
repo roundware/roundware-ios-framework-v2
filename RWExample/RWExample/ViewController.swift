@@ -112,11 +112,23 @@ class ViewController: UIViewController, MKMapViewDelegate {
         return false
     }
     
+    // MARK: -
+    
     func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
         let span = MKCoordinateSpanMake(0.3, 0.3)
         let region = MKCoordinateRegionMake(mapView.userLocation.coordinate, span)
         mapView.setRegion(region, animated: true)
     }
+    
+    // MARK: -
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+//        let destinationNavigationController = segue.destination as! UINavigationController
+//        let targetController = destinationNavigationController.topViewController
+//        print(targetController?.description)
+    }
+    
+
 }
 
 extension ViewController: RWFrameworkProtocol {
