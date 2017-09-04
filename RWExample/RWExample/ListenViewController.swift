@@ -11,6 +11,15 @@ import Foundation
 import RWFramework
 
 class ListenViewController: UIViewController {
+    
+    // MARK: -
+
+    @IBOutlet var tagsButton: UIButton!
+    @IBOutlet var playButton: UIButton!
+    @IBOutlet var skipButton: UIButton!
+    @IBOutlet var stopButton: UIButton!
+
+    // MARK: -
 
     override func viewDidLoad() {
         super.viewDidLoad()

@@ -13,13 +13,15 @@ import MapKit
 
 class ViewController: UIViewController, MKMapViewDelegate {
 
-    // MARK: Actions and Outlets
+    // MARK: -
 
     @IBOutlet var listenButton: UIButton!
     @IBOutlet var speakButton: UIButton!
     @IBOutlet var heartbeatButton: UIButton!
     @IBOutlet var map: MKMapView!
-    
+ 
+    // MARK: -
+
     override func viewDidLoad() {
         super.viewDidLoad()
 

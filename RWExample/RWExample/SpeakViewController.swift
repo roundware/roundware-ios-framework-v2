@@ -11,7 +11,13 @@ import Foundation
 import RWFramework
 
 class SpeakViewController: UIViewController {
-    
+
+    // MARK: -
+
+    @IBOutlet var recordButton: UIButton!
+
+    // MARK: -
+
     override func viewDidLoad() {
         super.viewDidLoad()
     }
