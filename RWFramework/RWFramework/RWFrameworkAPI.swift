@@ -173,55 +173,13 @@ extension RWFramework {
             }
         }
     }
-
+    
     func getProjectsIdTagsSuccess(_ data: Data, project_id: NSNumber) {
-        do {
-
-            let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
-
-            if let dict = json as? [String: AnyObject] {
-                let reset_tag_defaults_on_startup = RWFrameworkConfig.getConfigValueAsBool("reset_tag_defaults_on_startup")
-
-                // Listen
-                if let listenArray = dict["listen"] as? [String: AnyObject] {
-                    UserDefaults.standard.set(listenArray, forKey: "tags_listen")
-
-                    // Save defaults as "current settings" for listen tags if they are not already set
-                    for (_, value) in listenArray {
-                        let code = value["code"]
-                        let defaults = value["defaults"]
-                        let defaultsKeyName = "tags_listen_\(String(describing: code))_current"
-                        let current: AnyObject? = UserDefaults.standard.object(forKey: defaultsKeyName) as AnyObject
-                        if (current == nil || reset_tag_defaults_on_startup) {
-                            UserDefaults.standard.set(defaults as Any, forKey: defaultsKeyName)
-                        }
-                    }
-                } // TODO: Handle missing value
-
-                // Speak
-                if let speakArray = dict["speak"] as? [String: AnyObject] {
-                    UserDefaults.standard.set(speakArray, forKey: "tags_speak")
-
-                    // Save defaults as "current settings" for speak tags if they are not already set
-                    for (_, value) in speakArray {
-                        let code = value["code"]
-                        let defaults = value["defaults"]
-                        let defaultsKeyName = "tags_speak_\(String(describing: code))_current"
-                        let current: AnyObject? = UserDefaults.standard.object(forKey: defaultsKeyName) as AnyObject
-                        if (current == nil || reset_tag_defaults_on_startup) {
-                            UserDefaults.standard.set(defaults as Any, forKey: defaultsKeyName)
-                        }
-                    }
-                } // TODO: Handle missing value
-
-                getProjectsIdTagsSucceeded = true
-                
-                apiGetProjectsIdUIGroups(project_id)
-            }
-        }
-        catch {
-            print(error)
-        }
+        // Save data to UserDefaults for later access
+        UserDefaults.standard.set(data, forKey: "tags")
+        
+        getProjectsIdTagsSucceeded = true
+        apiGetProjectsIdUIGroups(project_id)
     }
 
     // MARK: GET projects id uigroups
@@ -239,7 +197,12 @@ extension RWFramework {
     }
     
     func getProjectsIdUIGroupsSuccess(_ data: Data, project_id: NSNumber) {
+        // Save data to UserDefaults for later access
         UserDefaults.standard.set(data, forKey: "ui_groups")
+        
+        let reset_tag_defaults_on_startup = RWFrameworkConfig.getConfigValueAsBool("reset_tag_defaults_on_startup")
+        println("TODO: honor reset_tag_defaults_on_startup = \(reset_tag_defaults_on_startup.description)")
+
         getProjectsIdUIGroupsSucceeded = true
     }
     
