@@ -93,57 +93,79 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="c1l-Mp-1Lz">
-                                <rect key="frame" x="153" y="72" width="68" height="55"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="36"/>
-                                <state key="normal" title="Play"/>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ncQ-Ie-hLA">
-                                <rect key="frame" x="149" y="337" width="76" height="55"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ncQ-Ie-hLA">
+                                <rect key="frame" x="16" y="592" width="76" height="55"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="36"/>
                                 <state key="normal" title="Filter"/>
+                                <connections>
+                                    <action selector="filter:" destination="13a-z5-wgH" eventType="touchUpInside" id="G1Z-2Q-9SZ"/>
+                                </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uCf-Jv-MD4">
-                                <rect key="frame" x="72" y="400" width="231" height="55"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="36"/>
-                                <state key="normal" title="Flag Recording"/>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MyE-4W-CKo">
-                                <rect key="frame" x="63" y="463" width="251" height="55"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="36"/>
-                                <state key="normal" title="Block Recording"/>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vv7-8r-k13">
+                            <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vv7-8r-k13">
                                 <rect key="frame" x="16" y="72" width="106" height="55"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="36"/>
                                 <state key="normal" title="Replay"/>
+                                <connections>
+                                    <action selector="replay:" destination="13a-z5-wgH" eventType="touchUpInside" id="kQa-rX-C56"/>
+                                </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sdR-SH-6rF">
-                                <rect key="frame" x="152" y="135" width="73" height="55"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="36"/>
-                                <state key="normal" title="Stop"/>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Dw8-LP-m6w">
+                            <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Dw8-LP-m6w">
                                 <rect key="frame" x="291" y="72" width="68" height="55"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="36"/>
                                 <state key="normal" title="Skip"/>
+                                <connections>
+                                    <action selector="skip:" destination="13a-z5-wgH" eventType="touchUpInside" id="7Z8-Q2-MZ2"/>
+                                </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="756-pY-QMX">
-                                <rect key="frame" x="105" y="526" width="167" height="55"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="756-pY-QMX">
+                                <rect key="frame" x="279" y="592" width="80" height="55"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="36"/>
-                                <state key="normal" title="Block User"/>
+                                <state key="normal" title="More"/>
+                                <connections>
+                                    <action selector="more:" destination="13a-z5-wgH" eventType="touchUpInside" id="4JY-Dv-Zv8"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="c1l-Mp-1Lz">
+                                <rect key="frame" x="154.5" y="306" width="66" height="55"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="36"/>
+                                <state key="normal" title="Play"/>
+                                <connections>
+                                    <action selector="play:" destination="13a-z5-wgH" eventType="touchUpInside" id="yZG-Aq-rg9"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sdR-SH-6rF">
+                                <rect key="frame" x="151" y="369" width="73" height="55"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="36"/>
+                                <state key="normal" title="Stop"/>
+                                <connections>
+                                    <action selector="stop:" destination="13a-z5-wgH" eventType="touchUpInside" id="zeE-lB-lv2"/>
+                                </connections>
                             </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="Vv7-8r-k13" firstAttribute="top" secondItem="SyN-oM-flE" secondAttribute="bottom" constant="8" id="6KN-nC-5Ls"/>
+                            <constraint firstItem="Vv7-8r-k13" firstAttribute="leading" secondItem="XUP-cb-ayG" secondAttribute="leading" constant="16" id="9Oi-eO-FN7"/>
+                            <constraint firstItem="sdR-SH-6rF" firstAttribute="top" secondItem="c1l-Mp-1Lz" secondAttribute="bottom" constant="8" id="AwB-Ha-5kK"/>
+                            <constraint firstItem="Dw8-LP-m6w" firstAttribute="top" secondItem="SyN-oM-flE" secondAttribute="bottom" constant="8" id="CwV-qw-jsV"/>
+                            <constraint firstAttribute="trailing" secondItem="756-pY-QMX" secondAttribute="trailing" constant="16" id="DtB-2Z-IzI"/>
+                            <constraint firstItem="TnU-V1-DMN" firstAttribute="top" secondItem="756-pY-QMX" secondAttribute="bottom" constant="20" id="GhT-Gi-OtZ"/>
+                            <constraint firstItem="c1l-Mp-1Lz" firstAttribute="centerY" secondItem="XUP-cb-ayG" secondAttribute="centerY" id="Vy0-4P-gd2"/>
+                            <constraint firstItem="ncQ-Ie-hLA" firstAttribute="leading" secondItem="XUP-cb-ayG" secondAttribute="leading" constant="16" id="Xb2-65-t6T"/>
+                            <constraint firstItem="TnU-V1-DMN" firstAttribute="top" secondItem="ncQ-Ie-hLA" secondAttribute="bottom" constant="20" id="YLs-wO-XI4"/>
+                            <constraint firstItem="c1l-Mp-1Lz" firstAttribute="centerX" secondItem="XUP-cb-ayG" secondAttribute="centerX" id="kWf-vR-doS"/>
+                            <constraint firstAttribute="trailing" secondItem="Dw8-LP-m6w" secondAttribute="trailing" constant="16" id="mml-mW-X4l"/>
+                            <constraint firstItem="sdR-SH-6rF" firstAttribute="centerX" secondItem="XUP-cb-ayG" secondAttribute="centerX" id="zzp-z3-a5n"/>
+                        </constraints>
                     </view>
+                    <connections>
+                        <outlet property="filterButton" destination="ncQ-Ie-hLA" id="ASh-9U-giK"/>
+                        <outlet property="moreButton" destination="756-pY-QMX" id="tbd-tU-jB4"/>
+                        <outlet property="playButton" destination="c1l-Mp-1Lz" id="Utn-CF-wzN"/>
+                        <outlet property="replayButton" destination="Vv7-8r-k13" id="qsx-ty-8O1"/>
+                        <outlet property="skipButton" destination="Dw8-LP-m6w" id="dmu-98-vTF"/>
+                        <outlet property="stopButton" destination="sdR-SH-6rF" id="ZOm-s3-zQj"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="g1g-Mv-YyU" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
