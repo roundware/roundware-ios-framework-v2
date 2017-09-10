@@ -28,8 +28,7 @@ class ListenViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        playButton.isEnabled = true
-        filterButton.isEnabled = true
+        updateUI()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -51,6 +50,8 @@ class ListenViewController: UIViewController {
         replayButton.isEnabled = rwf.isPlaying
         skipButton.isEnabled = rwf.isPlaying
         moreButton.isEnabled = rwf.isPlaying
+
+        filterButton.isEnabled = true
     }
     
     @IBAction func play(_ sender: UIButton) {
@@ -65,10 +66,6 @@ class ListenViewController: UIViewController {
         updateUI()
     }
     
-    @IBAction func filter(_ sender: UIButton) {
-        
-    }
-
     @IBAction func replay(_ sender: UIButton) {
         let rwf = RWFramework.sharedInstance
         rwf.replay()
@@ -79,22 +76,12 @@ class ListenViewController: UIViewController {
         rwf.skip()
     }
 
+    @IBAction func filter(_ sender: UIButton) {
+        
+    }
+    
     @IBAction func more(_ sender: UIButton) {
 
     }
-
-//    @IBAction func listenTags(_ sender: UIButton) {
-//        RWFramework.sharedInstance.editListenTags()
-//    }
-//
-//    @IBAction func listenPlay(_ sender: UIButton) {
-//        let rwf = RWFramework.sharedInstance
-//        rwf.isPlaying ? rwf.stop() : rwf.play()
-//        listenPlayButton.setTitle(rwf.isPlaying ? "Stop" : "Play", for: UIControlState())
-//    }
-//
-//    @IBAction func listenSkip(_ sender: UIButton) {
-//        RWFramework.sharedInstance.skip()
-//    }
 
 }
