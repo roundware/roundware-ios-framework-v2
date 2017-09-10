@@ -228,21 +228,4 @@ extension RWFramework {
         apiPatchStreamsIdWithTags(tag_ids)
     }
 
-// MARK: edit tags
-
-    /// Edit the Listen tags in a web view
-    public func editListenTags() {
-        editTags("tags_listen", title:LS("Listen Tags"))
-    }
-
-    /// Edit the Speak tags in a web view
-    public func editSpeakTags() {
-        editTags("tags_speak", title:LS("Speak Tags"))
-    }
-
-    /// Edit the Listen or Speak tags in a web view
-    func editTags(_ type: String, title: String) {
-        println("editing tags not yet supported but coming soon via WKWebView")
-    }
-
 }
