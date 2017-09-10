@@ -84,7 +84,7 @@ extension RWFramework {
 
     /// Replay audio
     public func replay() {
-        //apiPostStreamsIdReplay() // TODO
+        apiPostStreamsIdReplay()
     }
 
 }

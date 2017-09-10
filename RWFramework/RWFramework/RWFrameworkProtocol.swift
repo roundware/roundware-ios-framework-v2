@@ -59,6 +59,11 @@ import CoreLocation
     /// Sent in the case that sending the heartbeat failed
     @objc optional func rwPostStreamsIdHeartbeatFailure(_ error: NSError?)
 
+    /// Sent after the server successfully replays a sound in the stream
+    @objc optional func rwPostStreamsIdReplaySuccess(_ data: Data?)
+    /// Sent in the case that replaying a sound in the stream fails
+    @objc optional func rwPostStreamsIdReplayFailure(_ error: NSError?)
+
     /// Sent after the server successfully advances to the next sound in the stream
     @objc optional func rwPostStreamsIdSkipSuccess(_ data: Data?)
     /// Sent in the case that advancing to the next sound in the stream fails
@@ -329,6 +334,22 @@ extension RWFramework {
                 self.dam { rwfp.rwPostStreamsIdHeartbeatFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwPostStreamsIdHeartbeatFailure"), message: error!.localizedDescription)
+            }
+        }
+    }
+
+    func rwPostStreamsIdReplaySuccess(_ data: Data?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwPostStreamsIdReplaySuccess?(data) }
+        }
+    }
+    
+    func rwPostStreamsIdReplayFailure(_ error: NSError?) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwPostStreamsIdReplayFailure != nil) {
+                self.dam { rwfp.rwPostStreamsIdReplayFailure?(error) }
+            } else {
+                self.alertOK(self.LS("RWFramework - rwPostStreamsIdReplayFailure"), message: error!.localizedDescription)
             }
         }
     }

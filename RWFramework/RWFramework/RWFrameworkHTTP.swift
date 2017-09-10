@@ -98,6 +98,16 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
+    func httpPostStreamsIdReplay(_ stream_id: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        if let url = URL(string: RWFrameworkURLFactory.postStreamsIdReplayURL(stream_id)) {
+            let postData = [:] as Dictionary<String, String>
+            postDataToURL(url, postData: postData, completion: completion)
+        } else {
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsIdReplayURL unable to be created."])
+            completion(nil, error)
+        }
+    }
+    
     func httpPostStreamsIdSkip(_ stream_id: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.postStreamsIdSkipURL(stream_id)) {
             let postData = [:] as Dictionary<String, String>

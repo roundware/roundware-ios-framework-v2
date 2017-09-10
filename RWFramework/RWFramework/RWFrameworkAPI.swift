@@ -319,12 +319,33 @@ extension RWFramework {
 
     }
 
-// MARK: POST streams id skip
+    // MARK: POST streams id replay
+    
+    func apiPostStreamsIdReplay() {
+        if (requestStreamSucceeded == false) { return }
+        if (self.streamID == 0) { return }
+        
+        httpPostStreamsIdReplay(self.streamID.description, completion: { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                self.postStreamsIdReplaySuccess(data!)
+                self.rwPostStreamsIdReplaySuccess(data)
+            } else if (error != nil) {
+                self.rwPostStreamsIdReplayFailure(error)
+                self.apiProcessError(data, error: error!, caller: "apiPostStreamsIdReplay")
+            }
+        })
+    }
+    
+    func postStreamsIdReplaySuccess(_ data: Data) {
+        
+    }
 
+    // MARK: POST streams id skip
+    
     func apiPostStreamsIdSkip() {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
-
+        
         httpPostStreamsIdSkip(self.streamID.description, completion: { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.postStreamsIdSkipSuccess(data!)
@@ -335,9 +356,9 @@ extension RWFramework {
             }
         })
     }
-
+    
     func postStreamsIdSkipSuccess(_ data: Data) {
-
+        
     }
 
 // MARK: POST envelopes
