@@ -75,6 +75,7 @@ private lazy var __once: () = { () -> Void in
         }
     }
     var getProjectsIdUIGroupsSucceeded = false
+    var getTagCategoriesSucceeded = false
     var requestStreamInProgress = false
     var requestStreamSucceeded = false {
         didSet {
@@ -111,7 +112,7 @@ private lazy var __once: () = { () -> Void in
         return _RWFrameworkSharedInstance
     }
 
-    fileprivate override init() {
+    public override init() {
         super.init()
 
         #if DEBUG

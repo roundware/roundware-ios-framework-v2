@@ -58,6 +58,15 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
     
+    func httpGetTagCategories(completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        if let url = URL(string: RWFrameworkURLFactory.getTagCategoriesURL()) {
+            getDataFromURL(url, completion: completion)
+        } else {
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "getTagCategoriesURL unable to be created."])
+            completion(nil, error)
+        }
+    }
+
     func httpPostStreams(_ session_id: NSNumber, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.postStreamsURL()) {
             let postData = ["session_id": session_id]

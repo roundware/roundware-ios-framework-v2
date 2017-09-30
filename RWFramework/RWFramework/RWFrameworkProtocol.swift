@@ -43,7 +43,12 @@ import CoreLocation
     @objc optional func rwGetProjectsIdTagsSuccess(_ data: Data?)
     /// Sent when the server fails to send project tags
     @objc optional func rwGetProjectsIdTagsFailure(_ error: NSError?)
-
+    
+    /// Sent when tag categories have been received from the server
+    @objc optional func rwGetTagCategoriesSuccess(_ data: Data?)
+    /// Sent when the server fails to send tag categories
+    @objc optional func rwGetTagCategoriesFailure(_ error: NSError?)
+    
     /// Sent when a stream has been acquired and can be played. Clients should enable their Play buttons.
     @objc optional func rwPostStreamsSuccess(_ data: Data?)
     /// Sent when a stream could not be acquired and therefore can not be played. Clients should disable their Play buttons.
@@ -286,6 +291,22 @@ extension RWFramework {
                 self.dam { rwfp.rwGetProjectsIdTagsFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwGetProjectsIdTagsFailure"), message: error!.localizedDescription)
+            }
+        }
+    }
+
+    func rwGetTagCategoriesSuccess(_ data: Data?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwGetTagCategoriesSuccess?(data) }
+        }
+    }
+    
+    func rwGetTagCategoriesFailure(_ error: NSError?) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwGetTagCategoriesFailure != nil) {
+                self.dam { rwfp.rwGetTagCategoriesFailure?(error) }
+            } else {
+                self.alertOK(self.LS("RWFramework - rwGetTagCategoriesFailure"), message: error!.localizedDescription)
             }
         }
     }

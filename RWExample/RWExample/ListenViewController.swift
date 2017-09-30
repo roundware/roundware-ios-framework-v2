@@ -22,7 +22,6 @@ class ListenViewController: UIViewController {
     @IBOutlet var filterButton: UIButton!
     @IBOutlet var moreButton: UIButton! // Flag Recording, Block Recording, Block User (apiPostAssetsIdVotes)
     
-
     // MARK: -
 
     override func viewDidLoad() {
@@ -84,4 +83,14 @@ class ListenViewController: UIViewController {
 
     }
 
+    // MARK: -
+    
+    override func canPerformUnwindSegueAction(_ action: Selector, from fromViewController: UIViewController, withSender sender: Any) -> Bool {
+        return true
+    }
+    
+    @IBAction func unwindToListenViewController(sender: UIStoryboardSegue) {
+        // let sourceViewController = sender.source
+        // Pull any data from the view controller which initiated the unwind segue.
+    }
 }

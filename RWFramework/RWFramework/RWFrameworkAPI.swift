@@ -182,7 +182,7 @@ extension RWFramework {
         apiGetProjectsIdUIGroups(project_id)
     }
 
-    // MARK: GET projects id uigroups
+// MARK: GET projects id uigroups
     
     func apiGetProjectsIdUIGroups(_ project_id: NSNumber) {
         httpGetProjectsIdUIGroups(project_id) { (data, error) -> Void in
@@ -204,8 +204,30 @@ extension RWFramework {
         println("TODO: honor reset_tag_defaults_on_startup = \(reset_tag_defaults_on_startup.description)")
 
         getProjectsIdUIGroupsSucceeded = true
+        apiGetTagCategories()
     }
     
+// MARK: GET tagcategories
+    
+    func apiGetTagCategories() {
+        httpGetTagCategories() { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                self.getTagCategoriesSuccess(data!)
+                self.rwGetTagCategoriesSuccess(data)
+            } else if (error != nil) {
+                self.rwGetTagCategoriesFailure(error)
+                self.apiProcessError(data, error: error!, caller: "apiGetTagCategories")
+            }
+        }
+    }
+    
+    func getTagCategoriesSuccess(_ data: Data) {
+        // Save data to UserDefaults for later access
+        UserDefaults.standard.set(data, forKey: "tagcategories")
+        
+        getTagCategoriesSucceeded = true
+    }
+
 // MARK: POST streams
 
     func apiPostStreams() {
