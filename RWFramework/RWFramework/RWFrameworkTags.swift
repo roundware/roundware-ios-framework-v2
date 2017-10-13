@@ -13,69 +13,105 @@ extension RWFramework {
     // Tags
     
     public struct Relationship: Codable {
-        var id: Int?
-        var tag_id: Int?
-        var parent_id: Int?
+        public var id: Int?
+        public var tag_id: Int?
+        public var parent_id: Int?
     }
     
     public struct Location: Codable {
-        var type: String?
+        public var type: String?
         // TODO
     }
     
     public struct Tag: Codable {
-        var id: Int
-        var value: String?
-        var description: String?
-        var data: String?
-        var filter: String?
-        //var location: [Location]? // TODO
-        var project_id: Int
-        var tag_category_id: Int
-        var description_loc: String?
-        var msg_loc: String?
-        var relationships: [Relationship]?
+        public var id: Int
+        public var value: String?
+        public var description: String?
+        public var data: String?
+        public var filter: String?
+        //public var location: [Location]? // TODO
+        public var project_id: Int
+        public var tag_category_id: Int
+        public var description_loc: String?
+        public var msg_loc: String?
+        public var relationships: [Relationship]?
     }
     
     public struct TagList : Codable {
-        let tags: [Tag]
+        public let tags: [Tag]
     }
 
     // UIGroups
     
     public struct UIItem: Codable {
-        var id: Int
-        var index: Int
-        var `default`: Bool // default is a keyword so include in `` to have it seen as not so
-        var active: Bool
-        var ui_group_id: Int?
-        var tag_id: Int?
-        var parent_id: Int?
+        public var id: Int
+        public var index: Int
+        public var `default`: Bool // default is a keyword so include in `` to have it seen as not so
+        public var active: Bool
+        public var ui_group_id: Int?
+        public var tag_id: Int?
+        public var parent_id: Int?
     }
     
     public struct UIGroup: Codable {
-        var id: Int
-        var name: String?
-        var ui_mode: String?
-        var select: String?
-        var active: Bool
-        var index: Int
-        var header_text_loc: String?
-        var tag_category_id: Int
-        var project_id: Int
-        var ui_items: [UIItem]?
+        public var id: Int
+        public var name: String?
+        public var ui_mode: String?
+        public var select: String?
+        public var active: Bool
+        public var index: Int
+        public var header_text_loc: String?
+        public var tag_category_id: Int
+        public var project_id: Int
+        public var ui_items: [UIItem]?
     }
     
     public struct UIGroupList : Codable {
-        let ui_groups: [UIGroup]
+        public let ui_groups: [UIGroup]
     }
 
     // TagCategories
     
     public struct TagCategory: Codable {
-        var id: Int
-        var name: String?
-        var data: String?
+        public var id: Int
+        public var name: String?
+        public var data: String?
+    }
+    
+// MARK: Simplified ui config endpoint
+    
+    public struct UIConfigItem: Codable {
+        public var id: Int
+        public var tag_id: Int
+        public var parent_id: Int?
+        public var default_state: Bool
+        public var tag_display_text: String?
+    }
+    
+    public struct UIConfigGroup: Codable {
+        public var select: String?
+        public var group_short_name: String?
+        public var header_display_text: String?
+        public var display_items: [UIConfigItem]
+    }
+    
+    public struct UIConfig : Codable {
+        public var speak: [UIConfigGroup]
+        public var listen: [UIConfigGroup]
+    }
+
+    public func getUIConfig() -> UIConfig? {
+        do {
+            if let data = UserDefaults.standard.object(forKey: "uiconfig") {
+                let decoder = JSONDecoder()
+                let uiconfig = try decoder.decode(UIConfig.self, from: data as! Data)
+                return uiconfig;
+            }
+        }
+        catch {
+            print(error)
+        }
+        return nil
     }
     
 // MARK: TagCategories
@@ -100,16 +136,6 @@ extension RWFramework {
         for id in ids {
             let tagcategory = tagcategories?.filter { id == $0.id }
             result.append((tagcategory?.first)!)
-        }
-        return result
-    }
-    
-    public func getFilteredTagCategoryNamesAndIDs(_ ids: Array<Int>) -> [[Int:String]]? {
-        var result = [[Int:String]]()
-        if let tagcategories = getFilteredTagCategories(ids) {
-            for tagcategory in tagcategories {
-                result.append([tagcategory.id: tagcategory.name!])
-            }
         }
         return result
     }
@@ -304,4 +330,44 @@ extension RWFramework {
         apiPatchStreamsIdWithTags(tag_ids)
     }
 
+// MARK: simplified
+    
+    public func submitListenTagsSet() {
+        var tag_ids: String = ""
+        if let selectedTagIDs = getListenTagsSet() {
+            for tag_id in selectedTagIDs {
+                if tag_ids.characters.count > 0 {
+                    tag_ids += ","
+                }
+                tag_ids += "\(tag_id)"
+            }
+        }
+        apiPatchStreamsIdWithTags(tag_ids)
+    }
+
+    public func getListenTagsSet() -> Set<Int>? {
+        if let array = UserDefaults.standard.object(forKey: "listenTagsSet") as? Array<Int> {
+            return Set(array)
+        } else {
+            if let uiconfig = getUIConfig() {
+                var set = Set<Int>()
+                for listen in uiconfig.listen {
+                    for item in listen.display_items {
+                        if item.default_state == true {
+                            set.insert(item.tag_id)
+                        }
+                    }
+                }
+                return set
+            }
+        }
+        return nil
+    }
+    
+    public func setListenTagsSet(_ tag_ids: Set<Int>) {
+        UserDefaults.standard.set(Array(tag_ids), forKey: "listenTagsSet")
+        UserDefaults.standard.synchronize()
+        submitListenTagsSet()
+    }
+    
 }

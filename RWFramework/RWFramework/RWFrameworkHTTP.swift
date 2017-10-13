@@ -40,6 +40,15 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
+    func httpGetUIConfig(_ project_id: NSNumber, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        if let url = URL(string: RWFrameworkURLFactory.getUIConfigURL(project_id)) {
+            getDataFromURLNoToken(url, completion: completion)
+        } else {
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "getUIConfigURL unable to be created."])
+            completion(nil, error)
+        }
+    }
+
     func httpGetProjectsIdTags(_ project_id: NSNumber, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.getProjectsIdTagsURL(project_id)) {
             getDataFromURL(url, completion: completion)
@@ -407,28 +416,28 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         loadDataTask.resume()
     }
 
-
-    /// Load data via GET and return in completion with or without error
-    /// This call does NOT add any token that may exist
-    func loadDataFromURL(_ url: URL, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
-        println("loadDataFromURL: " + url.absoluteString)
-
+    func getDataFromURLNoToken(_ url: URL, completion: @escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        println("getDataFromURLNoToken: " + url.absoluteString)
+        
         let session = URLSession.shared
-        let loadDataTask = session.dataTask(with: url, completionHandler: { (data: Data?, response: URLResponse?, error: NSError?) -> Void in
+        let request = NSMutableURLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        let loadDataTask = session.dataTask(with: request as URLRequest) { (data, response, error) -> Void in
             if let errorResponse = error {
-                completion(nil, errorResponse)
+                completion(nil, errorResponse as NSError)
             } else if let httpResponse = response as? HTTPURLResponse {
                 if httpResponse.statusCode == 200 {
                     completion(data, nil)
                 } else {
                     let error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
-                    completion(nil, error)
+                    completion(data, error)
                 }
             } else {
                 let error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
                 completion(nil, error)
             }
-        } as! (Data?, URLResponse?, Error?) -> Void)
+        }
         loadDataTask.resume()
     }
 

@@ -34,6 +34,11 @@ import CoreLocation
     /// Sent when the server fails to send project information
     @objc optional func rwGetProjectsIdFailure(_ error: NSError?)
 
+    /// Sent when ui config has been received from the server
+    @objc optional func rwGetUIConfigSuccess(_ data: Data?)
+    /// Sent when the server fails to send ui config
+    @objc optional func rwGetUIConfigFailure(_ error: NSError?)
+
     /// Sent when project uigroups have been received from the server
     @objc optional func rwGetProjectsIdUIGroupsSuccess(_ data: Data?)
     /// Sent when the server fails to send project uigroups
@@ -252,7 +257,7 @@ extension RWFramework {
             self.dam { rwfp.rwGetProjectsIdSuccess?(data) }
         }
     }
-
+    
     func rwGetProjectsIdFailure(_ error: NSError?) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwGetProjectsIdFailure != nil) {
@@ -262,7 +267,23 @@ extension RWFramework {
             }
         }
     }
-
+    
+    func rwGetUIConfigSuccess(_ data: Data?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwGetUIConfigSuccess?(data) }
+        }
+    }
+    
+    func rwGetUIConfigFailure(_ error: NSError?) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwGetUIConfigFailure != nil) {
+                self.dam { rwfp.rwGetUIConfigFailure?(error) }
+            } else {
+                self.alertOK(self.LS("RWFramework - rwGetUIConfigFailure"), message: error!.localizedDescription)
+            }
+        }
+    }
+    
     func rwGetProjectsIdUIGroupsSuccess(_ data: Data?) {
         protocaller { (rwfp, _) -> Void in
             self.dam { rwfp.rwGetProjectsIdUIGroupsSuccess?(data) }

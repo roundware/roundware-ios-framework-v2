@@ -76,6 +76,7 @@ private lazy var __once: () = { () -> Void in
     }
     var getProjectsIdUIGroupsSucceeded = false
     var getTagCategoriesSucceeded = false
+    var getUIConfigSucceeded = false
     var requestStreamInProgress = false
     var requestStreamSucceeded = false {
         didSet {

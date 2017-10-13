@@ -38,6 +38,10 @@ open class RWFrameworkURLFactory {
     class func getTagCategoriesURL() -> String {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "/tagcategories/"
     }
+    
+    class func getUIConfigURL(_ project_id: NSNumber) -> String {
+        return "https://gist.githubusercontent.com/hburgund/e0cbf959204d83ab88c95cf0d31a0673/raw/389d54464ebb6732952af03e421bd62b9619e16f/api2-uiconfig.json"
+    }
 
     class func postStreamsURL() -> String {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "streams/"

@@ -152,12 +152,34 @@ extension RWFramework {
 
                 getProjectsIdSucceeded = true
 
-                apiGetProjectsIdTags(project_id)
+                apiGetProjectsIdTags(project_id) // TBDeleted
+                apiGetUIConfig(project_id)
             }
         }
         catch {
             print(error)
         }
+    }
+
+    // MARK: GET ui config
+    
+    func apiGetUIConfig(_ project_id: NSNumber) {
+        httpGetUIConfig(project_id) { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                self.getUIConfigSuccess(data!, project_id: project_id)
+                self.rwGetUIConfigSuccess(data)
+            } else if (error != nil) {
+                self.rwGetUIConfigFailure(error)
+                self.apiProcessError(data, error: error!, caller: "apiGetUIConfig")
+            }
+        }
+    }
+    
+    func getUIConfigSuccess(_ data: Data, project_id: NSNumber) {
+        // Save data to UserDefaults for later access
+        UserDefaults.standard.set(data, forKey: "uiconfig")
+        
+        getUIConfigSucceeded = true
     }
 
 // MARK: GET projects id tags
