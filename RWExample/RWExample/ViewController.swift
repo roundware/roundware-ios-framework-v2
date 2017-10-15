@@ -31,10 +31,12 @@ class ViewController: UIViewController, MKMapViewDelegate {
     }
 
     override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         RWFramework.sharedInstance.addDelegate(self)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
         RWFramework.sharedInstance.removeDelegate(self)
     }
 

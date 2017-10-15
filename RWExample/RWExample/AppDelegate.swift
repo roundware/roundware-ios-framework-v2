@@ -70,6 +70,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 }
 
+// MARK: -
+
 extension AppDelegate: RWFrameworkProtocol {
     
     func rwUpdateStatus(_ message: String) {

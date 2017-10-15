@@ -13,20 +13,7 @@ extension RWFramework {
 
     /// This is set in the self.player's willSet/didSet
     open override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        //println("keyPath: \(String(describing: keyPath)) object: \(String(describing: object)) change: \(String(describing: change))")
-
-        if let _ = keyPath, let _ = object, let _ = change {
-            // TODO: Fix crash here
-            //rwObserveValueForKeyPath(keyPath!, ofObject: object! as AnyObject, change: change!, context: context!)
-        }
-
-//        if (keyPath == "timedMetadata") {
-//            let newChange = change["new"] as! NSArray // NB: change may be nil when backgrounding - TOFIX
-//            let avMetadataItem = newChange.firstObject as! AVMetadataItem
-//            let value = avMetadataItem.value
-//            println("AVMetadataItem value = \(value)")
-//
-//        }
+        rwObserveValueForKeyPath(forKeyPath: keyPath, of: object, change: change, context: context)
     }
 
     /// Return true if the framework can play audio
