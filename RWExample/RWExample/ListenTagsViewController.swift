@@ -6,6 +6,8 @@
 //  Copyright © 2017 Roundware. All rights reserved.
 //
 
+TODO: take into account "single"
+
 import UIKit
 import Foundation
 import RWFramework
