@@ -60,7 +60,7 @@ open class RWFrameworkURLFactory {
     }
     
     class func postStreamsIdSkipURL(_ stream_id: String) -> String {
-        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "streams/" + stream_id + "/skip/"
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "streams/" + stream_id + "/skipasset/"
     }
     
     class func postEnvelopesURL() -> String {

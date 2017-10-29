@@ -83,7 +83,7 @@ extension RWFramework {
 
             var session_id : NSNumber = 0
             if let dict = json as? [String: AnyObject] {
-                if let _session_id = dict["session_id"] as? NSNumber {
+                if let _session_id = dict["id"] as? NSNumber {
                     session_id = _session_id
                     RWFrameworkConfig.setConfigValue("session_id", value: session_id, group: RWFrameworkConfig.ConfigGroup.client)
                 } // TODO: Handle missing value
@@ -426,7 +426,7 @@ extension RWFramework {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
             if let dict = json as? [String: AnyObject] {
-                if let envelope_id = dict["envelope_id"] as? NSNumber {
+                if let envelope_id = dict["id"] as? NSNumber {
                     success(envelope_id.intValue)
                 }
             }
