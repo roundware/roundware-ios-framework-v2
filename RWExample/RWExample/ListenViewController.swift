@@ -93,9 +93,6 @@ class ListenViewController: UIViewController {
         }
         let assetID = mostRecentAssetID! // Use the one that was playing when we tapped the button, not any subsequent updates
         
-        
-        RWFramework.sharedInstance.alertOK
-        
         let ac = UIAlertController(title: "More", message: "Report Recordings or Users", preferredStyle: .alert)
         
         ac.addAction(UIAlertAction(title: "Block User", style: .default, handler: {(alert: UIAlertAction!) in
