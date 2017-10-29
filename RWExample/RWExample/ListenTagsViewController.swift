@@ -6,8 +6,6 @@
 //  Copyright © 2017 Roundware. All rights reserved.
 //
 
-TODO: take into account "single"
-
 import UIKit
 import Foundation
 import RWFramework
@@ -99,10 +97,15 @@ class ListenTagsViewController: UIViewController, UITableViewDelegate, UITableVi
         if let cell = tableView.cellForRow(at: indexPath) {
             cell.accessoryType = .none
 
+            // take into account single/min_one
+
             // Remove the newly deselected tag from the set
             let group = uiconfig!.listen[segmentedControl.selectedSegmentIndex]
             selectedTagIDs!.remove(group.display_items[indexPath.row].tag_id)
             RWFramework.sharedInstance.setListenTagsSet(selectedTagIDs!)
+
+            // take into account single/min_one
+
         }
     }
     
@@ -114,11 +117,16 @@ class ListenTagsViewController: UIViewController, UITableViewDelegate, UITableVi
         if let cell = tableView.cellForRow(at: indexPath) {
             cell.accessoryType = .checkmark
             
+            // take into account single/min_one
+            
             // Add the newly selected tag to the set
             let group = uiconfig!.listen[segmentedControl.selectedSegmentIndex]
             selectedTagIDs!.insert(group.display_items[indexPath.row].tag_id)
             RWFramework.sharedInstance.setListenTagsSet(selectedTagIDs!)
-       }
+        
+            // take into account single/min_one
+
+        }
     }
 
     // MARK: - Navigation
