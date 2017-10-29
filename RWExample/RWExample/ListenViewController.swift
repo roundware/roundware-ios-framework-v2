@@ -84,7 +84,7 @@ class ListenViewController: UIViewController {
     }
 
     @IBAction func filter(_ sender: UIButton) {
-        // This is handled in the storyboard via segue to ListenTagsViewController
+        
     }
     
     @IBAction func more(_ sender: UIButton) {
@@ -94,29 +94,31 @@ class ListenViewController: UIViewController {
         let assetID = mostRecentAssetID! // Use the one that was playing when we tapped the button, not any subsequent updates
         
         
-        let ac = UIAlertController(title: "Report Recordings or Users", message: "", preferredStyle: .alert)
+        RWFramework.sharedInstance.alertOK
+        
+        let ac = UIAlertController(title: "More", message: "Report Recordings or Users", preferredStyle: .alert)
         
         ac.addAction(UIAlertAction(title: "Block User", style: .default, handler: {(alert: UIAlertAction!) in
             RWFramework.sharedInstance.apiPostAssetsIdVotes(assetID, vote_type: "block_user", success: { (data) in
-                self.alertOK(title: "Block User", message: "You successfully blocked this user.")
+                print("block_user success")
             }, failure: { (error) in
-                self.alertOK(title: "Block User", message: "There was an error trying to block this user.")
+                print("block_user failure")
             })
         }))
         
         ac.addAction(UIAlertAction(title: "Block Asset", style: .default, handler: {(alert: UIAlertAction!) in
             RWFramework.sharedInstance.apiPostAssetsIdVotes(assetID, vote_type: "block_asset", success: { (data) in
-                self.alertOK(title: "Block Asset", message: "You successfully blocked this asset.")
+                print("block_asset success")
             }, failure: { (error) in
-                self.alertOK(title: "Block Asset", message: "There was an error trying to block this asset.")
+                print("block_asset failure")
             })
         }))
 
         ac.addAction(UIAlertAction(title: "Flag Recording", style: .default, handler: {(alert: UIAlertAction!) in
             RWFramework.sharedInstance.apiPostAssetsIdVotes(assetID, vote_type: "flag", success: { (data) in
-                self.alertOK(title: "Flag Recording", message: "You successfully flagged this recording.")
+                print("flag success")
             }, failure: { (error) in
-                self.alertOK(title: "Flag Recording", message: "There was an error trying to flag this recording.")
+                print("flag failure")
             })
         }))
 
@@ -125,13 +127,6 @@ class ListenViewController: UIViewController {
         self.present(ac, animated: true, completion: nil)
     }
 
-    func alertOK(title: String, message: String) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.alert)
-        let OKAction = UIAlertAction(title: "OK", style: .default) { (action) in }
-        alert.addAction(OKAction)
-        self.present(alert, animated: true, completion: nil)
-    }
-    
     // MARK: -
     
     override func canPerformUnwindSegueAction(_ action: Selector, from fromViewController: UIViewController, withSender sender: Any) -> Bool {
