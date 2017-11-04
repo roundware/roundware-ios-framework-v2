@@ -151,8 +151,11 @@ extension RWFramework {
                 }
 
                 getProjectsIdSucceeded = true
-
+                
                 apiGetProjectsIdTags(project_id, session_id: session_id)
+                
+                // a simpler alternative to apiGetProjectsIdTags and it's subsequent calls but needs
+                // to be properly vetted before turning off the more complex calls
                 apiGetUIConfig(project_id)
             }
         }
