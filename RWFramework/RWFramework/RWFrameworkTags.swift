@@ -180,7 +180,7 @@ extension RWFramework {
         do {
             if let data = UserDefaults.standard.object(forKey: "tags") {
                 let decoder = JSONDecoder()
-                let taglist = try decoder.decode(Tag.self, from: data as! Data)
+                let taglist = try decoder.decode([Tag].self, from: data as! Data)
                 let uigrouplist = getUIGroups(ui_mode)
 
                 // Create an empty array of tags that will be filled with all ui_mode tags
@@ -266,7 +266,7 @@ extension RWFramework {
         var s = ""
         if let tags = getAllListenTagsCurrent() {
             for tag in tags {
-                if s.characters.count > 0 {
+                if s.count > 0 {
                     s += ","
                 }
                 s += "\(tag.id)"
@@ -293,7 +293,7 @@ extension RWFramework {
         var s = ""
         if let tags = getAllSpeakTagsCurrent() {
             for tag in tags {
-                if s.characters.count > 0 {
+                if s.count > 0 {
                     s += ","
                 }
                 s += "\(tag.id)"
@@ -316,7 +316,7 @@ extension RWFramework {
         var tag_ids: String = ""
         if let selectedTagIDs = getListenTagsSet() {
             for tag_id in selectedTagIDs {
-                if tag_ids.characters.count > 0 {
+                if tag_ids.count > 0 {
                     tag_ids += ","
                 }
                 tag_ids += "\(tag_id)"

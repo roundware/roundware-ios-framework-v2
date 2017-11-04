@@ -152,7 +152,7 @@ extension RWFramework {
 
                 getProjectsIdSucceeded = true
 
-                apiGetProjectsIdTags(project_id, session_id: session_id) // TBDeleted
+                apiGetProjectsIdTags(project_id, session_id: session_id)
                 apiGetUIConfig(project_id)
             }
         }
@@ -187,7 +187,7 @@ extension RWFramework {
     func apiGetProjectsIdTags(_ project_id: NSNumber, session_id: NSNumber) {
         httpGetProjectsIdTags(project_id, session_id: session_id) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
-                self.getProjectsIdTagsSuccess(data!, project_id: project_id)
+                self.getProjectsIdTagsSuccess(data!, project_id: project_id, session_id: session_id)
                 self.rwGetProjectsIdTagsSuccess(data)
             } else if (error != nil) {
                 self.rwGetProjectsIdTagsFailure(error)
@@ -196,12 +196,12 @@ extension RWFramework {
         }
     }
     
-    func getProjectsIdTagsSuccess(_ data: Data, project_id: NSNumber) {
+    func getProjectsIdTagsSuccess(_ data: Data, project_id: NSNumber, session_id: NSNumber) {
         // Save data to UserDefaults for later access
         UserDefaults.standard.set(data, forKey: "tags")
         
         getProjectsIdTagsSucceeded = true
-//        apiGetProjectsIdUIGroups(project_id) // don't think this is necessary now with UIConfig call in place
+        apiGetProjectsIdUIGroups(project_id, session_id: session_id)
     }
 
 // MARK: GET projects id uigroups
