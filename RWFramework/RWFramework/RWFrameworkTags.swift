@@ -36,10 +36,6 @@ extension RWFramework {
         public var msg_loc: String?
         public var relationships: [Relationship]?
     }
-    
-    public struct TagList : Codable {
-        public let tags: [Tag]
-    }
 
     // UIGroups
     
@@ -64,10 +60,6 @@ extension RWFramework {
         public var tag_category_id: Int
         public var project_id: Int
         public var ui_items: [UIItem]?
-    }
-    
-    public struct UIGroupList : Codable {
-        public let ui_groups: [UIGroup]
     }
 
     // TagCategories
@@ -141,39 +133,32 @@ extension RWFramework {
     }
     
 // MARK: UIGroups
-
-    public func getUIGroupList() -> UIGroupList? {
+    
+    public func getUIGroups(_ ui_mode: String) -> [UIGroup]? {
+        // Get groups
         do {
             if let data = UserDefaults.standard.object(forKey: "ui_groups") {
                 let decoder = JSONDecoder()
-                let uigrouplist = try decoder.decode(UIGroupList.self, from: data as! Data)
-                return uigrouplist
+                let uigrouplist = try decoder.decode([UIGroup].self, from: data as! Data)
+                
+                // Create an empty array of groups that will be filled with all listen tags
+                var groups = [UIGroup]()
+
+                // Iterate groups for ui_mode of the passed in parameter
+                for group in uigrouplist where group.ui_mode == ui_mode {
+                    groups.append(group)
+                }
+                
+                guard groups.count > 0 else { return nil }
+                groups.sort {
+                    return $0.index < $1.index
+                }
+
+                return groups
             }
         }
         catch {
             print(error)
-        }
-        return nil
-    }
-    
-    public func getUIGroups(_ ui_mode: String) -> [UIGroup]? {
-        // Get groups
-        if let uigrouplist = getUIGroupList() {
-            
-            // Create an empty array of groups that will be filled with all listen tags
-            var groups = [UIGroup]()
-
-            // Iterate groups for ui_mode of the passed in parameter
-            for group in uigrouplist.ui_groups where group.ui_mode == ui_mode {
-                groups.append(group)
-            }
-            
-            guard groups.count > 0 else { return nil }
-            groups.sort {
-                return $0.index < $1.index
-            }
-
-            return groups
         }
         return nil
     }
@@ -189,13 +174,39 @@ extension RWFramework {
     }
     
 // MARK: Tags
-
-    public func getTagList() -> TagList? {
+    
+    public func getTags(_ ui_mode: String) -> [Tag]? {
+        // Get tags and groups
         do {
             if let data = UserDefaults.standard.object(forKey: "tags") {
                 let decoder = JSONDecoder()
-                let taglist = try decoder.decode(TagList.self, from: data as! Data)
-                return taglist
+                let taglist = try decoder.decode(Tag.self, from: data as! Data)
+                let uigrouplist = getUIGroups(ui_mode)
+
+                // Create an empty array of tags that will be filled with all ui_mode tags
+                var tags = [Tag]()
+
+                // Iterate groups for ui_mode of the passed in parameter
+                for group in uigrouplist! where group.ui_mode == ui_mode {
+
+                    // Verify that there are ui_items defined for any found group
+                    guard let ui_items = group.ui_items else { continue }
+
+                    // Iterate the ui_items
+                    for ui_item in ui_items {
+
+                        // Verify that there is a tag_id set for any found item
+                        if let tag_id = ui_item.tag_id {
+
+                            // Find the tag with that tag_id
+                            if let tag = taglist.filter({$0.id == tag_id}).first {
+                                tags.append(tag)
+                            }
+                        }
+                    }
+                }
+                guard tags.count > 0 else { return nil }
+                return tags
             }
         }
         catch {
@@ -203,48 +214,17 @@ extension RWFramework {
         }
         return nil
     }
-
-    public func getTags(_ ui_mode: String) -> [Tag]? {
-        // Get tags and groups
-        if let uigrouplist = getUIGroupList(), let taglist = getTagList() {
-            
-            // Create an empty array of tags that will be filled with all ui_mode tags
-            var tags = [Tag]()
-            
-            // Iterate groups for ui_mode of the passed in parameter
-            for group in uigrouplist.ui_groups where group.ui_mode == ui_mode {
-                
-                // Verify that there are ui_items defined for any found group
-                guard let ui_items = group.ui_items else { continue }
-                
-                // Iterate the ui_items
-                for ui_item in ui_items {
-                    
-                    // Verify that there is a tag_id set for any found item
-                    if let tag_id = ui_item.tag_id {
-                        
-                        // Find the tag with that tag_id
-                        if let tag = taglist.tags.filter({$0.id == tag_id}).first {
-                            tags.append(tag)
-                        }
-                    }
-                }
-            }
-            guard tags.count > 0 else { return nil }
-            return tags
-        }
-        return nil
-    }
+    
     
     public func getDefaultTags(_ ui_mode: String) -> [Tag]? {
         // Get tags and groups
-        if let uigrouplist = getUIGroupList(), let taglist = getTagList() {
+        if let uigrouplist = getUIGroups(ui_mode), let taglist = getTags(ui_mode) {
             
             // Create an empty array of tags that will be filled with all ui_mode tags
             var tags = [Tag]()
             
             // Iterate groups for ui_mode of the passed in parameter
-            for group in uigrouplist.ui_groups where group.ui_mode == ui_mode {
+            for group in uigrouplist where group.ui_mode == ui_mode {
                 
                 // Verify that there are ui_items defined for any found group
                 guard let ui_items = group.ui_items else { continue }
@@ -256,7 +236,7 @@ extension RWFramework {
                     if let tag_id = ui_item.tag_id, ui_item.default == true {
                         
                         // Find the tag with that tag_id
-                        if let tag = taglist.tags.filter({$0.id == tag_id}).first {
+                        if let tag = taglist.filter({$0.id == tag_id}).first {
                             tags.append(tag)
                         }
                     }
