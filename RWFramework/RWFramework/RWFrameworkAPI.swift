@@ -152,7 +152,7 @@ extension RWFramework {
 
                 getProjectsIdSucceeded = true
 
-                apiGetProjectsIdTags(project_id) // TBDeleted
+                apiGetProjectsIdTags(project_id, session_id: session_id)
                 apiGetUIConfig(project_id)
             }
         }
@@ -184,10 +184,10 @@ extension RWFramework {
 
 // MARK: GET projects id tags
 
-    func apiGetProjectsIdTags(_ project_id: NSNumber) {
-        httpGetProjectsIdTags(project_id) { (data, error) -> Void in
+    func apiGetProjectsIdTags(_ project_id: NSNumber, session_id: NSNumber) {
+        httpGetProjectsIdTags(project_id, session_id: session_id) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
-                self.getProjectsIdTagsSuccess(data!, project_id: project_id)
+                self.getProjectsIdTagsSuccess(data!, project_id: project_id, session_id: session_id)
                 self.rwGetProjectsIdTagsSuccess(data)
             } else if (error != nil) {
                 self.rwGetProjectsIdTagsFailure(error)
@@ -196,18 +196,18 @@ extension RWFramework {
         }
     }
     
-    func getProjectsIdTagsSuccess(_ data: Data, project_id: NSNumber) {
+    func getProjectsIdTagsSuccess(_ data: Data, project_id: NSNumber, session_id: NSNumber) {
         // Save data to UserDefaults for later access
         UserDefaults.standard.set(data, forKey: "tags")
         
         getProjectsIdTagsSucceeded = true
-        apiGetProjectsIdUIGroups(project_id)
+        apiGetProjectsIdUIGroups(project_id, session_id: session_id)
     }
 
 // MARK: GET projects id uigroups
     
-    func apiGetProjectsIdUIGroups(_ project_id: NSNumber) {
-        httpGetProjectsIdUIGroups(project_id) { (data, error) -> Void in
+    func apiGetProjectsIdUIGroups(_ project_id: NSNumber, session_id: NSNumber) {
+        httpGetProjectsIdUIGroups(project_id, session_id: session_id) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.getProjectsIdUIGroupsSuccess(data!, project_id: project_id)
                 self.rwGetProjectsIdUIGroupsSuccess(data)
