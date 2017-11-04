@@ -32,6 +32,7 @@ class ListenTagsViewController: UIViewController, UITableViewDelegate, UITableVi
             }
             segmentedControl.selectedSegmentIndex = 0
             updateHeaderLabel()
+            updateTableOptions()
         }
     }
 
@@ -44,6 +45,7 @@ class ListenTagsViewController: UIViewController, UITableViewDelegate, UITableVi
     @IBAction func valueChanged(_ sender: UISegmentedControl) {
         tableView.reloadData()
         updateHeaderLabel()
+        updateTableOptions()
     }
     
     override func didReceiveMemoryWarning() {
@@ -52,12 +54,32 @@ class ListenTagsViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     // MARK: -
-    
+
     func updateHeaderLabel() {
         guard uiconfig != nil else {
             return
         }
         headerLabel.text = uiconfig!.listen[segmentedControl.selectedSegmentIndex].header_display_text
+    }
+
+    func updateTableOptions() {
+        guard uiconfig != nil else {
+            return
+        }
+        let group = uiconfig!.listen[segmentedControl.selectedSegmentIndex]
+        
+        // take into account single/min_one/multi
+        // single = 1 selection only (required)
+        // min_one = must have at least one selected
+        // multi = like min_one but can have zero selections
+        tableView.allowsMultipleSelection = group.select != "single"
+    }
+    
+    func numTableViewSelections() -> Int {
+        if let indexPathsForSelectedRows = tableView.indexPathsForSelectedRows {
+            return indexPathsForSelectedRows.count
+        }
+        return 0
     }
     
     // MARK: - UITableView
@@ -89,23 +111,44 @@ class ListenTagsViewController: UIViewController, UITableViewDelegate, UITableVi
         return cell
     }
     
+    // When selecting and deselecting, the table already has allowsMultipleSelection set properly for the current segment
+    // but we still have to manually take into account single/min_one/multi for some cases
+    //
+    // single = 1 selection only (required)
+    // min_one = must have at least one selected
+    // multi = like min_one but can have zero selections
+
+    func tableView(_ tableView: UITableView, willDeselectRowAt indexPath: IndexPath) -> IndexPath? {
+        guard uiconfig != nil else {
+            return indexPath
+        }
+
+        let group = uiconfig!.listen[segmentedControl.selectedSegmentIndex]
+        let numTableViewSelections = self.numTableViewSelections()
+        
+        if group.select == "single" && numTableViewSelections == 1 {
+            return nil // must have at least one
+        }
+        if group.select == "min_one" && numTableViewSelections == 1 {
+            return nil // must have at least one
+        }
+        
+        return indexPath
+    }
+    
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
         guard uiconfig != nil, selectedTagIDs != nil else {
             return
         }
+        
+        let group = uiconfig!.listen[segmentedControl.selectedSegmentIndex]
 
         if let cell = tableView.cellForRow(at: indexPath) {
             cell.accessoryType = .none
 
-            // take into account single/min_one
-
             // Remove the newly deselected tag from the set
-            let group = uiconfig!.listen[segmentedControl.selectedSegmentIndex]
             selectedTagIDs!.remove(group.display_items[indexPath.row].tag_id)
             RWFramework.sharedInstance.setListenTagsSet(selectedTagIDs!)
-
-            // take into account single/min_one
-
         }
     }
     
@@ -114,18 +157,14 @@ class ListenTagsViewController: UIViewController, UITableViewDelegate, UITableVi
             return
         }
 
+        let group = uiconfig!.listen[segmentedControl.selectedSegmentIndex]
+
         if let cell = tableView.cellForRow(at: indexPath) {
             cell.accessoryType = .checkmark
             
-            // take into account single/min_one
-            
             // Add the newly selected tag to the set
-            let group = uiconfig!.listen[segmentedControl.selectedSegmentIndex]
             selectedTagIDs!.insert(group.display_items[indexPath.row].tag_id)
             RWFramework.sharedInstance.setListenTagsSet(selectedTagIDs!)
-        
-            // take into account single/min_one
-
         }
     }
 
