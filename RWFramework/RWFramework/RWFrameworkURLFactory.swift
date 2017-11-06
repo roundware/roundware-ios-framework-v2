@@ -28,19 +28,19 @@ open class RWFrameworkURLFactory {
     }
 
     class func getProjectsIdTagsURL(_ project_id: NSNumber, session_id: NSNumber) -> String {
-        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "projects/" + project_id.stringValue + "/tags/" + "/?session_id=" + session_id.stringValue
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "projects/" + project_id.stringValue + "/tags/" + "?session_id=" + session_id.stringValue
     }
     
     class func getProjectsIdUIGroupsURL(_ project_id: NSNumber, session_id: NSNumber) -> String {
-        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "projects/" + project_id.stringValue + "/uigroups/" + "/?session_id=" + session_id.stringValue
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "projects/" + project_id.stringValue + "/uigroups/" + "?session_id=" + session_id.stringValue
     }
 
     class func getTagCategoriesURL() -> String {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "/tagcategories/"
     }
     
-    class func getUIConfigURL(_ project_id: NSNumber) -> String {
-        return "https://gist.githubusercontent.com/hburgund/e0cbf959204d83ab88c95cf0d31a0673/raw/389d54464ebb6732952af03e421bd62b9619e16f/api2-uiconfig.json"
+    class func getUIConfigURL(_ project_id: NSNumber, session_id: NSNumber) -> String {
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "projects/" + project_id.stringValue + "/uiconfig/" + "?session_id=" + session_id.stringValue
     }
 
     class func postStreamsURL() -> String {
