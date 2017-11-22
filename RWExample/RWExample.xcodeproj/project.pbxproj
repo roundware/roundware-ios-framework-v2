@@ -20,6 +20,7 @@
 		75D532031A813EF900DFB873 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D532021A813EF900DFB873 /* MapKit.framework */; };
 		75DFFFE01A7AECC300660B96 /* RWFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75A7D31F1A76774B00E662A8 /* RWFramework.framework */; };
 		75DFFFE11A7AECC300660B96 /* RWFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 75A7D31F1A76774B00E662A8 /* RWFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		75FE0D571FC5DF8D00BAF45B /* SpeakTagsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FE0D561FC5DF8D00BAF45B /* SpeakTagsViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -91,6 +92,7 @@
 		75A7D3191A76774B00E662A8 /* RWFramework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RWFramework.xcodeproj; path = ../RWFramework/RWFramework.xcodeproj; sourceTree = "<group>"; };
 		75A7D3281A76F5DA00E662A8 /* RWFramework.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = RWFramework.plist; sourceTree = "<group>"; };
 		75D532021A813EF900DFB873 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
+		75FE0D561FC5DF8D00BAF45B /* SpeakTagsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakTagsViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -141,6 +143,7 @@
 				7514200D1F5DAEAB00BF7864 /* ListenViewController.swift */,
 				75179DEF1F76B6B9004A2591 /* ListenTagsViewController.swift */,
 				751420101F5DB59300BF7864 /* SpeakViewController.swift */,
+				75FE0D561FC5DF8D00BAF45B /* SpeakTagsViewController.swift */,
 				75A7D2AB1A745B5300E662A8 /* Main.storyboard */,
 				75A7D2AE1A745B5300E662A8 /* Images.xcassets */,
 				75A7D2B01A745B5300E662A8 /* LaunchScreen.xib */,
@@ -325,6 +328,7 @@
 				75A7D2A81A745B5300E662A8 /* AppDelegate.swift in Sources */,
 				7514200E1F5DAEAB00BF7864 /* ListenViewController.swift in Sources */,
 				75179DF01F76B6B9004A2591 /* ListenTagsViewController.swift in Sources */,
+				75FE0D571FC5DF8D00BAF45B /* SpeakTagsViewController.swift in Sources */,
 				751420111F5DB59300BF7864 /* SpeakViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

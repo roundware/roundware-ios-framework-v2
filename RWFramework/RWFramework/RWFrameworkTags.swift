@@ -349,5 +349,31 @@ extension RWFramework {
         UserDefaults.standard.synchronize()
         submitListenTagsSet()
     }
+
+// MARK: --
+    
+    public func getSpeakTagsSet() -> Set<Int>? {
+        if let array = UserDefaults.standard.object(forKey: "speakTagsSet") as? Array<Int> {
+            return Set(array)
+        } else {
+            if let uiconfig = getUIConfig() {
+                var set = Set<Int>()
+                for speak in uiconfig.speak {
+                    for item in speak.display_items {
+                        if item.default_state == true {
+                            set.insert(item.tag_id)
+                        }
+                    }
+                }
+                return set
+            }
+        }
+        return nil
+    }
+    
+    public func setSpeakTagsSet(_ tag_ids: Set<Int>) {
+        UserDefaults.standard.set(Array(tag_ids), forKey: "speakTagsSet")
+        UserDefaults.standard.synchronize()
+    }
     
 }
