@@ -21,6 +21,7 @@
 		75DFFFE01A7AECC300660B96 /* RWFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75A7D31F1A76774B00E662A8 /* RWFramework.framework */; };
 		75DFFFE11A7AECC300660B96 /* RWFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 75A7D31F1A76774B00E662A8 /* RWFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		75FE0D571FC5DF8D00BAF45B /* SpeakTagsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FE0D561FC5DF8D00BAF45B /* SpeakTagsViewController.swift */; };
+		75FE0D5B1FCB039700BAF45B /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75FE0D591FCB039700BAF45B /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -93,6 +94,7 @@
 		75A7D3281A76F5DA00E662A8 /* RWFramework.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = RWFramework.plist; sourceTree = "<group>"; };
 		75D532021A813EF900DFB873 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		75FE0D561FC5DF8D00BAF45B /* SpeakTagsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakTagsViewController.swift; sourceTree = "<group>"; };
+		75FE0D5A1FCB039700BAF45B /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -148,6 +150,7 @@
 				75A7D2AE1A745B5300E662A8 /* Images.xcassets */,
 				75A7D2B01A745B5300E662A8 /* LaunchScreen.xib */,
 				75A7D3281A76F5DA00E662A8 /* RWFramework.plist */,
+				75FE0D591FCB039700BAF45B /* Localizable.strings */,
 				75A7D2A51A745B5300E662A8 /* Supporting Files */,
 			);
 			path = RWExample;
@@ -303,6 +306,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				75FE0D5B1FCB039700BAF45B /* Localizable.strings in Resources */,
 				75A7D2AD1A745B5300E662A8 /* Main.storyboard in Resources */,
 				75A7D2B21A745B5300E662A8 /* LaunchScreen.xib in Resources */,
 				75A7D3291A76F5DA00E662A8 /* RWFramework.plist in Resources */,
@@ -376,6 +380,14 @@
 				75A7D2B11A745B5300E662A8 /* Base */,
 			);
 			name = LaunchScreen.xib;
+			sourceTree = "<group>";
+		};
+		75FE0D591FCB039700BAF45B /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				75FE0D5A1FCB039700BAF45B /* Base */,
+			);
+			name = Localizable.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
