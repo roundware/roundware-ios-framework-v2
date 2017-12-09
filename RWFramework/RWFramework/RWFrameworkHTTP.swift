@@ -40,9 +40,9 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
-    func httpGetUIConfig(_ project_id: NSNumber, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
-        if let url = URL(string: RWFrameworkURLFactory.getUIConfigURL(project_id)) {
-            getDataFromURLNoToken(url, completion: completion)
+    func httpGetUIConfig(_ project_id: NSNumber, session_id: NSNumber, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        if let url = URL(string: RWFrameworkURLFactory.getUIConfigURL(project_id, session_id: session_id)) {
+            getDataFromURL(url, completion: completion)
         } else {
             let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "getUIConfigURL unable to be created."])
             completion(nil, error)

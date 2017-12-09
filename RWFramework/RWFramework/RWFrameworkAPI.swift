@@ -156,7 +156,7 @@ extension RWFramework {
                 
                 // a simpler alternative to apiGetProjectsIdTags and it's subsequent calls but needs
                 // to be properly vetted before turning off the more complex calls
-                apiGetUIConfig(project_id)
+                apiGetUIConfig(project_id, session_id: session_id)
             }
         }
         catch {
@@ -166,8 +166,8 @@ extension RWFramework {
 
     // MARK: GET ui config
     
-    func apiGetUIConfig(_ project_id: NSNumber) {
-        httpGetUIConfig(project_id) { (data, error) -> Void in
+    func apiGetUIConfig(_ project_id: NSNumber, session_id: NSNumber) {
+        httpGetUIConfig(project_id, session_id: session_id) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.getUIConfigSuccess(data!, project_id: project_id)
                 self.rwGetUIConfigSuccess(data)
