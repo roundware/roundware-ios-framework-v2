@@ -376,4 +376,34 @@ extension RWFramework {
         UserDefaults.standard.synchronize()
     }
     
+// MARK: --
+    
+    public func getValidDisplayItems(_ group: [UIConfigGroup], index: Int, tags: Set<Int>) -> [UIConfigItem] {
+        var display_items = [UIConfigItem]()
+        for item in group[index].display_items {
+            if item.parent_id == nil {
+                display_items.append(item)
+            } else {
+                var previousIndex = index - 1
+                if previousIndex < 0 { previousIndex = 0 }
+                if let tagIDOfParentID = getTagIdOfDisplayItemParent(item, group: [group[previousIndex]]) {
+                    if tags.contains(tagIDOfParentID) {
+                        display_items.append(item)
+                    }
+                }
+            }
+        }
+        return display_items
+    }
+
+    public func getTagIdOfDisplayItemParent(_ display_item: UIConfigItem, group: [UIConfigGroup]) -> Int? {
+        for g in group {
+            for item in g.display_items {
+                if (item.id == display_item.parent_id) {
+                    return item.tag_id
+                }
+            }
+        }
+        return nil
+    }
 }
