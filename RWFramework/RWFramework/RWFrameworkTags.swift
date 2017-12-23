@@ -312,10 +312,24 @@ extension RWFramework {
 
 // MARK: simplified
     
-    public func submitListenTagsSet() {
+    public func getListenTagIDFromID(_ id: Int) -> Int {
+        if let uiconfig = getUIConfig() {
+            for listen in uiconfig.listen {
+                for item in listen.display_items {
+                    if item.id == id {
+                        return item.tag_id
+                    }
+                }
+            }
+        }
+        return 0
+    }
+    
+    public func submitListenIDsSetAsTags() {
         var tag_ids: String = ""
-        if let selectedTagIDs = getListenTagsSet() {
-            for tag_id in selectedTagIDs {
+        if let selectedIDs = getListenIDsSet() {
+            for id in selectedIDs {
+                let tag_id = getListenTagIDFromID(id)
                 if tag_ids.count > 0 {
                     tag_ids += ","
                 }
@@ -325,8 +339,8 @@ extension RWFramework {
         apiPatchStreamsIdWithTags(tag_ids)
     }
 
-    public func getListenTagsSet() -> Set<Int>? {
-        if let array = UserDefaults.standard.object(forKey: "listenTagsSet") as? Array<Int> {
+    public func getListenIDsSet() -> Set<Int>? {
+        if let array = UserDefaults.standard.object(forKey: "listenIDsSet") as? Array<Int> {
             return Set(array)
         } else {
             if let uiconfig = getUIConfig() {
@@ -334,7 +348,7 @@ extension RWFramework {
                 for listen in uiconfig.listen {
                     for item in listen.display_items {
                         if item.default_state == true {
-                            set.insert(item.tag_id)
+                            set.insert(item.id)
                         }
                     }
                 }
@@ -344,10 +358,10 @@ extension RWFramework {
         return nil
     }
     
-    public func setListenTagsSet(_ tag_ids: Set<Int>) {
-        UserDefaults.standard.set(Array(tag_ids), forKey: "listenTagsSet")
+    public func setListenIDsSet(_ tag_ids: Set<Int>) {
+        UserDefaults.standard.set(Array(tag_ids), forKey: "listenIDsSet")
         UserDefaults.standard.synchronize()
-        submitListenTagsSet()
+        submitListenIDsSetAsTags()
     }
 
 // MARK: --
