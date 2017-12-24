@@ -18,14 +18,14 @@ class SpeakTagsViewController: UIViewController, UITableViewDelegate, UITableVie
     
     // getUIConfig provides a simplified UIConfig struct that allows the UI to get to what it needs without complex parsing
     var uiconfig = RWFramework.sharedInstance.getUIConfig()
-    // getSpeakTagsSet provides a Set of the currently selected tag IDs within the UIConfig struct
-    var selectedTagIDs:Set? = Set<Int>() // Start with an empty set each time // RWFramework.sharedInstance.getSpeakTagsSet()
+    // getSpeakIDsSet provides a Set of the currently selected IDs within the UIConfig struct
+    var selectedIDs:Set? = Set<Int>() // Start with an empty set each time // RWFramework.sharedInstance.getSpeakTagsSet()
     
     var nextButton:UIBarButtonItem?
     
     required init?(coder aDecoder: NSCoder) {
-        // Make sure to set the current speak tags to our default (empty) set
-        RWFramework.sharedInstance.setSpeakTagsSet(selectedTagIDs!)
+        // Make sure to set the current speak IDs to our default (empty) set
+        RWFramework.sharedInstance.setSpeakIDsSet(selectedIDs!)
         super.init(coder: aDecoder)
     }
     
@@ -43,7 +43,6 @@ class SpeakTagsViewController: UIViewController, UITableViewDelegate, UITableVie
             }
             segmentedControl.selectedSegmentIndex = 0
             updateHeaderLabel()
-            updateTableOptions()
         }
     }
     
@@ -56,7 +55,6 @@ class SpeakTagsViewController: UIViewController, UITableViewDelegate, UITableVie
     @IBAction func valueChanged(_ sender: UISegmentedControl) {
         tableView.reloadData()
         updateHeaderLabel()
-        updateTableOptions()
     }
     
     override func didReceiveMemoryWarning() {
@@ -80,19 +78,6 @@ class SpeakTagsViewController: UIViewController, UITableViewDelegate, UITableVie
         headerLabel.text = uiconfig!.speak[segmentedControl.selectedSegmentIndex].header_display_text
     }
     
-    func updateTableOptions() {
-        guard uiconfig != nil else {
-            return
-        }
-        let group = uiconfig!.speak[segmentedControl.selectedSegmentIndex]
-        
-        // take into account single/min_one/multi
-        // single = 1 selection only (required)
-        // min_one = must have at least one selected
-        // multi = like min_one but can have zero selections
-        tableView.allowsMultipleSelection = group.select != "single"
-    }
-    
     func numTableViewSelections() -> Int {
         if let indexPathsForSelectedRows = tableView.indexPathsForSelectedRows {
             return indexPathsForSelectedRows.count
@@ -105,17 +90,19 @@ class SpeakTagsViewController: UIViewController, UITableViewDelegate, UITableVie
     // MARK: - UITableView
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard uiconfig != nil, selectedTagIDs != nil, segmentedControl.selectedSegmentIndex != UISegmentedControlNoSegment else {
+        guard uiconfig != nil, selectedIDs != nil, segmentedControl.selectedSegmentIndex != UISegmentedControlNoSegment else {
             return 0
         }
         
+        let display_items = RWFramework.sharedInstance.getValidDisplayItems(uiconfig!.speak, index: segmentedControl.selectedSegmentIndex, tags: selectedIDs!)
+
         var numberOfRowsInSection = 0
-        for display_item in uiconfig!.speak[segmentedControl.selectedSegmentIndex].display_items {
+        for display_item in display_items {
             if display_item.parent_id == nil {
                 numberOfRowsInSection += 1
             } else {
-                if let tag_id = RWFramework.sharedInstance.getTagIdOfDisplayItemParent(display_item, group: uiconfig!.speak) {
-                    if (selectedTagIDs!.contains(tag_id)) {
+                if let id = RWFramework.sharedInstance.getIDOfDisplayItemParent(display_item, group: uiconfig!.speak) {
+                    if (selectedIDs!.contains(id)) {
                         numberOfRowsInSection += 1
                     }
                 }
@@ -127,17 +114,16 @@ class SpeakTagsViewController: UIViewController, UITableViewDelegate, UITableVie
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as UITableViewCell
-        guard uiconfig != nil, selectedTagIDs != nil, segmentedControl.selectedSegmentIndex != UISegmentedControlNoSegment else {
+        guard uiconfig != nil, selectedIDs != nil, segmentedControl.selectedSegmentIndex != UISegmentedControlNoSegment else {
             return cell
         }
         
         // Populate the cell with tag_display_text and checkmark if needed
-//        let group = uiconfig!.speak[segmentedControl.selectedSegmentIndex]
-        let display_items = RWFramework.sharedInstance.getValidDisplayItems(uiconfig!.speak, index: segmentedControl.selectedSegmentIndex, tags: selectedTagIDs!)
+        let display_items = RWFramework.sharedInstance.getValidDisplayItems(uiconfig!.speak, index: segmentedControl.selectedSegmentIndex, tags: selectedIDs!)
         let display_item = display_items[indexPath.row]
         
-        cell.textLabel?.text = display_item.tag_display_text
-        let selected = selectedTagIDs!.contains(display_item.tag_id)
+        cell.textLabel?.text = "\(String(describing: display_item.tag_display_text)) \(display_item.id)"
+        let selected = selectedIDs!.contains(display_item.id)
         cell.accessoryType = selected == true ? .checkmark : .none
         
         // Tell the table the cell is selected or not so didDeselectRowAt is called on first tap
@@ -153,7 +139,7 @@ class SpeakTagsViewController: UIViewController, UITableViewDelegate, UITableVie
     //
     // single = 1 selection only (required)
     // min_one = must have at least one selected
-    // multi = like min_one but can have zero selections
+    // multi = like min_one but can have zero selections (aka min_zero)
     
     func tableView(_ tableView: UITableView, willDeselectRowAt indexPath: IndexPath) -> IndexPath? {
         guard uiconfig != nil else {
@@ -174,38 +160,60 @@ class SpeakTagsViewController: UIViewController, UITableViewDelegate, UITableVie
     }
     
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        guard uiconfig != nil, selectedTagIDs != nil else {
+        guard uiconfig != nil, selectedIDs != nil else {
             return
         }
         
-        let group = uiconfig!.speak[segmentedControl.selectedSegmentIndex]
-        
-        // Remove the newly deselected tag from the set
-        selectedTagIDs!.remove(group.display_items[indexPath.row].tag_id)
-        RWFramework.sharedInstance.setSpeakTagsSet(selectedTagIDs!)
-        
-        tableView.reloadData()
+        let display_items = RWFramework.sharedInstance.getValidDisplayItems(uiconfig!.speak, index: segmentedControl.selectedSegmentIndex, tags: selectedIDs!)
+
+        if let cell = tableView.cellForRow(at: indexPath) {
+            cell.accessoryType = .none
+            
+            // Remove the newly deselected tag from the set
+            selectedIDs!.remove(display_items[indexPath.row].id)
+            RWFramework.sharedInstance.setSpeakIDsSet(selectedIDs!)
+        }
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard uiconfig != nil, selectedTagIDs != nil else {
+        guard uiconfig != nil, selectedIDs != nil else {
             return
         }
         
         let group = uiconfig!.speak[segmentedControl.selectedSegmentIndex]
+        let display_items = RWFramework.sharedInstance.getValidDisplayItems(uiconfig!.speak, index: segmentedControl.selectedSegmentIndex, tags: selectedIDs!)
+        let numTableViewSelections = self.numTableViewSelections()
         
-        if group.select == "single" {
-            // Remove all selections
-            for display_items in group.display_items {
-                selectedTagIDs!.remove(display_items.tag_id)
+        if group.select == "single" && numTableViewSelections > 0, let indexPathsForSelectedRows = tableView.indexPathsForSelectedRows {
+            for ip in indexPathsForSelectedRows {
+                if self.tableView(tableView, willDeselectRowAt: ip) != nil {
+                    tableView.deselectRow(at: ip, animated: false)
+                    self.tableView(tableView, didDeselectRowAt: ip)
+                }
             }
         }
         
-        // Add the newly selected tag to the set
-        selectedTagIDs!.insert(group.display_items[indexPath.row].tag_id)
-        RWFramework.sharedInstance.setSpeakTagsSet(selectedTagIDs!)
-        
-        tableView.reloadData()
+        // Because the speak side is a serial approach and each segment depends on the previous, if any changes are made
+        // in a segment, all segments beyond it have their choices cleared. This would occur when the user goes back a step
+        // and makes a change to their selection. For example, changing step 1 after selected step 2 would clear the items in
+        // step 2, causing the requirement for reselection of step 2. The listen side does not have this stipulation and therefore
+        // does not perform this extra step at this point.
+        for (index, group) in uiconfig!.speak.enumerated() {
+            if index > segmentedControl.selectedSegmentIndex {
+                for display_item in group.display_items {
+                    selectedIDs!.remove(display_item.id)
+                }
+            }
+        }
+        RWFramework.sharedInstance.setSpeakIDsSet(selectedIDs!)
+
+        if let cell = tableView.cellForRow(at: indexPath) {
+            cell.accessoryType = .checkmark
+            
+            // Add the newly selected tag to the set
+            selectedIDs!.insert(display_items[indexPath.row].id)
+            RWFramework.sharedInstance.setSpeakIDsSet(selectedIDs!)
+        }
     }
     
     // MARK: - Navigation

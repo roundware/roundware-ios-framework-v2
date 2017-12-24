@@ -358,16 +358,29 @@ extension RWFramework {
         return nil
     }
     
-    public func setListenIDsSet(_ tag_ids: Set<Int>) {
-        UserDefaults.standard.set(Array(tag_ids), forKey: "listenIDsSet")
+    public func setListenIDsSet(_ ids: Set<Int>) {
+        UserDefaults.standard.set(Array(ids), forKey: "listenIDsSet")
         UserDefaults.standard.synchronize()
         submitListenIDsSetAsTags()
     }
 
 // MARK: --
     
-    public func getSpeakTagsSet() -> Set<Int>? {
-        if let array = UserDefaults.standard.object(forKey: "speakTagsSet") as? Array<Int> {
+    public func getSpeakTagIDFromID(_ id: Int) -> Int {
+        if let uiconfig = getUIConfig() {
+            for speak in uiconfig.speak {
+                for item in speak.display_items {
+                    if item.id == id {
+                        return item.tag_id
+                    }
+                }
+            }
+        }
+        return 0
+    }
+
+    public func getSpeakIDsSet() -> Set<Int>? {
+        if let array = UserDefaults.standard.object(forKey: "speakIDsSet") as? Array<Int> {
             return Set(array)
         } else {
             if let uiconfig = getUIConfig() {
@@ -375,7 +388,7 @@ extension RWFramework {
                 for speak in uiconfig.speak {
                     for item in speak.display_items {
                         if item.default_state == true {
-                            set.insert(item.tag_id)
+                            set.insert(item.id)
                         }
                     }
                 }
@@ -385,8 +398,8 @@ extension RWFramework {
         return nil
     }
     
-    public func setSpeakTagsSet(_ tag_ids: Set<Int>) {
-        UserDefaults.standard.set(Array(tag_ids), forKey: "speakTagsSet")
+    public func setSpeakIDsSet(_ ids: Set<Int>) {
+        UserDefaults.standard.set(Array(ids), forKey: "speakIDsSet")
         UserDefaults.standard.synchronize()
     }
     
@@ -400,8 +413,8 @@ extension RWFramework {
             } else {
                 var previousIndex = index - 1
                 if previousIndex < 0 { previousIndex = 0 }
-                if let tagIDOfParentID = getTagIdOfDisplayItemParent(item, group: [group[previousIndex]]) {
-                    if tags.contains(tagIDOfParentID) {
+                if let IDOfParentID = getIDOfDisplayItemParent(item, group: [group[previousIndex]]) {
+                    if tags.contains(IDOfParentID) {
                         display_items.append(item)
                     }
                 }
@@ -410,11 +423,11 @@ extension RWFramework {
         return display_items
     }
 
-    public func getTagIdOfDisplayItemParent(_ display_item: UIConfigItem, group: [UIConfigGroup]) -> Int? {
+    public func getIDOfDisplayItemParent(_ display_item: UIConfigItem, group: [UIConfigGroup]) -> Int? {
         for g in group {
             for item in g.display_items {
                 if (item.id == display_item.parent_id) {
-                    return item.tag_id
+                    return item.id
                 }
             }
         }
