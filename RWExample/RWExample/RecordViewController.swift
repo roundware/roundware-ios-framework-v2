@@ -85,6 +85,8 @@ class RecordViewController: UIViewController, RWFrameworkProtocol {
         updateUI()
     }
     
+    // MARK: -
+
     func rwRecordingProgress(_ percentage: Double, maxDuration: TimeInterval, peakPower: Float, averagePower: Float) {
         var timeLeft = maxDuration - (maxDuration * percentage)
         timeLeft = timeLeft >= 0 ? timeLeft : 0
