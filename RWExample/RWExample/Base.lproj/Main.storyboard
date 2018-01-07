@@ -6,6 +6,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -249,24 +250,39 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oU3-jv-q3e">
-                                <rect key="frame" x="164" y="378.66666666666669" width="46" height="55"/>
+                                <rect key="frame" x="141.66666666666666" y="378.66666666666669" width="92" height="55"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="36"/>
-                                <state key="normal" title="Go"/>
+                                <state key="normal" title="Agree"/>
                                 <connections>
                                     <segue destination="e5I-pH-gCB" kind="show" identifier="Speak Tags" id="lnw-Ie-DhF"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Legal Agreement" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ken-c7-SxJ">
+                                <rect key="frame" x="16" y="95.666666666666686" width="342" height="275"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="275" id="cmh-mk-95p"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="oU3-jv-q3e" firstAttribute="centerY" secondItem="Hwb-Vn-fIt" secondAttribute="centerY" id="Nnx-d8-9ms"/>
+                            <constraint firstItem="ken-c7-SxJ" firstAttribute="centerX" secondItem="oU3-jv-q3e" secondAttribute="centerX" id="VKw-24-UEx"/>
                             <constraint firstItem="oU3-jv-q3e" firstAttribute="centerX" secondItem="Hwb-Vn-fIt" secondAttribute="centerX" id="XMv-UC-IqF"/>
+                            <constraint firstItem="ken-c7-SxJ" firstAttribute="leading" secondItem="Hwb-Vn-fIt" secondAttribute="leadingMargin" id="kuR-c1-Wmf"/>
+                            <constraint firstItem="oU3-jv-q3e" firstAttribute="top" secondItem="ken-c7-SxJ" secondAttribute="bottom" constant="7.6666666666666856" id="zZg-fx-msA"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="legalAgreementLabel" destination="ken-c7-SxJ" id="eB8-Yp-3LI"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="yzU-rd-4go" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="982.5" y="691"/>
+            <point key="canvasLocation" x="981.60000000000002" y="690.88669950738915"/>
         </scene>
         <!--Speak Tags-->
         <scene sceneID="oXr-3Q-fDy">
@@ -303,7 +319,7 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" accessoryType="checkmark" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="cell" id="SgN-97-AGU">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" accessoryType="checkmark" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="cell" id="SgN-97-AGU">
                                         <rect key="frame" x="0.0" y="28" width="343" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="SgN-97-AGU" id="J6f-gY-e0d">

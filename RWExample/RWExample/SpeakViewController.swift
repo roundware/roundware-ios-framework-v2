@@ -12,10 +12,16 @@ import RWFramework
 
 class SpeakViewController: UIViewController {
 
+    @IBOutlet var legalAgreementLabel: UILabel!
+
     // MARK: -
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        if let projectData = RWFrameworkConfig.getConfigDataFromGroup(RWFrameworkConfig.ConfigGroup.project) as? NSDictionary {
+            legalAgreementLabel.text = projectData["legal_agreement"] as! String?
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
