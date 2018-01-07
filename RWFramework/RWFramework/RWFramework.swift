@@ -19,7 +19,7 @@ open class RWFramework: NSObject {
 
 private lazy var __once: () = { () -> Void in
                     self.println("Submitting Listen Tags (timeToSendTheListenTags)")
-                    self.submitListenTags()
+                    self.submitListenIDsSetAsTags() //self.submitListenTags()
                 }()
 
 // MARK: Properties
