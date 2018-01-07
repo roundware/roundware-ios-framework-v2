@@ -146,12 +146,8 @@
 			children = (
 				75A7D2A71A745B5300E662A8 /* AppDelegate.swift */,
 				75A7D2A91A745B5300E662A8 /* ViewController.swift */,
-				7514200D1F5DAEAB00BF7864 /* ListenViewController.swift */,
-				75179DEF1F76B6B9004A2591 /* ListenTagsViewController.swift */,
-				751420101F5DB59300BF7864 /* SpeakViewController.swift */,
-				75FE0D561FC5DF8D00BAF45B /* SpeakTagsViewController.swift */,
-				75558DD41FF2A2A2007D16B0 /* RecordViewController.swift */,
-				75558DD71FF2A305007D16B0 /* ThankYouViewController.swift */,
+				75B1E5D9200294F500428DD0 /* Listen */,
+				75B1E5DB200294FF00428DD0 /* Speak */,
 				75A7D2AB1A745B5300E662A8 /* Main.storyboard */,
 				75A7D2AE1A745B5300E662A8 /* Images.xcassets */,
 				75A7D2B01A745B5300E662A8 /* LaunchScreen.xib */,
@@ -194,6 +190,26 @@
 				75A7D3211A76774B00E662A8 /* RWFrameworkTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		75B1E5D9200294F500428DD0 /* Listen */ = {
+			isa = PBXGroup;
+			children = (
+				7514200D1F5DAEAB00BF7864 /* ListenViewController.swift */,
+				75179DEF1F76B6B9004A2591 /* ListenTagsViewController.swift */,
+			);
+			name = Listen;
+			sourceTree = "<group>";
+		};
+		75B1E5DB200294FF00428DD0 /* Speak */ = {
+			isa = PBXGroup;
+			children = (
+				751420101F5DB59300BF7864 /* SpeakViewController.swift */,
+				75FE0D561FC5DF8D00BAF45B /* SpeakTagsViewController.swift */,
+				75558DD41FF2A2A2007D16B0 /* RecordViewController.swift */,
+				75558DD71FF2A305007D16B0 /* ThankYouViewController.swift */,
+			);
+			name = Speak;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
