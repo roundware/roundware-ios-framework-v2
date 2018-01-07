@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="mmH-Ai-KCj">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="mmH-Ai-KCj">
     <device id="retina5_9" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
         <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -324,13 +324,107 @@
                         <outlet property="headerLabel" destination="FKR-2W-WzG" id="FA7-zw-Pyo"/>
                         <outlet property="segmentedControl" destination="GyO-ML-6tW" id="vmj-Ge-i2J"/>
                         <outlet property="tableView" destination="vCY-0c-lb3" id="5y2-Jk-awj"/>
-                        <segue destination="Cuh-MG-xeY" kind="unwind" identifier="unwindToSpeakViewController" unwindAction="unwindToSpeakViewControllerWithSender:" id="FpX-d5-krn"/>
+                        <segue destination="coo-fH-lyS" kind="show" identifier="RecordViewController" id="RMe-yU-ET5"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="QAe-KU-HRJ" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <exit id="Cuh-MG-xeY" userLabel="Exit" sceneMemberID="exit"/>
             </objects>
             <point key="canvasLocation" x="1841" y="691"/>
+        </scene>
+        <!--Record-->
+        <scene sceneID="XEE-ub-pQW">
+            <objects>
+                <viewController title="Record" id="coo-fH-lyS" customClass="RecordViewController" customModule="RWExample" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="LFE-7M-nNg"/>
+                        <viewControllerLayoutGuide type="bottom" id="UyY-aV-Fqz"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="NaY-Y9-4Np">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="w7c-eI-qKt">
+                                <rect key="frame" x="52" y="347" width="271" height="55"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="36"/>
+                                <state key="normal" title="Record/Stop/Play"/>
+                                <connections>
+                                    <action selector="recordStopPlay:" destination="coo-fH-lyS" eventType="touchUpInside" id="eet-pb-by2"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="80i-DS-srf">
+                                <rect key="frame" x="110" y="723" width="155" height="55"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="36"/>
+                                <state key="normal" title="Re-record"/>
+                                <connections>
+                                    <action selector="rerecord:" destination="coo-fH-lyS" eventType="touchUpInside" id="dhQ-Cd-Zux"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2Kc-BY-Uaz">
+                                <rect key="frame" x="131" y="410" width="112" height="55"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="36"/>
+                                <state key="normal" title="Upload"/>
+                                <connections>
+                                    <action selector="upload:" destination="coo-fH-lyS" eventType="touchUpInside" id="1au-LE-Wwm"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="~" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CNM-L3-szE">
+                                <rect key="frame" x="103" y="186" width="169" height="64"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="48"/>
+                                <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="seconds" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qnB-Wf-f9w">
+                                <rect key="frame" x="100" y="234" width="174" height="64"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="48"/>
+                                <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </view>
+                    <connections>
+                        <outlet property="recordStopPlayButton" destination="w7c-eI-qKt" id="yLd-eP-en0"/>
+                        <outlet property="rerecordButton" destination="80i-DS-srf" id="bK9-Og-k8Z"/>
+                        <outlet property="timerLabel" destination="CNM-L3-szE" id="lvY-vU-V2o"/>
+                        <outlet property="uploadButton" destination="2Kc-BY-Uaz" id="6ub-81-ZJF"/>
+                        <segue destination="lgm-vv-4EL" kind="show" identifier="ThankYouViewController" id="XiK-06-UkL"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="A7o-MJ-O4g" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2648.8000000000002" y="688.66995073891633"/>
+        </scene>
+        <!--Thank You-->
+        <scene sceneID="tvD-3D-pkL">
+            <objects>
+                <viewController title="Thank You" id="lgm-vv-4EL" customClass="ThankYouViewController" customModule="RWExample" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="hlu-Vb-UTC"/>
+                        <viewControllerLayoutGuide type="bottom" id="cEy-9A-c9z"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="COf-hg-ayU">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" mapType="standard" pitchEnabled="NO" showsUserLocation="YES" showsBuildings="NO" showsCompass="NO" showsPointsOfInterest="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FVH-A3-Y2B">
+                                <rect key="frame" x="0.0" y="52" width="375" height="718"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            </mapView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </view>
+                    <connections>
+                        <outlet property="map" destination="FVH-A3-Y2B" id="enA-It-4u6"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="K4k-HI-NZd" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3488.8000000000002" y="686.45320197044339"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="nuL-cg-mwv">

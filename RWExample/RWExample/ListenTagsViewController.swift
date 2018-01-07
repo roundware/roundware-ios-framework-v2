@@ -163,12 +163,21 @@ class ListenTagsViewController: UIViewController, UITableViewDelegate, UITableVi
         }
     }
 
-    // MARK: - Navigation
+    // MARK: - 
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
+    }
+
+    override func canPerformUnwindSegueAction(_ action: Selector, from fromViewController: UIViewController, withSender sender: Any) -> Bool {
+        return true
+    }
+
+    @IBAction func unwindToListenTagsViewController(sender: UIStoryboardSegue) {
+        // let sourceViewController = sender.source
+        // Pull any data from the view controller which initiated the unwind segue.
     }
 
 }

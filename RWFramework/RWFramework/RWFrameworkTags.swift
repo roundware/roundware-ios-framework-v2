@@ -379,6 +379,20 @@ extension RWFramework {
         return 0
     }
 
+    public func getSubmittableSpeakIDsSetAsTags() -> String {
+        var tag_ids: String = ""
+        if let selectedIDs = getSpeakIDsSet() {
+            for id in selectedIDs {
+                let tag_id = getSpeakTagIDFromID(id)
+                if tag_ids.count > 0 {
+                    tag_ids += ","
+                }
+                tag_ids += "\(tag_id)"
+            }
+        }
+        return tag_ids
+    }
+
     public func getSpeakIDsSet() -> Set<Int>? {
         if let array = UserDefaults.standard.object(forKey: "speakIDsSet") as? Array<Int> {
             return Set(array)

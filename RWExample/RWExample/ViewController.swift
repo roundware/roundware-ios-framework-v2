@@ -51,9 +51,18 @@ class ViewController: UIViewController, MKMapViewDelegate {
     // MARK: -
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        print(segue)
+        // Get the new view controller using segue.destinationViewController.
+        // Pass the selected object to the new view controller.
+    }
+
+    override func canPerformUnwindSegueAction(_ action: Selector, from fromViewController: UIViewController, withSender sender: Any) -> Bool {
+        return true
     }
     
+    @IBAction func unwindToViewController(sender: UIStoryboardSegue) {
+        // let sourceViewController = sender.source
+        // Pull any data from the view controller which initiated the unwind segue.
+    }
 
 }
 

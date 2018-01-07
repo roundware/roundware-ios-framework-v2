@@ -34,6 +34,7 @@ class SpeakTagsViewController: UIViewController, UITableViewDelegate, UITableVie
         
         self.nextButton = UIBarButtonItem(title: "Next".localizedCapitalized, style: UIBarButtonItemStyle.plain, target: self, action: #selector(tapNextButton))
         self.navigationItem.rightBarButtonItem = nextButton
+        self.nextButton?.isEnabled = false
         
         // Update the UI by adding the proper number of segments named appropriately, select the first one and update the header label.
         segmentedControl.removeAllSegments()
@@ -46,16 +47,23 @@ class SpeakTagsViewController: UIViewController, UITableViewDelegate, UITableVie
         }
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        RWFramework.sharedInstance.addDelegate(self)
+    }
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        self.performSegue(withIdentifier: "unwindToSpeakViewController", sender: self)
+        RWFramework.sharedInstance.removeDelegate(self)
+//        self.performSegue(withIdentifier: "unwindToSpeakViewController", sender: self)
     }
     
     // When the segment is tapped, update the table and header label for that item
     @IBAction func valueChanged(_ sender: UISegmentedControl) {
         tableView.reloadData()
         updateHeaderLabel()
-    }
+        self.nextButton?.isEnabled = true
+   }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -65,8 +73,13 @@ class SpeakTagsViewController: UIViewController, UITableViewDelegate, UITableVie
     // MARK: -
     
     @objc func tapNextButton() {
-        print("tap")
-        self.nextButton?.isEnabled = false
+        if segmentedControl.selectedSegmentIndex < segmentedControl.numberOfSegments-1 {
+            segmentedControl.selectedSegmentIndex = segmentedControl.selectedSegmentIndex+1
+            valueChanged(segmentedControl)
+            self.nextButton?.isEnabled = false
+        } else {
+            performSegue(withIdentifier: "RecordViewController", sender: self)
+        }
     }
     
     // MARK: -
@@ -84,8 +97,6 @@ class SpeakTagsViewController: UIViewController, UITableViewDelegate, UITableVie
         }
         return 0
     }
-    
-    // MARK: -
     
     // MARK: - UITableView
     
@@ -122,7 +133,7 @@ class SpeakTagsViewController: UIViewController, UITableViewDelegate, UITableVie
         let display_items = RWFramework.sharedInstance.getValidDisplayItems(uiconfig!.speak, index: segmentedControl.selectedSegmentIndex, tags: selectedIDs!)
         let display_item = display_items[indexPath.row]
         
-        cell.textLabel?.text = "\(String(describing: display_item.tag_display_text)) \(display_item.id)"
+        cell.textLabel?.text = display_item.tag_display_text
         let selected = selectedIDs!.contains(display_item.id)
         cell.accessoryType = selected == true ? .checkmark : .none
         
@@ -180,6 +191,8 @@ class SpeakTagsViewController: UIViewController, UITableViewDelegate, UITableVie
             return
         }
         
+        self.nextButton?.isEnabled = true
+        
         let group = uiconfig!.speak[segmentedControl.selectedSegmentIndex]
         let display_items = RWFramework.sharedInstance.getValidDisplayItems(uiconfig!.speak, index: segmentedControl.selectedSegmentIndex, tags: selectedIDs!)
         let numTableViewSelections = self.numTableViewSelections()
@@ -216,12 +229,21 @@ class SpeakTagsViewController: UIViewController, UITableViewDelegate, UITableVie
         }
     }
     
-    // MARK: - Navigation
+    // MARK: - 
     
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
+    }
+    
+    override func canPerformUnwindSegueAction(_ action: Selector, from fromViewController: UIViewController, withSender sender: Any) -> Bool {
+        return true
+    }
+    
+    @IBAction func unwindToSpeakTagsViewController(sender: UIStoryboardSegue) {
+        // let sourceViewController = sender.source
+        // Pull any data from the view controller which initiated the unwind segue.
     }
 
 }

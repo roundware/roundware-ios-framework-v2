@@ -14,10 +14,6 @@ class SpeakViewController: UIViewController {
 
     // MARK: -
 
-    @IBOutlet var recordButton: UIButton!
-
-    // MARK: -
-
     override func viewDidLoad() {
         super.viewDidLoad()
     }
@@ -34,6 +30,11 @@ class SpeakViewController: UIViewController {
     
     // MARK: -
     
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Get the new view controller using segue.destinationViewController.
+        // Pass the selected object to the new view controller.
+    }
+
     override func canPerformUnwindSegueAction(_ action: Selector, from fromViewController: UIViewController, withSender sender: Any) -> Bool {
         return true
     }
@@ -44,84 +45,3 @@ class SpeakViewController: UIViewController {
     }
 
 }
-
-//    @IBAction func speakUpload(_ sender: UIButton) {
-//        RWFramework.sharedInstance.uploadAllMedia()
-//    }
-//
-//    @IBAction func speakTags(_ sender: UIButton) {
-//        RWFramework.sharedInstance.editSpeakTags()
-//    }
-//
-//    @IBAction func speakRecord(_ sender: UIButton) {
-//        speakProgress.setProgress(0, animated: false)
-//        let rwf = RWFramework.sharedInstance
-//        rwf.stop()
-//        rwf.isRecording() ? rwf.stopRecording() : rwf.startRecording()
-//        speakRecordButton.setTitle(rwf.isRecording() ? "Stop" : "Record", for: UIControlState())
-//    }
-//
-//    @IBAction func speakPlay(_ sender: UIButton) {
-//        speakProgress.setProgress(0, animated: false)
-//        let rwf = RWFramework.sharedInstance
-//        rwf.stop()
-//        rwf.isPlayingBack() ? rwf.stopPlayback() : rwf.startPlayback()
-//        speakPlayButton.setTitle(rwf.isPlayingBack() ? "Stop" : "Play", for: UIControlState())
-//    }
-//
-//    @IBAction func speakSubmit(_ sender: UIButton) {
-//        let rwf = RWFramework.sharedInstance
-//        _ = rwf.addRecording("This is my recording!")
-//    }
-//
-//    @IBAction func speakImage(_ sender: UIButton) {
-//        let rwf = RWFramework.sharedInstance
-//        rwf.doImage()
-//    }
-//
-//    @IBAction func speakPhotoLibrary(_ sender: UIButton) {
-//        let rwf = RWFramework.sharedInstance
-//        rwf.doPhotoLibrary([kUTTypeImage as String])
-//    }
-//
-//    @IBAction func speakMovie(_ sender: UIButton) {
-//        let rwf = RWFramework.sharedInstance
-//        rwf.doMovie()
-//    }
-//
-//    @IBAction func speakText(_ sender: UIButton) {
-//        let rwf = RWFramework.sharedInstance
-//        _ = rwf.addText("Hello, world!")
-//    }
-//
-//    @IBAction func speakDelete(_ sender: UIButton) {
-//        let rwf = RWFramework.sharedInstance
-//        rwf.deleteRecording()
-//    }
-
-//    func rwImagePickerControllerDidFinishPickingMedia(_ info: [AnyHashable: Any], path: String) {
-//        print(path)
-//        print(info)
-//        let rwf = RWFramework.sharedInstance
-//        rwf.setImageDescription(path, description: "Hello, This is an image!")
-//    }
-//
-//    func rwRecordingProgress(_ percentage: Double, maxDuration: TimeInterval, peakPower: Float, averagePower: Float) {
-//        speakProgress.setProgress(Float(percentage), animated: true)
-//    }
-//
-//    func rwPlayingBackProgress(_ percentage: Double, duration: TimeInterval, peakPower: Float, averagePower: Float) {
-//        speakProgress.setProgress(Float(percentage), animated: true)
-//    }
-//
-//    func rwAudioRecorderDidFinishRecording() {
-//        let rwf = RWFramework.sharedInstance
-//        speakRecordButton.setTitle(rwf.isRecording() ? "Stop" : "Record", for: UIControlState())
-//        speakProgress.setProgress(0, animated: false)
-//    }
-//
-//    func rwAudioPlayerDidFinishPlaying() {
-//        let rwf = RWFramework.sharedInstance
-//        speakPlayButton.setTitle(rwf.isPlayingBack() ? "Stop" : "Play", for: UIControlState())
-//        speakProgress.setProgress(0, animated: false)
-//    }
