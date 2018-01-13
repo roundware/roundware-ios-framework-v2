@@ -5,6 +5,12 @@
 //  Created by Joe Zobkiw on 2/12/15.
 //  Copyright (c) 2015 Roundware. All rights reserved.
 //
+/*
+ NOTE: This file has a complex implementation and a simplified implementation. The simplified implementation uses the
+ UIConfig struct in order to get from the server exactly what is needed for display in one result rather than having
+ to piece together tags, tag categories and UI groups. It is recommended that you use the simplified mechanism if at
+ all possible unless you specifically need more control over the raw data from the server.
+*/
 
 import Foundation
 
@@ -68,42 +74,6 @@ extension RWFramework {
         public var id: Int
         public var name: String?
         public var data: String?
-    }
-    
-// MARK: Simplified ui config endpoint
-    
-    public struct UIConfigItem: Codable {
-        public var id: Int
-        public var tag_id: Int
-        public var parent_id: Int?
-        public var default_state: Bool
-        public var tag_display_text: String?
-    }
-    
-    public struct UIConfigGroup: Codable {
-        public var select: String?
-        public var group_short_name: String?
-        public var header_display_text: String?
-        public var display_items: [UIConfigItem]
-    }
-    
-    public struct UIConfig : Codable {
-        public var speak: [UIConfigGroup]
-        public var listen: [UIConfigGroup]
-    }
-
-    public func getUIConfig() -> UIConfig? {
-        do {
-            if let data = UserDefaults.standard.object(forKey: "uiconfig") {
-                let decoder = JSONDecoder()
-                let uiconfig = try decoder.decode(UIConfig.self, from: data as! Data)
-                return uiconfig;
-            }
-        }
-        catch {
-            print(error)
-        }
-        return nil
     }
     
 // MARK: TagCategories
@@ -215,7 +185,6 @@ extension RWFramework {
         return nil
     }
     
-    
     public func getDefaultTags(_ ui_mode: String) -> [Tag]? {
         // Get tags and groups
         if let uigrouplist = getUIGroups(ui_mode), let taglist = getTags(ui_mode) {
@@ -248,69 +217,48 @@ extension RWFramework {
         return nil
     }
 
-// MARK: Listen Tags
-
-    public func getListenTags() -> [Tag]? {
-        return getTags("listen")
+// MARK: Simplified
+    
+    public struct UIConfigItem: Codable {
+        public var id: Int
+        public var tag_id: Int
+        public var parent_id: Int?
+        public var default_state: Bool
+        public var tag_display_text: String?
     }
     
-    public func getDefaultListenTags() -> [Tag]? {
-        return getDefaultTags("listen")
+    public struct UIConfigGroup: Codable {
+        public var select: String?
+        public var group_short_name: String?
+        public var header_display_text: String?
+        public var display_items: [UIConfigItem]
     }
     
-    public func getAllListenTagsCurrent() -> [Tag]? {
-        return getDefaultListenTags()
+    public struct UIConfig : Codable {
+        public var speak: [UIConfigGroup]
+        public var listen: [UIConfigGroup]
     }
     
-    public func getAllListenTagsCurrentAsString() -> String {
-        var s = ""
-        if let tags = getAllListenTagsCurrent() {
-            for tag in tags {
-                if s.count > 0 {
-                    s += ","
-                }
-                s += "\(tag.id)"
+    public func getUIConfig() -> UIConfig? {
+        do {
+            if let data = UserDefaults.standard.object(forKey: "uiconfig") {
+                let decoder = JSONDecoder()
+                let uiconfig = try decoder.decode(UIConfig.self, from: data as! Data)
+                return uiconfig;
             }
         }
-        return s
-    }
-
-// MARK: Speak Tags
-
-    public func getSpeakTags() -> [Tag]? {
-        return getTags("speak")
-    }
-
-    public func getDefaultSpeakTags() -> [Tag]? {
-        return getDefaultTags("speak")
-    }
-
-    public func getAllSpeakTagsCurrent() -> [Tag]? {
-        return getDefaultSpeakTags()
+        catch {
+            print(error)
+        }
+        return nil
     }
     
-    public func getAllSpeakTagsCurrentAsString() -> String {
-        var s = ""
-        if let tags = getAllSpeakTagsCurrent() {
-            for tag in tags {
-                if s.count > 0 {
-                    s += ","
-                }
-                s += "\(tag.id)"
-            }
-        }
-        return s
-    }
+// MARK: --
 
-// MARK: submit tags
-
-    /// Submit all current listen tags to the server
-    public func submitListenTags() {
-        let tag_ids = getAllListenTagsCurrentAsString()
+    public func submitListenIDsSetAsTags() {
+        let tag_ids = getSubmittableListenIDsSetAsTags()
         apiPatchStreamsIdWithTags(tag_ids)
     }
-
-// MARK: simplified
     
     public func getListenTagIDFromID(_ id: Int) -> Int {
         if let uiconfig = getUIConfig() {
@@ -325,7 +273,7 @@ extension RWFramework {
         return 0
     }
     
-    public func submitListenIDsSetAsTags() {
+    public func getSubmittableListenIDsSetAsTags() -> String {
         var tag_ids: String = ""
         if let selectedIDs = getListenIDsSet() {
             for id in selectedIDs {
@@ -336,7 +284,7 @@ extension RWFramework {
                 tag_ids += "\(tag_id)"
             }
         }
-        apiPatchStreamsIdWithTags(tag_ids)
+        return tag_ids
     }
 
     public func getListenIDsSet() -> Set<Int>? {
