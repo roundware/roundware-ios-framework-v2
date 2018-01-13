@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7514200E1F5DAEAB00BF7864 /* ListenViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7514200D1F5DAEAB00BF7864 /* ListenViewController.swift */; };
+		751420111F5DB59300BF7864 /* SpeakViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751420101F5DB59300BF7864 /* SpeakViewController.swift */; };
+		75179DF01F76B6B9004A2591 /* ListenTagsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75179DEF1F76B6B9004A2591 /* ListenTagsViewController.swift */; };
+		75558DD51FF2A2A2007D16B0 /* RecordViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75558DD41FF2A2A2007D16B0 /* RecordViewController.swift */; };
+		75558DD81FF2A305007D16B0 /* ThankYouViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75558DD71FF2A305007D16B0 /* ThankYouViewController.swift */; };
 		75A7D2A81A745B5300E662A8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A7D2A71A745B5300E662A8 /* AppDelegate.swift */; };
 		75A7D2AA1A745B5300E662A8 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A7D2A91A745B5300E662A8 /* ViewController.swift */; };
 		75A7D2AD1A745B5300E662A8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75A7D2AB1A745B5300E662A8 /* Main.storyboard */; };
@@ -17,6 +22,8 @@
 		75D532031A813EF900DFB873 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D532021A813EF900DFB873 /* MapKit.framework */; };
 		75DFFFE01A7AECC300660B96 /* RWFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75A7D31F1A76774B00E662A8 /* RWFramework.framework */; };
 		75DFFFE11A7AECC300660B96 /* RWFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 75A7D31F1A76774B00E662A8 /* RWFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		75FE0D571FC5DF8D00BAF45B /* SpeakTagsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FE0D561FC5DF8D00BAF45B /* SpeakTagsViewController.swift */; };
+		75FE0D5B1FCB039700BAF45B /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75FE0D591FCB039700BAF45B /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,6 +79,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7514200D1F5DAEAB00BF7864 /* ListenViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListenViewController.swift; sourceTree = "<group>"; };
+		751420101F5DB59300BF7864 /* SpeakViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakViewController.swift; sourceTree = "<group>"; };
+		75179DEF1F76B6B9004A2591 /* ListenTagsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListenTagsViewController.swift; sourceTree = "<group>"; };
+		75558DD41FF2A2A2007D16B0 /* RecordViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordViewController.swift; sourceTree = "<group>"; };
+		75558DD71FF2A305007D16B0 /* ThankYouViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThankYouViewController.swift; sourceTree = "<group>"; };
 		75A7D2A21A745B5300E662A8 /* RWExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RWExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		75A7D2A61A745B5300E662A8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		75A7D2A71A745B5300E662A8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -85,6 +97,8 @@
 		75A7D3191A76774B00E662A8 /* RWFramework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RWFramework.xcodeproj; path = ../RWFramework/RWFramework.xcodeproj; sourceTree = "<group>"; };
 		75A7D3281A76F5DA00E662A8 /* RWFramework.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = RWFramework.plist; sourceTree = "<group>"; };
 		75D532021A813EF900DFB873 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
+		75FE0D561FC5DF8D00BAF45B /* SpeakTagsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakTagsViewController.swift; sourceTree = "<group>"; };
+		75FE0D5A1FCB039700BAF45B /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,10 +146,13 @@
 			children = (
 				75A7D2A71A745B5300E662A8 /* AppDelegate.swift */,
 				75A7D2A91A745B5300E662A8 /* ViewController.swift */,
+				75B1E5D9200294F500428DD0 /* Listen */,
+				75B1E5DB200294FF00428DD0 /* Speak */,
 				75A7D2AB1A745B5300E662A8 /* Main.storyboard */,
 				75A7D2AE1A745B5300E662A8 /* Images.xcassets */,
 				75A7D2B01A745B5300E662A8 /* LaunchScreen.xib */,
 				75A7D3281A76F5DA00E662A8 /* RWFramework.plist */,
+				75FE0D591FCB039700BAF45B /* Localizable.strings */,
 				75A7D2A51A745B5300E662A8 /* Supporting Files */,
 			);
 			path = RWExample;
@@ -173,6 +190,26 @@
 				75A7D3211A76774B00E662A8 /* RWFrameworkTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		75B1E5D9200294F500428DD0 /* Listen */ = {
+			isa = PBXGroup;
+			children = (
+				7514200D1F5DAEAB00BF7864 /* ListenViewController.swift */,
+				75179DEF1F76B6B9004A2591 /* ListenTagsViewController.swift */,
+			);
+			name = Listen;
+			sourceTree = "<group>";
+		};
+		75B1E5DB200294FF00428DD0 /* Speak */ = {
+			isa = PBXGroup;
+			children = (
+				751420101F5DB59300BF7864 /* SpeakViewController.swift */,
+				75FE0D561FC5DF8D00BAF45B /* SpeakTagsViewController.swift */,
+				75558DD41FF2A2A2007D16B0 /* RecordViewController.swift */,
+				75558DD71FF2A305007D16B0 /* ThankYouViewController.swift */,
+			);
+			name = Speak;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -291,6 +328,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				75FE0D5B1FCB039700BAF45B /* Localizable.strings in Resources */,
 				75A7D2AD1A745B5300E662A8 /* Main.storyboard in Resources */,
 				75A7D2B21A745B5300E662A8 /* LaunchScreen.xib in Resources */,
 				75A7D3291A76F5DA00E662A8 /* RWFramework.plist in Resources */,
@@ -313,7 +351,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				75A7D2AA1A745B5300E662A8 /* ViewController.swift in Sources */,
+				75558DD81FF2A305007D16B0 /* ThankYouViewController.swift in Sources */,
 				75A7D2A81A745B5300E662A8 /* AppDelegate.swift in Sources */,
+				7514200E1F5DAEAB00BF7864 /* ListenViewController.swift in Sources */,
+				75558DD51FF2A2A2007D16B0 /* RecordViewController.swift in Sources */,
+				75179DF01F76B6B9004A2591 /* ListenTagsViewController.swift in Sources */,
+				75FE0D571FC5DF8D00BAF45B /* SpeakTagsViewController.swift in Sources */,
+				751420111F5DB59300BF7864 /* SpeakViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -360,6 +404,14 @@
 				75A7D2B11A745B5300E662A8 /* Base */,
 			);
 			name = LaunchScreen.xib;
+			sourceTree = "<group>";
+		};
+		75FE0D591FCB039700BAF45B /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				75FE0D5A1FCB039700BAF45B /* Base */,
+			);
+			name = Localizable.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

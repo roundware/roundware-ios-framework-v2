@@ -177,12 +177,6 @@ open class RWFrameworkConfig {
         } else {
             return [String:AnyObject]()
         }
-        
-//        var value: AnyObject? = UserDefaults.standard.object(forKey: group.description) as AnyObject
-//        if value == nil {
-//            value = [String:AnyObject]() as AnyObject
-//        }
-//        return value as! [String:AnyObject]
     }
 
     /// Set the entire group (usually after being edited)

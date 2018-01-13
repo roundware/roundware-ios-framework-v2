@@ -34,6 +34,11 @@ import CoreLocation
     /// Sent when the server fails to send project information
     @objc optional func rwGetProjectsIdFailure(_ error: NSError?)
 
+    /// Sent when ui config has been received from the server
+    @objc optional func rwGetUIConfigSuccess(_ data: Data?)
+    /// Sent when the server fails to send ui config
+    @objc optional func rwGetUIConfigFailure(_ error: NSError?)
+
     /// Sent when project uigroups have been received from the server
     @objc optional func rwGetProjectsIdUIGroupsSuccess(_ data: Data?)
     /// Sent when the server fails to send project uigroups
@@ -43,7 +48,12 @@ import CoreLocation
     @objc optional func rwGetProjectsIdTagsSuccess(_ data: Data?)
     /// Sent when the server fails to send project tags
     @objc optional func rwGetProjectsIdTagsFailure(_ error: NSError?)
-
+    
+    /// Sent when tag categories have been received from the server
+    @objc optional func rwGetTagCategoriesSuccess(_ data: Data?)
+    /// Sent when the server fails to send tag categories
+    @objc optional func rwGetTagCategoriesFailure(_ error: NSError?)
+    
     /// Sent when a stream has been acquired and can be played. Clients should enable their Play buttons.
     @objc optional func rwPostStreamsSuccess(_ data: Data?)
     /// Sent when a stream could not be acquired and therefore can not be played. Clients should disable their Play buttons.
@@ -58,6 +68,11 @@ import CoreLocation
     @objc optional func rwPostStreamsIdHeartbeatSuccess(_ data: Data?)
     /// Sent in the case that sending the heartbeat failed
     @objc optional func rwPostStreamsIdHeartbeatFailure(_ error: NSError?)
+
+    /// Sent after the server successfully replays a sound in the stream
+    @objc optional func rwPostStreamsIdReplaySuccess(_ data: Data?)
+    /// Sent in the case that replaying a sound in the stream fails
+    @objc optional func rwPostStreamsIdReplayFailure(_ error: NSError?)
 
     /// Sent after the server successfully advances to the next sound in the stream
     @objc optional func rwPostStreamsIdSkipSuccess(_ data: Data?)
@@ -107,7 +122,7 @@ import CoreLocation
 // MARK: metadata
 
     /// Sent when metadata (and all other observed values) are found, sent synchronously on main thread
-    @objc optional func rwObserveValueForKeyPath(_ keyPath: String, ofObject object: AnyObject, change: [AnyHashable: Any], context: UnsafeMutableRawPointer)
+    @objc optional func rwObserveValueForKeyPath(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?)
 
 // MARK: Image Picker
 
@@ -160,6 +175,7 @@ extension RWFramework {
 
     /// Add a delegate to the list of delegates
     public func addDelegate(_ object: AnyObject) {
+        delegates.remove(object) // To ensure we only have this object in the table once, try to remove it first
         delegates.add(object)
         println("addDelegate: \(delegates)")
     }
@@ -241,7 +257,7 @@ extension RWFramework {
             self.dam { rwfp.rwGetProjectsIdSuccess?(data) }
         }
     }
-
+    
     func rwGetProjectsIdFailure(_ error: NSError?) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwGetProjectsIdFailure != nil) {
@@ -251,7 +267,23 @@ extension RWFramework {
             }
         }
     }
-
+    
+    func rwGetUIConfigSuccess(_ data: Data?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwGetUIConfigSuccess?(data) }
+        }
+    }
+    
+    func rwGetUIConfigFailure(_ error: NSError?) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwGetUIConfigFailure != nil) {
+                self.dam { rwfp.rwGetUIConfigFailure?(error) }
+            } else {
+                self.alertOK(self.LS("RWFramework - rwGetUIConfigFailure"), message: error!.localizedDescription)
+            }
+        }
+    }
+    
     func rwGetProjectsIdUIGroupsSuccess(_ data: Data?) {
         protocaller { (rwfp, _) -> Void in
             self.dam { rwfp.rwGetProjectsIdUIGroupsSuccess?(data) }
@@ -280,6 +312,22 @@ extension RWFramework {
                 self.dam { rwfp.rwGetProjectsIdTagsFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwGetProjectsIdTagsFailure"), message: error!.localizedDescription)
+            }
+        }
+    }
+
+    func rwGetTagCategoriesSuccess(_ data: Data?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwGetTagCategoriesSuccess?(data) }
+        }
+    }
+    
+    func rwGetTagCategoriesFailure(_ error: NSError?) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwGetTagCategoriesFailure != nil) {
+                self.dam { rwfp.rwGetTagCategoriesFailure?(error) }
+            } else {
+                self.alertOK(self.LS("RWFramework - rwGetTagCategoriesFailure"), message: error!.localizedDescription)
             }
         }
     }
@@ -328,6 +376,22 @@ extension RWFramework {
                 self.dam { rwfp.rwPostStreamsIdHeartbeatFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwPostStreamsIdHeartbeatFailure"), message: error!.localizedDescription)
+            }
+        }
+    }
+
+    func rwPostStreamsIdReplaySuccess(_ data: Data?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwPostStreamsIdReplaySuccess?(data) }
+        }
+    }
+    
+    func rwPostStreamsIdReplayFailure(_ error: NSError?) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwPostStreamsIdReplayFailure != nil) {
+                self.dam { rwfp.rwPostStreamsIdReplayFailure?(error) }
+            } else {
+                self.alertOK(self.LS("RWFramework - rwPostStreamsIdReplayFailure"), message: error!.localizedDescription)
             }
         }
     }
@@ -463,9 +527,9 @@ extension RWFramework {
 
 // MARK: metadata
 
-    func rwObserveValueForKeyPath(_ keyPath: String, ofObject object: AnyObject, change: [AnyHashable: Any], context: UnsafeMutableRawPointer) {
+    func rwObserveValueForKeyPath(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         protocaller { (rwfp, _) -> Void in
-            self.dam { rwfp.rwObserveValueForKeyPath?(keyPath, ofObject: object, change: change, context: context) }
+            self.dam { rwfp.rwObserveValueForKeyPath?(forKeyPath: keyPath, of: object, change: change, context: context) }
         }
     }
 

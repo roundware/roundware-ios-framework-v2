@@ -19,7 +19,7 @@ open class RWFramework: NSObject {
 
 private lazy var __once: () = { () -> Void in
                     self.println("Submitting Listen Tags (timeToSendTheListenTags)")
-                    self.submitListenTags()
+                    self.submitListenIDsSetAsTags() //self.submitListenTags()
                 }()
 
 // MARK: Properties
@@ -75,6 +75,8 @@ private lazy var __once: () = { () -> Void in
         }
     }
     var getProjectsIdUIGroupsSucceeded = false
+    var getTagCategoriesSucceeded = false
+    var getUIConfigSucceeded = false
     var requestStreamInProgress = false
     var requestStreamSucceeded = false {
         didSet {
@@ -111,7 +113,7 @@ private lazy var __once: () = { () -> Void in
         return _RWFrameworkSharedInstance
     }
 
-    fileprivate override init() {
+    public override init() {
         super.init()
 
         #if DEBUG

@@ -83,7 +83,7 @@ extension RWFramework {
 
             var session_id : NSNumber = 0
             if let dict = json as? [String: AnyObject] {
-                if let _session_id = dict["session_id"] as? NSNumber {
+                if let _session_id = dict["id"] as? NSNumber {
                     session_id = _session_id
                     RWFrameworkConfig.setConfigValue("session_id", value: session_id, group: RWFrameworkConfig.ConfigGroup.client)
                 } // TODO: Handle missing value
@@ -151,8 +151,12 @@ extension RWFramework {
                 }
 
                 getProjectsIdSucceeded = true
-
-                apiGetProjectsIdTags(project_id)
+                
+                apiGetProjectsIdTags(project_id, session_id: session_id)
+                
+                // a simpler alternative to apiGetProjectsIdTags and it's subsequent calls but needs
+                // to be properly vetted before turning off the more complex calls
+                apiGetUIConfig(project_id, session_id: session_id)
             }
         }
         catch {
@@ -160,12 +164,33 @@ extension RWFramework {
         }
     }
 
+    // MARK: GET ui config
+    
+    func apiGetUIConfig(_ project_id: NSNumber, session_id: NSNumber) {
+        httpGetUIConfig(project_id, session_id: session_id) { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                self.getUIConfigSuccess(data!, project_id: project_id)
+                self.rwGetUIConfigSuccess(data)
+            } else if (error != nil) {
+                self.rwGetUIConfigFailure(error)
+                self.apiProcessError(data, error: error!, caller: "apiGetUIConfig")
+            }
+        }
+    }
+    
+    func getUIConfigSuccess(_ data: Data, project_id: NSNumber) {
+        // Save data to UserDefaults for later access
+        UserDefaults.standard.set(data, forKey: "uiconfig")
+        
+        getUIConfigSucceeded = true
+    }
+
 // MARK: GET projects id tags
 
-    func apiGetProjectsIdTags(_ project_id: NSNumber) {
-        httpGetProjectsIdTags(project_id) { (data, error) -> Void in
+    func apiGetProjectsIdTags(_ project_id: NSNumber, session_id: NSNumber) {
+        httpGetProjectsIdTags(project_id, session_id: session_id) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
-                self.getProjectsIdTagsSuccess(data!, project_id: project_id)
+                self.getProjectsIdTagsSuccess(data!, project_id: project_id, session_id: session_id)
                 self.rwGetProjectsIdTagsSuccess(data)
             } else if (error != nil) {
                 self.rwGetProjectsIdTagsFailure(error)
@@ -174,18 +199,18 @@ extension RWFramework {
         }
     }
     
-    func getProjectsIdTagsSuccess(_ data: Data, project_id: NSNumber) {
+    func getProjectsIdTagsSuccess(_ data: Data, project_id: NSNumber, session_id: NSNumber) {
         // Save data to UserDefaults for later access
         UserDefaults.standard.set(data, forKey: "tags")
         
         getProjectsIdTagsSucceeded = true
-        apiGetProjectsIdUIGroups(project_id)
+        apiGetProjectsIdUIGroups(project_id, session_id: session_id)
     }
 
-    // MARK: GET projects id uigroups
+// MARK: GET projects id uigroups
     
-    func apiGetProjectsIdUIGroups(_ project_id: NSNumber) {
-        httpGetProjectsIdUIGroups(project_id) { (data, error) -> Void in
+    func apiGetProjectsIdUIGroups(_ project_id: NSNumber, session_id: NSNumber) {
+        httpGetProjectsIdUIGroups(project_id, session_id: session_id) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.getProjectsIdUIGroupsSuccess(data!, project_id: project_id)
                 self.rwGetProjectsIdUIGroupsSuccess(data)
@@ -204,8 +229,30 @@ extension RWFramework {
         println("TODO: honor reset_tag_defaults_on_startup = \(reset_tag_defaults_on_startup.description)")
 
         getProjectsIdUIGroupsSucceeded = true
+        apiGetTagCategories()
     }
     
+// MARK: GET tagcategories
+    
+    func apiGetTagCategories() {
+        httpGetTagCategories() { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                self.getTagCategoriesSuccess(data!)
+                self.rwGetTagCategoriesSuccess(data)
+            } else if (error != nil) {
+                self.rwGetTagCategoriesFailure(error)
+                self.apiProcessError(data, error: error!, caller: "apiGetTagCategories")
+            }
+        }
+    }
+    
+    func getTagCategoriesSuccess(_ data: Data) {
+        // Save data to UserDefaults for later access
+        UserDefaults.standard.set(data, forKey: "tagcategories")
+        
+        getTagCategoriesSucceeded = true
+    }
+
 // MARK: POST streams
 
     func apiPostStreams() {
@@ -319,12 +366,33 @@ extension RWFramework {
 
     }
 
-// MARK: POST streams id skip
+    // MARK: POST streams id replay
+    
+    func apiPostStreamsIdReplay() {
+        if (requestStreamSucceeded == false) { return }
+        if (self.streamID == 0) { return }
+        
+        httpPostStreamsIdReplay(self.streamID.description, completion: { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                self.postStreamsIdReplaySuccess(data!)
+                self.rwPostStreamsIdReplaySuccess(data)
+            } else if (error != nil) {
+                self.rwPostStreamsIdReplayFailure(error)
+                self.apiProcessError(data, error: error!, caller: "apiPostStreamsIdReplay")
+            }
+        })
+    }
+    
+    func postStreamsIdReplaySuccess(_ data: Data) {
+        
+    }
 
+    // MARK: POST streams id skip
+    
     func apiPostStreamsIdSkip() {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
-
+        
         httpPostStreamsIdSkip(self.streamID.description, completion: { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.postStreamsIdSkipSuccess(data!)
@@ -335,9 +403,9 @@ extension RWFramework {
             }
         })
     }
-
+    
     func postStreamsIdSkipSuccess(_ data: Data) {
-
+        
     }
 
 // MARK: POST envelopes
@@ -361,7 +429,7 @@ extension RWFramework {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
             if let dict = json as? [String: AnyObject] {
-                if let envelope_id = dict["envelope_id"] as? NSNumber {
+                if let envelope_id = dict["id"] as? NSNumber {
                     success(envelope_id.intValue)
                 }
             }
@@ -465,7 +533,7 @@ extension RWFramework {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss" // 2015-03-13T13:00:09
         let client_time = dateFormatter.string(from: Date())
-        let tag_ids = getAllListenTagsCurrentAsString() + "," + getAllSpeakTagsCurrentAsString()
+        let tag_ids = getSubmittableListenIDsSetAsTags() + "," + getSubmittableSpeakIDsSetAsTags()
 
         httpPostEvents(session_id, event_type: event_type, data: data, latitude: latitude, longitude: longitude, client_time: client_time, tag_ids: tag_ids) { (data, error) -> Void in
             if (data != nil) && (error == nil) {

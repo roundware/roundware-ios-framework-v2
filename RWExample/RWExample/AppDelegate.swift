@@ -16,29 +16,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
-
-        // Configure AVAudioSession for the application
-        let avAudioSession = AVAudioSession.sharedInstance()
-
-        // This can be moved to the appropriate place in the application where it makes sense
-        avAudioSession.requestRecordPermission { (granted: Bool) -> Void in
-            print("AppDelegate: record permission granted: \(granted)")
-        }
-
-        do {
-            // Play and record for VOIP
-            try avAudioSession.setCategory(AVAudioSessionCategoryPlayAndRecord)
-            // Send audio to the speaker
-            try avAudioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.speaker)
-            // Activiate the AVAudioSession
-            try avAudioSession.setActive(true)
-        } catch {
-            print("RWExample - Couldn't setup audio session \(error)")
-        }
-
-        let rwf = RWFramework.sharedInstance
-        rwf.addDelegate(self)
+        
+        initializeAudioSession()
+        
+        RWFramework.sharedInstance.addDelegate(self)
 
         return true
     }
@@ -65,6 +46,45 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
 
-
+    // MARK: -
+    
+    func initializeAudioSession() {
+        // Configure AVAudioSession for the application
+        let avAudioSession = AVAudioSession.sharedInstance()
+        
+        // This can be moved to the appropriate place in the application where it makes sense
+        avAudioSession.requestRecordPermission { (granted: Bool) -> Void in
+            print("AppDelegate: record permission granted: \(granted)")
+        }
+        
+        do {
+            // Play and record for VOIP
+            try avAudioSession.setCategory(AVAudioSessionCategoryPlayAndRecord)
+            // Send audio to the speaker
+            try avAudioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.speaker)
+            // Activiate the AVAudioSession
+            try avAudioSession.setActive(true)
+        } catch {
+            print("RWExample - Couldn't setup audio session \(error)")
+        }
+    }
 }
+
+// MARK: -
+
+extension AppDelegate: RWFrameworkProtocol {
+    
+    func rwUpdateStatus(_ message: String) {
+        print(message)
+    }
+    
+    func rwUpdateApplicationIconBadgeNumber(_ count: Int) {
+        UIApplication.shared.applicationIconBadgeNumber = count
+    }
+    
+    func rwGetProjectsIdSuccess(_ data: Data?) {
+        _ = RWFramework.sharedInstance.requestWhenInUseAuthorizationForLocation()
+    }
+}
+
 

@@ -40,8 +40,17 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
-    func httpGetProjectsIdTags(_ project_id: NSNumber, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
-        if let url = URL(string: RWFrameworkURLFactory.getProjectsIdTagsURL(project_id)) {
+    func httpGetUIConfig(_ project_id: NSNumber, session_id: NSNumber, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        if let url = URL(string: RWFrameworkURLFactory.getUIConfigURL(project_id, session_id: session_id)) {
+            getDataFromURL(url, completion: completion)
+        } else {
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "getUIConfigURL unable to be created."])
+            completion(nil, error)
+        }
+    }
+
+    func httpGetProjectsIdTags(_ project_id: NSNumber, session_id: NSNumber, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        if let url = URL(string: RWFrameworkURLFactory.getProjectsIdTagsURL(project_id, session_id: session_id)) {
             getDataFromURL(url, completion: completion)
         } else {
             let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "getProjectsIdTagsURL unable to be created."])
@@ -49,8 +58,8 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
-    func httpGetProjectsIdUIGroups(_ project_id: NSNumber, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
-        if let url = URL(string: RWFrameworkURLFactory.getProjectsIdUIGroupsURL(project_id)) {
+    func httpGetProjectsIdUIGroups(_ project_id: NSNumber, session_id: NSNumber, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        if let url = URL(string: RWFrameworkURLFactory.getProjectsIdUIGroupsURL(project_id, session_id: session_id)) {
             getDataFromURL(url, completion: completion)
         } else {
             let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "getProjectsIdUIGroupsURL unable to be created."])
@@ -58,6 +67,15 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
     
+    func httpGetTagCategories(completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        if let url = URL(string: RWFrameworkURLFactory.getTagCategoriesURL()) {
+            getDataFromURL(url, completion: completion)
+        } else {
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "getTagCategoriesURL unable to be created."])
+            completion(nil, error)
+        }
+    }
+
     func httpPostStreams(_ session_id: NSNumber, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.postStreamsURL()) {
             let postData = ["session_id": session_id]
@@ -98,6 +116,16 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
+    func httpPostStreamsIdReplay(_ stream_id: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        if let url = URL(string: RWFrameworkURLFactory.postStreamsIdReplayURL(stream_id)) {
+            let postData = [:] as Dictionary<String, String>
+            postDataToURL(url, postData: postData, completion: completion)
+        } else {
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsIdReplayURL unable to be created."])
+            completion(nil, error)
+        }
+    }
+    
     func httpPostStreamsIdSkip(_ stream_id: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.postStreamsIdSkipURL(stream_id)) {
             let postData = [:] as Dictionary<String, String>
@@ -388,28 +416,28 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         loadDataTask.resume()
     }
 
-
-    /// Load data via GET and return in completion with or without error
-    /// This call does NOT add any token that may exist
-    func loadDataFromURL(_ url: URL, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
-        println("loadDataFromURL: " + url.absoluteString)
-
+    func getDataFromURLNoToken(_ url: URL, completion: @escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        println("getDataFromURLNoToken: " + url.absoluteString)
+        
         let session = URLSession.shared
-        let loadDataTask = session.dataTask(with: url, completionHandler: { (data: Data?, response: URLResponse?, error: NSError?) -> Void in
+        let request = NSMutableURLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        let loadDataTask = session.dataTask(with: request as URLRequest) { (data, response, error) -> Void in
             if let errorResponse = error {
-                completion(nil, errorResponse)
+                completion(nil, errorResponse as NSError)
             } else if let httpResponse = response as? HTTPURLResponse {
                 if httpResponse.statusCode == 200 {
                     completion(data, nil)
                 } else {
                     let error = NSError(domain:self.reverse_domain, code:httpResponse.statusCode, userInfo:[NSLocalizedDescriptionKey : "HTTP status code \(httpResponse.statusCode)."])
-                    completion(nil, error)
+                    completion(data, error)
                 }
             } else {
                 let error = NSError(domain:self.reverse_domain, code:NSURLErrorUnknown, userInfo:[NSLocalizedDescriptionKey : "HTTP request returned no data and no error."])
                 completion(nil, error)
             }
-        } as! (Data?, URLResponse?, Error?) -> Void)
+        }
         loadDataTask.resume()
     }
 

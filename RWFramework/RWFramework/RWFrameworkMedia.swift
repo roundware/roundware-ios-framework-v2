@@ -135,7 +135,7 @@ extension RWFramework {
             for media: Media in self.mediaArray {
                 if media.mediaStatus == MediaStatus.Hold {
                     media.envelopeID = NSNumber(value: envelopeID)
-                    media.tagIDs = self.getAllSpeakTagsCurrentAsString()
+                    media.tagIDs = self.getSubmittableSpeakIDsSetAsTags() //self.getAllSpeakTagsCurrentAsString() // the old way
                     media.mediaStatus = MediaStatus.Ready
                 }
             }
