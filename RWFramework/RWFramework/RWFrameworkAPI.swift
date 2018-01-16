@@ -306,16 +306,14 @@ extension RWFramework {
     }
 
 // MARK: PATCH streams id
-
-    func apiPatchStreamsIdWithLocation(_ newLocation: CLLocation?) {
+    func apiPatchStreamsIdWithLocation(_ newLocation: CLLocation?, streamPatchOptions: Dictionary<String, Any>) {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
         if (newLocation == nil) { return }
 
         let latitude = doubleToStringWithZeroAsEmptyString(newLocation!.coordinate.latitude)
         let longitude = doubleToStringWithZeroAsEmptyString(newLocation!.coordinate.longitude)
-
-        httpPatchStreamsId(self.streamID.description, latitude: latitude, longitude: longitude, completion: { (data, error) -> Void in
+        httpPatchStreamsId(self.streamID.description, latitude: latitude, longitude: longitude, streamPatchOptions: streamPatchOptions, completion: { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.patchStreamsIdSuccess(data!)
                 self.rwPatchStreamsIdSuccess(data)

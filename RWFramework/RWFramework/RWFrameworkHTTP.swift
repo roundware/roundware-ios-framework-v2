@@ -85,10 +85,14 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
             completion(nil, error)
         }
     }
-
-    func httpPatchStreamsId(_ stream_id: String, latitude: String, longitude: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    func httpPatchStreamsId(_ stream_id: String, latitude: String, longitude: String, streamPatchOptions: Dictionary<String, Any> = [:], completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.patchStreamsIdURL(stream_id)) {
-            let postData = ["latitude": latitude, "longitude": longitude]
+            var postData = ["latitude": latitude, "longitude": longitude] as [String:Any]
+            // append postData with any key/value pairs that exist in optionalParams dictionary; if empty dictionary, append nothing
+            postData = postData.merging(streamPatchOptions, uniquingKeysWith: { (first, _) in
+                return first
+            })
+            
             patchDataToURL(url, postData: postData, completion: completion)
         } else {
             let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "patchStreamsIdURL unable to be created."])

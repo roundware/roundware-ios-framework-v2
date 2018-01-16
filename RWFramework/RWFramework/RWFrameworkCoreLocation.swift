@@ -36,10 +36,13 @@ extension RWFramework: CLLocationManagerDelegate {
                 apiPostStreams()
             } else {
                 #if DEBUG
-                    let fakeLocation: CLLocation = CLLocation(latitude: 1.0, longitude: 1.0)
-                    apiPatchStreamsIdWithLocation(fakeLocation)
+//                    let fakeLocation: CLLocation = CLLocation(latitude: 1.0, longitude: 1.0)
+//                    apiPatchStreamsIdWithLocation(fakeLocation)
+                    let streamPatchOptions = ["listener_range_min": 0, "listener_range_max": 10000000, "listener_heading": 270.0, "listener_width": 0.0]
+                    apiPatchStreamsIdWithLocation(locations[0] as? CLLocation, streamPatchOptions: streamPatchOptions)
                 #else
-                    apiPatchStreamsIdWithLocation(locations[0] as? CLLocation)
+                    let streamPatchOptions = ["listener_range_min": 0, "listener_range_max": 10000000, "listener_heading": 270.0, "listener_width": 0.0]
+                    apiPatchStreamsIdWithLocation(locations[0] as? CLLocation, streamPatchOptions: streamPatchOptions)
                 #endif
             }
         }
