@@ -49,7 +49,7 @@
 		75A2CDC31A8411440052F987 /* RWFrameworkAudioPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkAudioPlayer.swift; sourceTree = "<group>"; };
 		75A2CDC51A8411CA0052F987 /* RWFrameworkAudioRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkAudioRecorder.swift; sourceTree = "<group>"; };
 		75A2E85F1A8CFCF90008AAF1 /* RWFrameworkTags.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkTags.swift; sourceTree = "<group>"; };
-		75A2E8951A93C7A90008AAF1 /* RWFrameworkAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkAPI.swift; sourceTree = "<group>"; };
+		75A2E8951A93C7A90008AAF1 /* RWFrameworkAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkAPI.swift; sourceTree = "<group>"; tabWidth = 4; };
 		75A2E8971A93CA7F0008AAF1 /* RWFrameworkTimers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkTimers.swift; sourceTree = "<group>"; };
 		75A7D2D11A745B7400E662A8 /* RWFramework.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RWFramework.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		75A7D2D51A745B7400E662A8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -63,7 +63,7 @@
 		75E08D911AE181BE005AD74D /* RWFrameworkAudioRecorder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RWFrameworkAudioRecorder.h; sourceTree = "<group>"; };
 		75E7DE9C1A7FE0F300B092AF /* RWFrameworkURLFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkURLFactory.swift; sourceTree = "<group>"; };
 		75E7DE9E1A7FEDE600B092AF /* RWFrameworkConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkConfig.swift; sourceTree = "<group>"; };
-		75FA3DF01A8503FB001D52CC /* RWFrameworkHTTP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkHTTP.swift; sourceTree = "<group>"; };
+		75FA3DF01A8503FB001D52CC /* RWFrameworkHTTP.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkHTTP.swift; sourceTree = "<group>"; tabWidth = 4; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */

@@ -255,7 +255,7 @@ extension RWFramework {
 
 // MARK: POST streams
 
-    func apiPostStreams() {
+    func apiPostStreams(at location: CLLocation? = nil) {
         if (requestStreamInProgress == true) { return }
         if (requestStreamSucceeded == true) { return }
         if (postSessionsSucceeded == false) { return }
@@ -263,8 +263,14 @@ extension RWFramework {
         requestStreamInProgress = true
 
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
+        
+        var lat: String? = nil, lng: String? = nil
+        if let loc = location?.coordinate {
+            lat = doubleToStringWithZeroAsEmptyString(loc.latitude)
+            lng = doubleToStringWithZeroAsEmptyString(loc.longitude)
+        }
 
-        httpPostStreams(session_id) { (data, error) -> Void in
+        httpPostStreams(session_id, latitude: lat, longitude: lng) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.postStreamsSuccess(data!, session_id: session_id)
                 self.rwPostStreamsSuccess(data)
