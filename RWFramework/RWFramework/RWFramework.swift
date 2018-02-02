@@ -216,7 +216,12 @@ private lazy var __once: () = { () -> Void in
 
     /// Return the preferred language of the device
     func preferredLanguage() -> String {
-        return Locale.preferredLanguages[0] 
+        let preferredLanguage = Locale.preferredLanguages[0] as String
+        let arr = preferredLanguage.components(separatedBy: "-")
+        if let deviceLanguage = arr.first {
+            return deviceLanguage
+        }
+        return "en"
     }
 
     /// Convert a Double to a String but return an empty string if the Double is 0
