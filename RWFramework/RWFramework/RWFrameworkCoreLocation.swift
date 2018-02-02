@@ -38,10 +38,15 @@ extension RWFramework: CLLocationManagerDelegate {
                 #if DEBUG
 //                    let fakeLocation: CLLocation = CLLocation(latitude: 1.0, longitude: 1.0)
 //                    apiPatchStreamsIdWithLocation(fakeLocation)
-                    let streamPatchOptions = ["listener_range_min": 0, "listener_range_max": 10000000, "listener_heading": 270.0, "listener_width": 0.0]
+//                    let streamPatchOptions = ["listener_range_min": 0, "listener_range_max": 10000000, "listener_heading": 270.0, "listener_width": 0.0]
+                    let streamPatchOptions = [String: Any]()
                     apiPatchStreamsIdWithLocation(locations[0] as? CLLocation, streamPatchOptions: streamPatchOptions)
                 #else
-                    let streamPatchOptions = ["listener_range_min": 0, "listener_range_max": 10000000, "listener_heading": 270.0, "listener_width": 0.0]
+//                    let streamPatchOptions = ["listener_range_min": 0, "listener_range_max": 10000000, "listener_heading": 270.0, "listener_width": 0.0]
+                    // if using range/directional listening, current param values should be inserted here
+                    // such that automatic location updates do not turn off range/direcitonal listening by omitting required params
+                    // for now, sans range/directional UI, we will pass an empty array of streamPatchOptions
+                    let streamPatchOptions = [String: Any]()
                     apiPatchStreamsIdWithLocation(locations[0] as? CLLocation, streamPatchOptions: streamPatchOptions)
                 #endif
             }
