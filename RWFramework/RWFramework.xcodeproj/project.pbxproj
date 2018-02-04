@@ -45,7 +45,7 @@
 		7519C3D41A856518006A5D1E /* RWFrameworkCamera.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkCamera.swift; sourceTree = "<group>"; };
 		75743B821A7831130058CCA4 /* RWFrameworkProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkProtocol.swift; sourceTree = "<group>"; };
 		75A2CDBF1A8172980052F987 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
-		75A2CDC11A8410760052F987 /* RWFrameworkCoreLocation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkCoreLocation.swift; sourceTree = "<group>"; };
+		75A2CDC11A8410760052F987 /* RWFrameworkCoreLocation.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkCoreLocation.swift; sourceTree = "<group>"; tabWidth = 4; };
 		75A2CDC31A8411440052F987 /* RWFrameworkAudioPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkAudioPlayer.swift; sourceTree = "<group>"; };
 		75A2CDC51A8411CA0052F987 /* RWFrameworkAudioRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkAudioRecorder.swift; sourceTree = "<group>"; };
 		75A2E85F1A8CFCF90008AAF1 /* RWFrameworkTags.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkTags.swift; sourceTree = "<group>"; };

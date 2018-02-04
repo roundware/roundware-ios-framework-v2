@@ -32,15 +32,18 @@ extension RWFramework: CLLocationManagerDelegate {
         let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
         if (listen_enabled) {
             let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
-            if (geo_listen_enabled && requestStreamInProgress == false && requestStreamSucceeded == false) {
-              apiPostStreams(at: locations[0])
-            } else {
-                #if DEBUG
-                    let fakeLocation: CLLocation = CLLocation(latitude: 1.0, longitude: 1.0)
-                    apiPatchStreamsIdWithLocation(fakeLocation)
-                #else
-                    apiPatchStreamsIdWithLocation(locations[0])
-                #endif
+            let custom_geo_listen = RWFrameworkConfig.getConfigValueAsBool("custom_geo_listen")
+            if (!custom_geo_listen) {
+                if (geo_listen_enabled && requestStreamInProgress == false && requestStreamSucceeded == false) {
+                  apiPostStreams(at: locations[0])
+                } else {
+//                    #if DEBUG
+//                        let fakeLocation: CLLocation = CLLocation(latitude: 1.0, longitude: 1.0)
+//                        apiPatchStreamsIdWithLocation(fakeLocation)
+//                    #else
+                        apiPatchStreamsIdWithLocation(locations[0])
+//                    #endif
+                }
             }
         }
 
@@ -70,12 +73,12 @@ extension RWFramework: CLLocationManagerDelegate {
     }
 
     /// Globally captures the most recent location
-    func captureLastRecordedLocation() {
-        #if DEBUG
-            let fakeLocation: CLLocation = CLLocation(latitude: 1.0, longitude: 1.0)
-            lastRecordedLocation = fakeLocation
-        #else
+    public func captureLastRecordedLocation() {
+//        #if DEBUG
+//            let fakeLocation: CLLocation = CLLocation(latitude: 1.0, longitude: 1.0)
+//            lastRecordedLocation = fakeLocation
+//        #else
             lastRecordedLocation = locationManager.location!
-        #endif
+//        #endif
     }
 }

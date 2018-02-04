@@ -613,13 +613,13 @@ extension RWFramework {
 
 // MARK: Location
 
-    func rwLocationManager(_ manager: CLLocationManager!, didUpdateLocations locations: [AnyObject]!) {
+    func rwLocationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         protocaller { (rwfp, _) -> Void in
             self.dam { rwfp.rwLocationManager?(manager, didUpdateLocations: locations) }
         }
     }
 
-    func rwLocationManager(_ manager: CLLocationManager!, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
+    func rwLocationManager(_ manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
         protocaller { (rwfp, _) -> Void in
             self.dam { rwfp.rwLocationManager?(manager, didChangeAuthorizationStatus: status) }
         }

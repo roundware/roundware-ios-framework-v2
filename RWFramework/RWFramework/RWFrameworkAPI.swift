@@ -255,7 +255,7 @@ extension RWFramework {
 
 // MARK: POST streams
 
-    func apiPostStreams(at location: CLLocation? = nil) {
+    public func apiPostStreams(at location: CLLocation? = nil) {
         if (requestStreamInProgress == true) { return }
         if (requestStreamSucceeded == true) { return }
         if (postSessionsSucceeded == false) { return }
@@ -266,8 +266,8 @@ extension RWFramework {
         
         var lat: String? = nil, lng: String? = nil
         if let loc = location?.coordinate {
-            lat = doubleToStringWithZeroAsEmptyString(loc.latitude)
-            lng = doubleToStringWithZeroAsEmptyString(loc.longitude)
+            lat = loc.latitude.description
+            lng = loc.longitude.description
         }
 
         httpPostStreams(session_id, latitude: lat, longitude: lng) { (data, error) -> Void in
@@ -313,15 +313,25 @@ extension RWFramework {
 
 // MARK: PATCH streams id
 
-    func apiPatchStreamsIdWithLocation(_ newLocation: CLLocation?) {
+    public func apiPatchStreamsIdWithLocation(_ newLocation: CLLocation?,
+                                       range: ClosedRange<Int>? = nil,
+                                       heading: Float? = nil,
+                                       angularWidth: Float? = nil) {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
         if (newLocation == nil) { return }
 
-        let latitude = doubleToStringWithZeroAsEmptyString(newLocation!.coordinate.latitude)
-        let longitude = doubleToStringWithZeroAsEmptyString(newLocation!.coordinate.longitude)
+        let latitude = newLocation!.coordinate.latitude.description
+        let longitude = newLocation!.coordinate.longitude.description
 
-        httpPatchStreamsId(self.streamID.description, latitude: latitude, longitude: longitude, completion: { (data, error) -> Void in
+        httpPatchStreamsId(
+            self.streamID.description,
+            latitude: latitude,
+            longitude: longitude,
+            range: range,
+            heading: heading,
+            angularWidth: angularWidth
+        ) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.patchStreamsIdSuccess(data!)
                 self.rwPatchStreamsIdSuccess(data)
@@ -329,7 +339,7 @@ extension RWFramework {
                 self.rwPatchStreamsIdFailure(error)
                 self.apiProcessError(data, error: error!, caller: "apiPatchStreamsIdWithLocation")
             }
-        })
+        }
     }
 
     func apiPatchStreamsIdWithTags(_ tag_ids: String) {
