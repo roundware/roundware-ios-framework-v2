@@ -36,7 +36,7 @@ open class RWFrameworkURLFactory {
     }
 
     class func getTagCategoriesURL() -> String {
-        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "/tagcategories/"
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "tagcategories/"
     }
     
     class func getUIConfigURL(_ project_id: NSNumber, session_id: NSNumber) -> String {
