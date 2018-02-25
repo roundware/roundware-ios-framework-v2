@@ -44,7 +44,7 @@ extension RWFramework {
         isPlaying = (player?.rate == 1.0)
         logToServer("start_listen")
         
-        // TODO: Tell server to resume as well (apiPostStreamsIdResume) (do not call if nt already playing)
+        // TODO: Tell server to resume as well (apiPostStreamsIdResume) (do not call if not already playing)
     }
 
     /// Pause audio
@@ -60,7 +60,6 @@ extension RWFramework {
     public func stop() {
         pause()
         destroyPlayer()
-        createPlayer()
         logToServer("stop_listen")
     }
 
