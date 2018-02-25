@@ -85,10 +85,10 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
             completion(nil, error)
         }
     }
-    func httpPatchStreamsId(_ stream_id: String, latitude: String, longitude: String, streamPatchOptions: Dictionary<String, Any> = [:], completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    func httpPatchStreamsId(_ stream_id: String, latitude: String, longitude: String, tag_ids: String, streamPatchOptions: Dictionary<String, Any> = [:], completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.patchStreamsIdURL(stream_id)) {
-            var postData = ["latitude": latitude, "longitude": longitude] as [String:Any]
-            // append postData with any key/value pairs that exist in optionalParams dictionary; if empty dictionary, append nothing
+            var postData = ["latitude": latitude, "longitude": longitude, "tag_ids": tag_ids] as [String:Any]
+            // append postData with any key/value pairs that exist in streamPatchOptions dictionary; if empty dictionary, append nothing
             postData = postData.merging(streamPatchOptions, uniquingKeysWith: { (first, _) in
                 return first
             })
