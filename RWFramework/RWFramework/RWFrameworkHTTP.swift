@@ -76,7 +76,7 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
-    func httpPostStreams(_ session_id: NSNumber, latitude: String = "0", longitude: String = "0", completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    func httpPostStreams(_ session_id: NSNumber, latitude: String = "0.1", longitude: String = "0.1", completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.postStreamsURL()) {
             let postData = ["session_id": session_id, "latitude": latitude, "longitude": longitude] as [String:Any]
             postDataToURL(url, postData: postData, completion: completion)

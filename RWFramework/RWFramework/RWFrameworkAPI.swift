@@ -261,10 +261,13 @@ extension RWFramework {
         if (postSessionsSucceeded == false) { return }
 
         requestStreamInProgress = true
+        lastRecordedLocation = locationManager.location!
 
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
+        let latitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.latitude)
+        let longitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.longitude)
 
-        httpPostStreams(session_id) { (data, error) -> Void in
+        httpPostStreams(session_id, latitude: latitude, longitude: longitude) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.postStreamsSuccess(data!, session_id: session_id)
                 self.rwPostStreamsSuccess(data)
