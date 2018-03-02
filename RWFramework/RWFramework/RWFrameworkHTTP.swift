@@ -76,7 +76,12 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
-    func httpPostStreams(_ session_id: NSNumber, latitude: String = "0.1", longitude: String = "0.1", completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    func httpPostStreams(
+        _ session_id: NSNumber,
+        latitude: String = "0.1",
+        longitude: String = "0.1",
+        completion:@escaping (_ data: Data?, _ error: NSError?) -> Void
+    ) {
         if let url = URL(string: RWFrameworkURLFactory.postStreamsURL()) {
             let postData = ["session_id": session_id, "latitude": latitude, "longitude": longitude] as [String:Any]
             postDataToURL(url, postData: postData, completion: completion)
@@ -89,10 +94,7 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         if let url = URL(string: RWFrameworkURLFactory.patchStreamsIdURL(stream_id)) {
             var postData = ["latitude": latitude, "longitude": longitude, "tag_ids": tag_ids] as [String:Any]
             // append postData with any key/value pairs that exist in streamPatchOptions dictionary; if empty dictionary, append nothing
-            postData = postData.merging(streamPatchOptions, uniquingKeysWith: { (first, _) in
-                return first
-            })
-            
+            postData.merge(streamPatchOptions) { (first, _) in first }
             patchDataToURL(url, postData: postData, completion: completion)
         } else {
             let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "patchStreamsIdURL unable to be created."])

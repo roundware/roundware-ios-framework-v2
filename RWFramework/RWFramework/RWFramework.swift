@@ -30,6 +30,7 @@ private lazy var __once: () = { () -> Void in
     // Location (see RWFrameworkCoreLocation.swift)
     let locationManager: CLLocationManager = CLLocationManager()
     var lastRecordedLocation: CLLocation = CLLocation()
+    var streamOptions = [String: Any]()
     var letFrameworkRequestWhenInUseAuthorizationForLocation = true
 
     // Audio - Stream (see RWFrameworkAudioPlayer.swift)

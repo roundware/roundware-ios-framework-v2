@@ -255,7 +255,7 @@ extension RWFramework {
 
 // MARK: POST streams
 
-    func apiPostStreams() {
+    func apiPostStreams(at location: CLLocation? = nil) {
         if (requestStreamInProgress == true) { return }
         if (requestStreamSucceeded == true) { return }
         if (postSessionsSucceeded == false) { return }
@@ -264,10 +264,21 @@ extension RWFramework {
         lastRecordedLocation = locationManager.location!
 
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
+<<<<<<< HEAD
         let latitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.latitude)
         let longitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.longitude)
 
         httpPostStreams(session_id, latitude: latitude, longitude: longitude) { (data, error) -> Void in
+=======
+        
+        var lat: String = "0", lng: String = "0"
+        if let loc = location?.coordinate {
+            lat = doubleToStringWithZeroAsEmptyString(loc.latitude)
+            lng = doubleToStringWithZeroAsEmptyString(loc.longitude)
+        }
+
+        httpPostStreams(session_id, latitude: lat, longitude: lng) { (data, error) -> Void in
+>>>>>>> Add streamOptions to externally control the parameters to PATCH
             if (data != nil) && (error == nil) {
                 self.postStreamsSuccess(data!, session_id: session_id)
                 self.rwPostStreamsSuccess(data)
@@ -279,9 +290,8 @@ extension RWFramework {
         }
     }
 
-    func postStreamsSuccess(_ data: Data, session_id: NSNumber) {
+    private func postStreamsSuccess(_ data: Data, session_id: NSNumber) {
         do {
-
             let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
 
             if let dict = json as? [String: AnyObject] {
@@ -310,8 +320,8 @@ extension RWFramework {
 
 // MARK: PATCH streams id
     func apiPatchStreamsIdWithLocation(_ newLocation: CLLocation?, tag_ids: String, streamPatchOptions: Dictionary<String, Any>) {
-        if (requestStreamSucceeded == false) { return }
-        if (self.streamID == 0) { return }
+        if (requestStreamSucceeded == false
+            || self.streamID == 0) { return }
         if (newLocation == nil) { return }
 
         let latitude = doubleToStringWithZeroAsEmptyString(newLocation!.coordinate.latitude)
@@ -342,7 +352,7 @@ extension RWFramework {
         })
     }
 
-    func patchStreamsIdSuccess(_ data: Data) {
+    private func patchStreamsIdSuccess(_ data: Data) {
 
     }
 
@@ -363,7 +373,7 @@ extension RWFramework {
         })
     }
 
-    func postStreamsIdHeartbeatSuccess(_ data: Data) {
+    private func postStreamsIdHeartbeatSuccess(_ data: Data) {
 
     }
 
@@ -384,7 +394,7 @@ extension RWFramework {
         })
     }
     
-    func postStreamsIdReplaySuccess(_ data: Data) {
+    private func postStreamsIdReplaySuccess(_ data: Data) {
         
     }
 
@@ -405,7 +415,7 @@ extension RWFramework {
         })
     }
     
-    func postStreamsIdSkipSuccess(_ data: Data) {
+    private func postStreamsIdSkipSuccess(_ data: Data) {
         
     }
 
@@ -425,7 +435,7 @@ extension RWFramework {
         }
     }
 
-    func postEnvelopesSuccess(_ data: Data, session_id: NSNumber, success:(_ envelopeID: Int) -> Void) {
+    private func postEnvelopesSuccess(_ data: Data, session_id: NSNumber, success:(_ envelopeID: Int) -> Void) {
 
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
@@ -562,7 +572,7 @@ extension RWFramework {
 
 // MARK: utilities
 
-    func apiProcessError(_ data: Data?, error: NSError, caller: String) {
+    private func apiProcessError(_ data: Data?, error: NSError, caller: String) {
         let detailStringValue = ""
 //        if (data != nil) {
 //            let dict = JSON(data: data!)
