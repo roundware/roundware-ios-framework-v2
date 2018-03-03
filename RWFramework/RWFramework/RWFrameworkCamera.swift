@@ -118,21 +118,25 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 
     func _rwImagePickerControllerDidFinishPickingMedia(_ info: [AnyHashable: Any], path: String) {
         finishPreflightGeoImage()
-        if let keyWindow = UIApplication.shared.keyWindow,
-            let rootViewController = keyWindow.rootViewController {
-            rootViewController.dismiss(animated: true, completion: { () -> Void in
-                self.rwImagePickerControllerDidFinishPickingMedia(info, path: path)
-            })
+        DispatchQueue.main.async {
+            if let keyWindow = UIApplication.shared.keyWindow,
+                let rootViewController = keyWindow.rootViewController {
+                rootViewController.dismiss(animated: true, completion: { () -> Void in
+                    self.rwImagePickerControllerDidFinishPickingMedia(info, path: path)
+                })
+            }
         }
     }
 
     func _rwImagePickerControllerDidCancel() {
         finishPreflightGeoImage()
-        if let keyWindow = UIApplication.shared.keyWindow,
-            let rootViewController = keyWindow.rootViewController {
-            rootViewController.dismiss(animated: true, completion: { () -> Void in
-                self.rwImagePickerControllerDidCancel()
-            })
+        DispatchQueue.main.async {
+            if let keyWindow = UIApplication.shared.keyWindow,
+                let rootViewController = keyWindow.rootViewController {
+                rootViewController.dismiss(animated: true, completion: { () -> Void in
+                    self.rwImagePickerControllerDidCancel()
+                })
+            }
         }
     }
 
@@ -182,16 +186,15 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
                     let r = arc4random()
                     let image_file_name = RWFrameworkConfig.getConfigValueAsString("image_file_name")
                     let imageFileName = "\(r)_\(image_file_name)"
-                    let imageFilePath = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(imageFileName)
-
-                    let success = (try? imageData.write(to: URL(fileURLWithPath: (imageFilePath.absoluteString)), options: [])) != nil
-                    if success == false {
-                        self.println("RWFramework - Couldn't write the image to disk")
-                        self._rwImagePickerControllerDidCancel()
-                    } else {
-                        // Success
-                        let keyPath = self.addImage((imageFilePath.absoluteString))
+                    do {
+                        let fileURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+                        let imageFilePathURL = fileURL.appendingPathComponent(imageFileName)
+                        try imageData.write(to: imageFilePathURL)
+                        let keyPath = self.addImage(imageFilePathURL.path)
                         self._rwImagePickerControllerDidFinishPickingMedia(info, path: keyPath!)
+                    } catch {
+                        print(error)
+                        self._rwImagePickerControllerDidCancel()
                     }
                 } else {
                     self._rwImagePickerControllerDidCancel()

@@ -16,6 +16,7 @@ class RecordViewController: UIViewController, RWFrameworkProtocol {
     @IBOutlet weak var recordStopPlayButton: UIButton!
     @IBOutlet weak var uploadButton: UIButton!
     @IBOutlet weak var rerecordButton: UIButton!
+    @IBOutlet weak var addImageButton: UIButton!
 
     // MARK: -
     
@@ -44,11 +45,13 @@ class RecordViewController: UIViewController, RWFrameworkProtocol {
             recordStopPlayButton.isEnabled = true
             uploadButton.isEnabled = !rwf.isPlayingBack()
             rerecordButton.isEnabled = !rwf.isPlayingBack()
+            addImageButton.isEnabled = !rwf.isPlayingBack()
         } else {                // record
             recordStopPlayButton.setTitle(rwf.isRecording() ? "Stop" : "Record", for: .normal)
             recordStopPlayButton.isEnabled = true
             uploadButton.isEnabled = false
             rerecordButton.isEnabled = false
+            addImageButton.isEnabled = false
         }
     }
 
@@ -85,6 +88,15 @@ class RecordViewController: UIViewController, RWFrameworkProtocol {
         updateUI()
     }
     
+    @IBAction func addImage(_ sender: UIButton) {
+        let rwf = RWFramework.sharedInstance
+#if (arch(i386) || arch(x86_64)) && os(iOS)
+        rwf.doPhotoLibrary()
+#else
+        rwf.doImage()
+#endif
+    }
+
     // MARK: -
 
     func rwRecordingProgress(_ percentage: Double, maxDuration: TimeInterval, peakPower: Float, averagePower: Float) {
