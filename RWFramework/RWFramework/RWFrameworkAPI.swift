@@ -255,7 +255,7 @@ extension RWFramework {
 
 // MARK: POST streams
 
-    func apiPostStreams() {
+    func apiPostStreams(at location: CLLocation? = nil) {
         if (requestStreamInProgress == true) { return }
         if (requestStreamSucceeded == true) { return }
         if (postSessionsSucceeded == false) { return }
@@ -264,10 +264,14 @@ extension RWFramework {
         lastRecordedLocation = locationManager.location!
 
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
-        let latitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.latitude)
-        let longitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.longitude)
+        
+        var lat: String = "0.1", lng: String = "0.1"
+        if let loc = location?.coordinate {
+            lat = doubleToStringWithZeroAsEmptyString(loc.latitude)
+            lng = doubleToStringWithZeroAsEmptyString(loc.longitude)
+        }
 
-        httpPostStreams(session_id, latitude: latitude, longitude: longitude) { (data, error) -> Void in
+        httpPostStreams(session_id, latitude: lat, longitude: lng) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.postStreamsSuccess(data!, session_id: session_id)
                 self.rwPostStreamsSuccess(data)
@@ -279,7 +283,7 @@ extension RWFramework {
         }
     }
 
-    func postStreamsSuccess(_ data: Data, session_id: NSNumber) {
+    private func postStreamsSuccess(_ data: Data, session_id: NSNumber) {
         do {
 
             let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
@@ -309,14 +313,22 @@ extension RWFramework {
     }
 
 // MARK: PATCH streams id
-    func apiPatchStreamsIdWithLocation(_ newLocation: CLLocation?, tag_ids: String, streamPatchOptions: Dictionary<String, Any>) {
-        if (requestStreamSucceeded == false) { return }
-        if (self.streamID == 0) { return }
-        if (newLocation == nil) { return }
-
-        let latitude = doubleToStringWithZeroAsEmptyString(newLocation!.coordinate.latitude)
-        let longitude = doubleToStringWithZeroAsEmptyString(newLocation!.coordinate.longitude)
-        httpPatchStreamsId(self.streamID.description, latitude: latitude, longitude: longitude, tag_ids: tag_ids, streamPatchOptions: streamPatchOptions, completion: { (data, error) -> Void in
+    public func apiPatchStreamsIdWithLocation(
+            _ newLocation: CLLocation,
+            tagIds: String? = nil,
+            streamPatchOptions: [String: Any] = [:]
+        ) {
+            if (requestStreamSucceeded == false || self.streamID == 0) { return }
+    
+            let latitude = doubleToStringWithZeroAsEmptyString(newLocation.coordinate.latitude)
+            let longitude = doubleToStringWithZeroAsEmptyString(newLocation.coordinate.longitude)
+            httpPatchStreamsId(
+                self.streamID.description,
+                tagIds: tagIds,
+                latitude: latitude,
+                longitude: longitude,
+                streamPatchOptions: streamPatchOptions
+            ) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.patchStreamsIdSuccess(data!)
                 self.rwPatchStreamsIdSuccess(data)
@@ -324,14 +336,14 @@ extension RWFramework {
                 self.rwPatchStreamsIdFailure(error)
                 self.apiProcessError(data, error: error!, caller: "apiPatchStreamsIdWithLocation")
             }
-        })
+        }
     }
 
     func apiPatchStreamsIdWithTags(_ tag_ids: String) {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
 
-        httpPatchStreamsId(self.streamID.description, tag_ids: tag_ids, completion: { (data, error) -> Void in
+        httpPatchStreamsId(self.streamID.description, tagIds: tag_ids, completion: { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.patchStreamsIdSuccess(data!)
                 self.rwPatchStreamsIdSuccess(data)

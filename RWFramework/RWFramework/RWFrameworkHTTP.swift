@@ -76,7 +76,12 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
-    func httpPostStreams(_ session_id: NSNumber, latitude: String = "0.1", longitude: String = "0.1", completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    func httpPostStreams(
+            _ session_id: NSNumber,
+            latitude: String = "0.1",
+            longitude: String = "0.1",
+            completion:@escaping (_ data: Data?, _ error: NSError?) -> Void
+        ) {
         if let url = URL(string: RWFrameworkURLFactory.postStreamsURL()) {
             let postData = ["session_id": session_id, "latitude": latitude, "longitude": longitude] as [String:Any]
             postDataToURL(url, postData: postData, completion: completion)
@@ -85,13 +90,22 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
             completion(nil, error)
         }
     }
-    func httpPatchStreamsId(_ stream_id: String, latitude: String, longitude: String, tag_ids: String, streamPatchOptions: Dictionary<String, Any> = [:], completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    
+    func httpPatchStreamsId(
+            _ stream_id: String,
+            tagIds: String? = nil,
+            latitude: String? = nil,
+            longitude: String? = nil,
+            streamPatchOptions: [String: Any] = [:],
+            completion:@escaping (_ data: Data?, _ error: NSError?) -> Void
+        ) {
         if let url = URL(string: RWFrameworkURLFactory.patchStreamsIdURL(stream_id)) {
-            var postData = ["latitude": latitude, "longitude": longitude, "tag_ids": tag_ids] as [String:Any]
-            // append postData with any key/value pairs that exist in streamPatchOptions dictionary; if empty dictionary, append nothing
-            postData = postData.merging(streamPatchOptions, uniquingKeysWith: { (first, _) in
-                return first
-            })
+            var postData = [String: Any]()
+            if let lat = latitude { postData["latitude"] = lat }
+            if let lng = longitude { postData["longitude"] = lng }
+            if let ids = tagIds { postData["tag_ids"] = ids }
+            // append postData with any key/value pairs that exist in optionalParams dictionary; if empty dictionary, append nothing
+            postData.merge(streamPatchOptions) { (first, _) in first }
             
             patchDataToURL(url, postData: postData, completion: completion)
         } else {
