@@ -7,11 +7,11 @@
 	<key>reverse_domain</key>
 	<string>org.roundware</string>
 	<key>base_url</key>
-	<string>http://roundware.dyndns.org/</string>
+	<string>http://localhost:8888/</string>
 	<key>reachability_host_name</key>
-	<string>roundware.dyndns.org</string>
+	<string>localhost:8888</string>
 	<key>distance_filter_in_meters</key>
-	<real>5</real>
+	<integer>5</integer>
 	<key>gps_idle_interval_in_seconds</key>
 	<integer>60</integer>
 	<key>recorded_file_name</key>

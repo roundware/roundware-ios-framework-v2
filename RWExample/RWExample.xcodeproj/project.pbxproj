@@ -264,6 +264,7 @@
 				TargetAttributes = {
 					75A7D2A11A745B5300E662A8 = {
 						CreatedOnToolsVersion = 6.1.1;
+						DevelopmentTeam = NXD56JM32J;
 						LastSwiftMigration = 0900;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
@@ -522,6 +523,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = NXD56JM32J;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = RWExample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
@@ -541,6 +543,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = NXD56JM32J;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = RWExample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;

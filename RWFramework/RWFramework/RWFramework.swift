@@ -78,8 +78,8 @@ private lazy var __once: () = { () -> Void in
     var getProjectsIdUIGroupsSucceeded = false
     var getTagCategoriesSucceeded = false
     var getUIConfigSucceeded = false
-    var requestStreamInProgress = false
-    var requestStreamSucceeded = false {
+    public var requestStreamInProgress = false
+    public var requestStreamSucceeded = false {
         didSet {
             if getProjectsIdTagsSucceeded && requestStreamSucceeded {
                 timeToSendTheListenTags = true

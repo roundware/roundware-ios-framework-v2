@@ -336,7 +336,7 @@ extension RWFramework {
                 self.rwPatchStreamsIdFailure(error)
                 self.apiProcessError(data, error: error!, caller: "apiPatchStreamsIdWithLocation")
             }
-        })
+        }
     }
 
     func apiPatchStreamsIdWithTags(_ tag_ids: String) {
