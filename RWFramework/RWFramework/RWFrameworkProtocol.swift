@@ -83,6 +83,16 @@ import CoreLocation
     @objc optional func rwGetStreamsIdCurrentSuccess(_ data: Data?)
     /// Sent in the case that getting the current assed ID in the stream fails
     @objc optional func rwGetStreamsIdCurrentFailure(_ error: NSError?)
+    
+    /// Sent to the server when user pauses stream playback locally
+    @objc optional func rwPostStreamsIdPauseSuccess(_ data: Data?)
+    /// Sent in the case that sending the pause request failed
+    @objc optional func rwPostStreamsIdPauseFailure(_ error: NSError?)
+    
+    /// Sent to the server when user un-pauses stream playback locally
+    @objc optional func rwPostStreamsIdResumeSuccess(_ data: Data?)
+    /// Sent in the case that sending the resume request failed
+    @objc optional func rwPostStreamsIdResumeFailure(_ error: NSError?)
 
     /// Sent after the server successfully returns a new envelope id
     @objc optional func rwPostEnvelopesSuccess(_ data: Data?)
@@ -408,6 +418,38 @@ extension RWFramework {
                 self.dam { rwfp.rwPostStreamsIdSkipFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwPostStreamsIdSkipFailure"), message: error!.localizedDescription)
+            }
+        }
+    }
+    
+    func rwPostStreamsIdPauseSuccess(_ data: Data?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwPostStreamsIdPauseSuccess?(data) }
+        }
+    }
+    
+    func rwPostStreamsIdPauseFailure(_ error: NSError?) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwPostStreamsIdPauseFailure != nil) {
+                self.dam { rwfp.rwPostStreamsIdPauseFailure?(error) }
+            } else {
+                self.alertOK(self.LS("RWFramework - rwPostStreamsIdPauseFailure"), message: error!.localizedDescription)
+            }
+        }
+    }
+    
+    func rwPostStreamsIdResumeSuccess(_ data: Data?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwPostStreamsIdResumeSuccess?(data) }
+        }
+    }
+    
+    func rwPostStreamsIdResumeFailure(_ error: NSError?) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwPostStreamsIdResumeFailure != nil) {
+                self.dam { rwfp.rwPostStreamsIdResumeFailure?(error) }
+            } else {
+                self.alertOK(self.LS("RWFramework - rwPostStreamsIdResumeFailure"), message: error!.localizedDescription)
             }
         }
     }

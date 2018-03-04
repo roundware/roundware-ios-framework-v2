@@ -153,6 +153,26 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
             completion(nil, error)
         }
     }
+    
+    func httpPostStreamsIdPause(_ stream_id: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        if let url = URL(string: RWFrameworkURLFactory.postStreamsIdPauseURL(stream_id)) {
+            let postData = [:] as Dictionary<String, String>
+            postDataToURL(url, postData: postData, completion: completion)
+        } else {
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsIdPauseURL unable to be created."])
+            completion(nil, error)
+        }
+    }
+    
+    func httpPostStreamsIdResume(_ stream_id: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        if let url = URL(string: RWFrameworkURLFactory.postStreamsIdResumeURL(stream_id)) {
+            let postData = [:] as Dictionary<String, String>
+            postDataToURL(url, postData: postData, completion: completion)
+        } else {
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsIdResumeURL unable to be created."])
+            completion(nil, error)
+        }
+    }
 
     func httpPostEnvelopes(_ session_id: NSNumber, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.postEnvelopesURL()) {
