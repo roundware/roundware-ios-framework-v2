@@ -25,7 +25,11 @@ extension RWFramework: CLLocationManagerDelegate {
   
     public func updateStream(options: [String: Any]) {
         streamOptions.merge(options) { (_, new) in new }
-        apiPatchStreamsIdWithLocation(lastRecordedLocation, streamPatchOptions: streamOptions)
+        apiPatchStreamsIdWithLocation(
+            lastRecordedLocation,
+            tagIds: getSubmittableListenIDsSetAsTags(),
+            streamPatchOptions: streamOptions
+        )
     }
 
     /// Called by the CLLocationManager when location has been updated
@@ -40,9 +44,13 @@ extension RWFramework: CLLocationManagerDelegate {
             if (geo_listen_enabled && requestStreamInProgress == false && requestStreamSucceeded == false) {
               apiPostStreams(at: locations[0])
             } else {
-                    // if using range/directional listening, current param values should be inserted here
-                    // such that automatic location updates do not turn off range/directional listening by omitting required params
-                      apiPatchStreamsIdWithLocation(locations[0], streamPatchOptions: streamOptions)
+                // if using range/directional listening, current param values should be inserted here
+                // such that automatic location updates do not turn off range/directional listening by omitting required params
+                  apiPatchStreamsIdWithLocation(
+                    locations[0],
+                    tagIds: getSubmittableListenIDsSetAsTags(),
+                    streamPatchOptions: streamOptions
+                )
             }
         }
 
