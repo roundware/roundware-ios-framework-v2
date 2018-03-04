@@ -255,19 +255,20 @@ extension RWFramework {
 
 // MARK: POST streams
 
-    public func apiPostStreams(at location: CLLocation? = nil) {
+    func apiPostStreams(at location: CLLocation? = nil) {
         if (requestStreamInProgress == true) { return }
         if (requestStreamSucceeded == true) { return }
         if (postSessionsSucceeded == false) { return }
 
         requestStreamInProgress = true
+        lastRecordedLocation = locationManager.location!
 
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
         
-        var lat: String? = nil, lng: String? = nil
+        var lat: String = "0.1", lng: String = "0.1"
         if let loc = location?.coordinate {
-            lat = loc.latitude.description
-            lng = loc.longitude.description
+            lat = doubleToStringWithZeroAsEmptyString(loc.latitude)
+            lng = doubleToStringWithZeroAsEmptyString(loc.longitude)
         }
 
         httpPostStreams(session_id, latitude: lat, longitude: lng) { (data, error) -> Void in
@@ -282,9 +283,8 @@ extension RWFramework {
         }
     }
 
-    func postStreamsSuccess(_ data: Data, session_id: NSNumber) {
+    private func postStreamsSuccess(_ data: Data, session_id: NSNumber) {
         do {
-
             let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
 
             if let dict = json as? [String: AnyObject] {
@@ -313,24 +313,21 @@ extension RWFramework {
 
 // MARK: PATCH streams id
 
-    public func apiPatchStreamsIdWithLocation(_ newLocation: CLLocation?,
-                                       range: ClosedRange<Int>? = nil,
-                                       heading: Float? = nil,
-                                       angularWidth: Float? = nil) {
-        if (requestStreamSucceeded == false) { return }
-        if (self.streamID == 0) { return }
-        if (newLocation == nil) { return }
+    public func apiPatchStreamsIdWithLocation(
+        _ newLocation: CLLocation, 
+        tagIds: String? = nil,
+        streamPatchOptions: [String: Any] = [:]
+    ) {
+        if (requestStreamSucceeded == false || self.streamID == 0) { return }
 
-        let latitude = newLocation!.coordinate.latitude.description
-        let longitude = newLocation!.coordinate.longitude.description
-
+        let latitude = doubleToStringWithZeroAsEmptyString(newLocation.coordinate.latitude)
+        let longitude = doubleToStringWithZeroAsEmptyString(newLocation.coordinate.longitude)
         httpPatchStreamsId(
             self.streamID.description,
+            tagIds: tagIds,
             latitude: latitude,
             longitude: longitude,
-            range: range,
-            heading: heading,
-            angularWidth: angularWidth
+            streamPatchOptions: streamPatchOptions
         ) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.patchStreamsIdSuccess(data!)
@@ -357,7 +354,7 @@ extension RWFramework {
         })
     }
 
-    func patchStreamsIdSuccess(_ data: Data) {
+    private func patchStreamsIdSuccess(_ data: Data) {
 
     }
 
@@ -378,7 +375,7 @@ extension RWFramework {
         })
     }
 
-    func postStreamsIdHeartbeatSuccess(_ data: Data) {
+    private func postStreamsIdHeartbeatSuccess(_ data: Data) {
 
     }
 
@@ -399,7 +396,7 @@ extension RWFramework {
         })
     }
     
-    func postStreamsIdReplaySuccess(_ data: Data) {
+    private func postStreamsIdReplaySuccess(_ data: Data) {
         
     }
 
@@ -420,7 +417,7 @@ extension RWFramework {
         })
     }
     
-    func postStreamsIdSkipSuccess(_ data: Data) {
+    private func postStreamsIdSkipSuccess(_ data: Data) {
         
     }
 
@@ -440,7 +437,7 @@ extension RWFramework {
         }
     }
 
-    func postEnvelopesSuccess(_ data: Data, session_id: NSNumber, success:(_ envelopeID: Int) -> Void) {
+    private func postEnvelopesSuccess(_ data: Data, session_id: NSNumber, success:(_ envelopeID: Int) -> Void) {
 
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
@@ -577,7 +574,7 @@ extension RWFramework {
 
 // MARK: utilities
 
-    func apiProcessError(_ data: Data?, error: NSError, caller: String) {
+    private func apiProcessError(_ data: Data?, error: NSError, caller: String) {
         let detailStringValue = ""
 //        if (data != nil) {
 //            let dict = JSON(data: data!)

@@ -369,7 +369,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="80i-DS-srf">
-                                <rect key="frame" x="110" y="723" width="155" height="55"/>
+                                <rect key="frame" x="110" y="473" width="155" height="55"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="36"/>
                                 <state key="normal" title="Re-record"/>
@@ -400,10 +400,20 @@
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8w3-PQ-4SW">
+                                <rect key="frame" x="103" y="723" width="167" height="55"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="36"/>
+                                <state key="normal" title="Add Image"/>
+                                <connections>
+                                    <action selector="addImage:" destination="coo-fH-lyS" eventType="touchUpInside" id="OTG-C7-Q2C"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     </view>
                     <connections>
+                        <outlet property="addImageButton" destination="8w3-PQ-4SW" id="dfp-XQ-4er"/>
                         <outlet property="recordStopPlayButton" destination="w7c-eI-qKt" id="yLd-eP-en0"/>
                         <outlet property="rerecordButton" destination="80i-DS-srf" id="bK9-Og-k8Z"/>
                         <outlet property="timerLabel" destination="CNM-L3-szE" id="lvY-vU-V2o"/>

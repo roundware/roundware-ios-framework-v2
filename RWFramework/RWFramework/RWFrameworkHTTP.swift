@@ -76,44 +76,36 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
-    func httpPostStreams(_ session_id: NSNumber,
-                         latitude: String? = nil,
-                         longitude: String? = nil,
-                         completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    func httpPostStreams(
+        _ session_id: NSNumber,
+        latitude: String = "0.1",
+        longitude: String = "0.1",
+        completion:@escaping (_ data: Data?, _ error: NSError?) -> Void
+    ) {
         if let url = URL(string: RWFrameworkURLFactory.postStreamsURL()) {
-            var postData = ["session_id": session_id.stringValue]
-            if let lat = latitude {
-                postData["latitude"] = lat
-            }
-            if let lng = longitude {
-                postData["longitude"] = lng
-            }
+            let postData = ["session_id": session_id, "latitude": latitude, "longitude": longitude] as [String:Any]
             postDataToURL(url, postData: postData, completion: completion)
         } else {
             let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "postStreamsURL unable to be created."])
             completion(nil, error)
         }
     }
-
-    func httpPatchStreamsId(_ stream_id: String,
-                            latitude: String,
-                            longitude: String,
-                            range: ClosedRange<Int>?,
-                            heading: Float?,
-                            angularWidth: Float?,
-                            completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+    
+    func httpPatchStreamsId(
+        _ stream_id: String,
+        tagIds: String? = nil,
+        latitude: String? = nil,
+        longitude: String? = nil,
+        streamPatchOptions: [String: Any] = [:],
+        completion:@escaping (_ data: Data?, _ error: NSError?) -> Void
+    ) {
         if let url = URL(string: RWFrameworkURLFactory.patchStreamsIdURL(stream_id)) {
-            var postData = ["latitude": latitude, "longitude": longitude]
-            if let range = range {
-                postData["listener_range_min"] = String(range.lowerBound)
-                postData["listener_range_max"] = String(range.upperBound)
-            }
-            if let h = heading {
-                postData["listen_heading"] = h.description
-            }
-            if let w = angularWidth {
-                postData["listen_width"] = w.description
-            }
+            var postData = [String: Any]()
+            if let lat = latitude { postData["latitude"] = lat }
+            if let lng = longitude { postData["longitude"] = lng }
+            if let ids = tagIds { postData["tag_ids"] = ids }
+            // append postData with any key/value pairs that exist in optionalParams dictionary; if empty dictionary, append nothing
+            postData.merge(streamPatchOptions) { (first, _) in first }
             patchDataToURL(url, postData: postData, completion: completion)
         } else {
             let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "patchStreamsIdURL unable to be created."])
