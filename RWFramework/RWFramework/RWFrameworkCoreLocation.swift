@@ -24,8 +24,18 @@ extension RWFramework: CLLocationManagerDelegate {
     }
     
     /// Update parameters to future stream requests
-    public func updateStreamParams(options: [String: Any]) {
-        streamOptions.merge(options) { (_, new) in new }
+    public func updateStreamParams(
+        range: ClosedRange<Int>?,
+        headingAngle: Float?,
+        angularWidth: Float?
+    ) {
+        if let r = range { 
+            streamOptions["listener_range_min"] = r.lowerBound
+            streamOptions["listener_range_max"] = r.upperBound
+        }
+        if let a = headingAngle { streamOptions["listen_heading"] = a }
+        if let w = angularWidth { streamOptions["listen_width"] = w }
+        
         apiPatchStreamsIdWithLocation(
             lastRecordedLocation,
             tagIds: getSubmittableListenIDsSetAsTags(),
@@ -35,10 +45,9 @@ extension RWFramework: CLLocationManagerDelegate {
 
     /// Called by the CLLocationManager when location has been updated
     public func locationManager(
-            _ manager: CLLocationManager,
-            didUpdateLocations locations: [CLLocation]
-        ) {
-
+        _ manager: CLLocationManager,
+        didUpdateLocations locations: [CLLocation]
+    ) {
         captureLastRecordedLocation()
 
         let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
