@@ -409,11 +409,21 @@
                                     <action selector="addImage:" destination="coo-fH-lyS" eventType="touchUpInside" id="OTG-C7-Q2C"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gCu-qo-PG8">
+                                <rect key="frame" x="120" y="660" width="135" height="55"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="36"/>
+                                <state key="normal" title="Add Text"/>
+                                <connections>
+                                    <action selector="addText:" destination="coo-fH-lyS" eventType="touchUpInside" id="F1g-qD-Fea"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     </view>
                     <connections>
                         <outlet property="addImageButton" destination="8w3-PQ-4SW" id="dfp-XQ-4er"/>
+                        <outlet property="addTextButton" destination="gCu-qo-PG8" id="EYg-bU-AOx"/>
                         <outlet property="recordStopPlayButton" destination="w7c-eI-qKt" id="yLd-eP-en0"/>
                         <outlet property="rerecordButton" destination="80i-DS-srf" id="bK9-Og-k8Z"/>
                         <outlet property="timerLabel" destination="CNM-L3-szE" id="lvY-vU-V2o"/>

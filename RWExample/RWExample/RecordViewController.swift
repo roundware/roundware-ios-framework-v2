@@ -17,6 +17,7 @@ class RecordViewController: UIViewController, RWFrameworkProtocol {
     @IBOutlet weak var uploadButton: UIButton!
     @IBOutlet weak var rerecordButton: UIButton!
     @IBOutlet weak var addImageButton: UIButton!
+    @IBOutlet weak var addTextButton: UIButton!
 
     // MARK: -
     
@@ -46,12 +47,14 @@ class RecordViewController: UIViewController, RWFrameworkProtocol {
             uploadButton.isEnabled = !rwf.isPlayingBack()
             rerecordButton.isEnabled = !rwf.isPlayingBack()
             addImageButton.isEnabled = !rwf.isPlayingBack()
+            addTextButton.isEnabled = !rwf.isPlayingBack()
         } else {                // record
             recordStopPlayButton.setTitle(rwf.isRecording() ? "Stop" : "Record", for: .normal)
             recordStopPlayButton.isEnabled = true
             uploadButton.isEnabled = false
             rerecordButton.isEnabled = false
             addImageButton.isEnabled = false
+            addTextButton.isEnabled = false
         }
     }
 
@@ -90,13 +93,22 @@ class RecordViewController: UIViewController, RWFrameworkProtocol {
     
     @IBAction func addImage(_ sender: UIButton) {
         let rwf = RWFramework.sharedInstance
-#if (arch(i386) || arch(x86_64)) && os(iOS)
-        rwf.doPhotoLibrary()
-#else
-        rwf.doImage()
-#endif
+        #if (arch(i386) || arch(x86_64)) && os(iOS)
+            rwf.doPhotoLibrary()
+        #else
+            rwf.doImage()
+        #endif
     }
-
+    
+    @IBAction func addText(_ sender: UIButton) {
+        let rwf = RWFramework.sharedInstance
+        if let key = rwf.addText("Hello String", description: "Hello Description") {
+            print("addText succeeded to path \(key)")
+        } else {
+            print("addText failed")
+        }
+    }
+    
     // MARK: -
 
     func rwRecordingProgress(_ percentage: Double, maxDuration: TimeInterval, peakPower: Float, averagePower: Float) {
