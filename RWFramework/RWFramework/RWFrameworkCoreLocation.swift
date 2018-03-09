@@ -33,8 +33,8 @@ extension RWFramework: CLLocationManagerDelegate {
             streamOptions["listener_range_min"] = r.lowerBound
             streamOptions["listener_range_max"] = r.upperBound
         }
-        if let a = headingAngle { streamOptions["listen_heading"] = a }
-        if let w = angularWidth { streamOptions["listen_width"] = w }
+        if let a = headingAngle { streamOptions["listener_heading"] = a }
+        if let w = angularWidth { streamOptions["listener_width"] = w }
         
         apiPatchStreamsIdWithLocation(
             lastRecordedLocation,
