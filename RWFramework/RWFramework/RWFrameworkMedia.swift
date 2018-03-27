@@ -139,6 +139,10 @@ extension RWFramework {
                     media.mediaStatus = MediaStatus.Ready
                 }
             }
+            // create and store sharing url for current envelope
+            let sharingUrl = RWFrameworkConfig.getConfigValueAsString("sharing_url")
+            let currentSharingUrl = sharingUrl + "?eid=" + String(envelopeID)
+            RWFrameworkConfig.setConfigValue("sharing_url_current", value: currentSharingUrl as AnyObject, group: RWFrameworkConfig.ConfigGroup.project)
         })
     }
 
