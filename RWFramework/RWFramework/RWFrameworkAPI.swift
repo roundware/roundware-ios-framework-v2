@@ -303,7 +303,7 @@ extension RWFramework {
                 // TODO: can we still expect this here?
                 func requestStreamDisplayUserMessage(_ userMessage: String?) {
                     if (userMessage != nil && userMessage!.lengthOfBytes(using: String.Encoding.utf8) > 0) {
-                        self.rwUpdateStatus(userMessage!)
+                        self.rwUpdateStatus(userMessage!, title: "Out of Range!")
                     }
                 }
                 requestStreamDisplayUserMessage(dict["user_message"] as? String)
