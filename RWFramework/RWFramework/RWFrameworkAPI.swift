@@ -464,6 +464,27 @@ extension RWFramework {
     func postStreamsIdResumeSuccess(_ data: Data) {
         
     }
+    
+    // MARK: GET streams id isactive
+    
+    func apiGetStreamsIdIsActive() {
+        if (requestStreamSucceeded == false) { return }
+        if (self.streamID == 0) { return }
+        
+        httpGetStreamsIdIsActive(self.streamID.description, completion: { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                self.getStreamsIdIsActiveSuccess(data!)
+                self.rwGetStreamsIdIsActiveSuccess(data)
+            } else if (error != nil) {
+                self.rwGetStreamsIdIsActiveFailure(error)
+                self.apiProcessError(data, error: error!, caller: "apiGetStreamsIdIsActive")
+            }
+        })
+    }
+    
+    func getStreamsIdIsActiveSuccess(_ data: Data) {
+
+    }
 
 // MARK: POST envelopes
 

@@ -71,6 +71,10 @@ open class RWFrameworkURLFactory {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "streams/" + stream_id + "/resume/"
     }
     
+    class func getStreamsIdIsActiveURL(_ stream_id: String) -> String {
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "streams/" + stream_id + "/isactive/"
+    }
+    
     class func postEnvelopesURL() -> String {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "envelopes/"
     }

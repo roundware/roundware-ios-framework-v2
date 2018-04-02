@@ -93,6 +93,11 @@ import CoreLocation
     @objc optional func rwPostStreamsIdResumeSuccess(_ data: Data?)
     /// Sent in the case that sending the resume request failed
     @objc optional func rwPostStreamsIdResumeFailure(_ error: NSError?)
+    
+    /// Sent to the server when user checks if stream is active
+    @objc optional func rwGetStreamsIdIsActiveSuccess(_ data: Data?)
+    /// Sent in the case that the isactive request failed
+    @objc optional func rwGetStreamsIdIsActiveFailure(_ error: NSError?)
 
     /// Sent after the server successfully returns a new envelope id
     @objc optional func rwPostEnvelopesSuccess(_ data: Data?)
@@ -434,6 +439,22 @@ extension RWFramework {
                 self.dam { rwfp.rwPostStreamsIdPauseFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwPostStreamsIdPauseFailure"), message: error!.localizedDescription)
+            }
+        }
+    }
+    
+    func rwGetStreamsIdIsActiveSuccess(_ data: Data?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwGetStreamsIdIsActiveSuccess?(data) }
+        }
+    }
+    
+    func rwGetStreamsIdIsActiveFailure(_ error: NSError?) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwGetStreamsIdIsActiveFailure != nil) {
+                self.dam { rwfp.rwGetStreamsIdIsActiveFailure?(error) }
+            } else {
+                self.alertOK(self.LS("RWFramework - rwGetStreamsIdIsActiveFailure"), message: error!.localizedDescription)
             }
         }
     }

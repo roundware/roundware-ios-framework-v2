@@ -173,6 +173,15 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
             completion(nil, error)
         }
     }
+    
+    func httpGetStreamsIdIsActive(_ stream_id: String, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        if let url = URL(string: RWFrameworkURLFactory.getStreamsIdIsActiveURL(stream_id)) {
+            getDataFromURL(url, completion: completion)
+        } else {
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "getStreamsIdIsActiveURL unable to be created."])
+            completion(nil, error)
+        }
+    }
 
     func httpPostEnvelopes(_ session_id: NSNumber, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.postEnvelopesURL()) {

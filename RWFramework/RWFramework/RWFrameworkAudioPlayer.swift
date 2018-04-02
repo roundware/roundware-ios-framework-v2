@@ -74,5 +74,10 @@ extension RWFramework {
     public func replay() {
         apiPostStreamsIdReplay()
     }
+    
+    /// Check if stream active
+    public func isActive() {
+        apiGetStreamsIdIsActive()
+    }
 
 }
