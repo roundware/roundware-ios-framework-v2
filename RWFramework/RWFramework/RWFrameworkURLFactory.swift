@@ -36,7 +36,7 @@ open class RWFrameworkURLFactory {
     }
 
     class func getTagCategoriesURL() -> String {
-        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "/tagcategories/"
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "tagcategories/"
     }
     
     class func getUIConfigURL(_ project_id: NSNumber, session_id: NSNumber) -> String {
@@ -61,6 +61,18 @@ open class RWFrameworkURLFactory {
     
     class func postStreamsIdSkipURL(_ stream_id: String) -> String {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "streams/" + stream_id + "/skipasset/"
+    }
+    
+    class func postStreamsIdPauseURL(_ stream_id: String) -> String {
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "streams/" + stream_id + "/pause/"
+    }
+    
+    class func postStreamsIdResumeURL(_ stream_id: String) -> String {
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "streams/" + stream_id + "/resume/"
+    }
+    
+    class func getStreamsIdIsActiveURL(_ stream_id: String) -> String {
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "streams/" + stream_id + "/isactive/"
     }
     
     class func postEnvelopesURL() -> String {

@@ -22,25 +22,47 @@ extension RWFramework: CLLocationManagerDelegate {
 
         rwLocationManager(manager, didChangeAuthorizationStatus: status)
     }
+    
+    /// Update parameters to future stream requests
+    public func updateStreamParams(
+        range: ClosedRange<Int>?,
+        headingAngle: Float?,
+        angularWidth: Float?
+    ) {
+        if let r = range { 
+            streamOptions["listener_range_min"] = r.lowerBound
+            streamOptions["listener_range_max"] = r.upperBound
+        }
+        if let a = headingAngle { streamOptions["listener_heading"] = a }
+        if let w = angularWidth { streamOptions["listener_width"] = w }
+        
+        apiPatchStreamsIdWithLocation(
+            lastRecordedLocation,
+            tagIds: getSubmittableListenIDsSetAsTags(),
+            streamPatchOptions: streamOptions
+        )
+    }
 
     /// Called by the CLLocationManager when location has been updated
-    public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        // println("locationManager didUpdateLocations \(locations)")
-
+    public func locationManager(
+        _ manager: CLLocationManager,
+        didUpdateLocations locations: [CLLocation]
+    ) {
         captureLastRecordedLocation()
 
         let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
-        if (listen_enabled) {
-            let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
-            if (geo_listen_enabled && requestStreamInProgress == false && requestStreamSucceeded == false) {
-                apiPostStreams()
+        let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
+        if (listen_enabled && geo_listen_enabled) {
+            if (!requestStreamInProgress && !requestStreamSucceeded) {
+                apiPostStreams(at: locations[0])
             } else {
-                #if DEBUG
-                    let fakeLocation: CLLocation = CLLocation(latitude: 1.0, longitude: 1.0)
-                    apiPatchStreamsIdWithLocation(fakeLocation)
-                #else
-                    apiPatchStreamsIdWithLocation(locations[0] as? CLLocation)
-                #endif
+                // if using range/directional listening, current param values should be inserted here
+                // such that automatic location updates do not turn off range/directional listening by omitting required params
+                apiPatchStreamsIdWithLocation(
+                    locations[0],
+                    tagIds: getSubmittableListenIDsSetAsTags(),
+                    streamPatchOptions: streamOptions
+                )
             }
         }
 
@@ -71,11 +93,6 @@ extension RWFramework: CLLocationManagerDelegate {
 
     /// Globally captures the most recent location
     func captureLastRecordedLocation() {
-        #if DEBUG
-            let fakeLocation: CLLocation = CLLocation(latitude: 1.0, longitude: 1.0)
-            lastRecordedLocation = fakeLocation
-        #else
-            lastRecordedLocation = locationManager.location!
-        #endif
+        lastRecordedLocation = locationManager.location!
     }
 }

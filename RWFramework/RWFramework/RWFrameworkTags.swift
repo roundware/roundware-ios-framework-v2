@@ -365,6 +365,21 @@ extension RWFramework {
         UserDefaults.standard.synchronize()
     }
     
+    public func getSpeakIDsDefaultSet() -> Set<Int>? {
+        if let uiconfig = getUIConfig() {
+            var set = Set<Int>()
+            for speak in uiconfig.speak {
+                for item in speak.display_items {
+                    if item.default_state == true {
+                        set.insert(item.id)
+                    }
+                }
+            }
+            return set
+        }
+        return nil
+    }
+    
 // MARK: --
     
     public func getValidDisplayItems(_ group: [UIConfigGroup], index: Int, tags: Set<Int>) -> [UIConfigItem] {
