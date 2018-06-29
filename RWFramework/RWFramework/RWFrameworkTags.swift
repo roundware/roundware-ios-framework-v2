@@ -255,9 +255,10 @@ extension RWFramework {
     
 // MARK: --
 
-    public func submitListenIDsSetAsTags() {
+    public func submitListenIDsSetAsTags(streamPatchOptions: [String: Any] = [:]) {
         let tag_ids = getSubmittableListenIDsSetAsTags()
-        apiPatchStreamsIdWithTags(tag_ids)
+        // must add streamPatchOptions in order to preserve any settings user already applied
+        apiPatchStreamsIdWithTags(tag_ids, streamPatchOptions: streamPatchOptions)
     }
     
     public func getListenTagIDFromID(_ id: Int) -> Int {
@@ -317,10 +318,10 @@ extension RWFramework {
         return nil
     }
     
-    public func setListenIDsSet(_ ids: Set<Int>) {
+    public func setListenIDsSet(_ ids: Set<Int>, streamPatchOptions: [String: Any] = [:]) {
         UserDefaults.standard.set(Array(ids), forKey: "listenIDsSet")
         UserDefaults.standard.synchronize()
-        submitListenIDsSetAsTags()
+        submitListenIDsSetAsTags(streamPatchOptions: streamPatchOptions)
     }
 
 // MARK: --

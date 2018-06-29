@@ -335,11 +335,12 @@ extension RWFramework {
         }
     }
 
-    func apiPatchStreamsIdWithTags(_ tag_ids: String) {
+    func apiPatchStreamsIdWithTags(_ tag_ids: String, streamPatchOptions: [String: Any] = [:]) {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
 
         httpPatchStreamsId(self.streamID.description, tagIds: tag_ids).then { data in
+//            self.patchStreamsIdSuccess(data!)
             self.rwPatchStreamsIdSuccess(data)
         }.catch { error in
             self.rwPatchStreamsIdFailure(error)
