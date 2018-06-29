@@ -341,11 +341,11 @@ extension RWFramework {
         }
     }
 
-    func apiPatchStreamsIdWithTags(_ tag_ids: String) {
+    func apiPatchStreamsIdWithTags(_ tag_ids: String, streamPatchOptions: [String: Any] = [:]) {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
 
-        httpPatchStreamsId(self.streamID.description, tagIds: tag_ids, completion: { (data, error) -> Void in
+        httpPatchStreamsId(self.streamID.description, tagIds: tag_ids, streamPatchOptions: streamPatchOptions, completion: { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.patchStreamsIdSuccess(data!)
                 self.rwPatchStreamsIdSuccess(data)
