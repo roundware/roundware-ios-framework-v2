@@ -526,12 +526,32 @@ extension RWFramework {
         httpPatchEnvelopesId(media, session_id: session_id) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 success()
+                self.patchEnvelopesSuccess(data!)
                 self.rwPatchEnvelopesIdSuccess(data)
             } else if (error != nil) {
                 failure(error!)
                 self.rwPatchEnvelopesIdFailure(error)
                 self.apiProcessError(data, error: error!, caller: "apiPatchEnvelopesId")
             }
+        }
+    }
+    
+    func patchEnvelopesSuccess(_ data: Data) {
+        do {
+            let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
+            
+            if let dict = json as? [String:AnyObject] {
+                if let assetId = dict["id"] as? NSNumber {
+                    // only set config value for audio assets
+                    let assetMediaType = dict["media_type"] as? String
+                    if (assetMediaType == "audio") {
+                        RWFrameworkConfig.setConfigValue("most_recent_audio_asset_id", value: assetId, group: RWFrameworkConfig.ConfigGroup.client)
+                    }
+                }
+            }
+        }
+        catch {
+            print(error)
         }
     }
 
@@ -568,6 +588,26 @@ extension RWFramework {
             }
         }
     }
+    
+// MARK: PATCH assets id PUBLIC
+    
+    public func apiPatchAssetsId(_ asset_id: String, postData: [String: Any] = [:], success:@escaping (_ data: Data?) -> Void, failure:@escaping (_ error: NSError) -> Void) {
+        
+        httpPatchAssetsId(asset_id, postData: postData) { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                success(data)
+                self.rwPatchAssetsIdSuccess(data)
+            } else if (error != nil) {
+                failure(error!)
+                self.rwPatchAssetsIdFailure(error)
+                self.apiProcessError(data, error: error!, caller: "apiPatchAssetsId")
+            }
+        }
+    }
+    
+    
+    
+
 
 // MARK: POST assets id votes
 
