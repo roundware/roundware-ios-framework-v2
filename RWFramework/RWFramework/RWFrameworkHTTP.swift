@@ -163,6 +163,15 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
     func httpGetAssets(_ dict: [String:String]) -> Promise<Data> {
         return getData(from: RWFrameworkURLFactory.getAssetsURL(dict))
     }
+    
+    func httpPatchAssetsId(_ asset_id: String, postData: [String: Any] = [:], completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        if let url = URL(string: RWFrameworkURLFactory.patchAssetsIdURL(asset_id)) {
+            patchDataToURL(url, postData: postData, completion: completion)
+        } else {
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "httpPatchAssetsId unable to be created."])
+            completion(nil, error)
+        }
+    }
 
     func httpGetAssetsId(_ asset_id: String) -> Promise<Data> {
         return getData(from: RWFrameworkURLFactory.getAssetsIdURL(asset_id))
