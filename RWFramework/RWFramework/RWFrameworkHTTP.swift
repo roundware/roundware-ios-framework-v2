@@ -174,6 +174,15 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
             completion(nil, error)
         }
     }
+    
+    func httpGetAudioTracks(_ dict: [String:String], completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        if let url = URL(string: RWFrameworkURLFactory.getAudioTracksURL(dict)) {
+            getDataFromURL(url, completion: completion)
+        } else {
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "httpGetAudioTracks unable to be created."])
+            completion(nil, error)
+        }
+    }
 
     func httpGetAssets(_ dict: [String:String], completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.getAssetsURL(dict)) {
@@ -208,6 +217,16 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
             getDataFromURL(url, completion: completion)
         } else {
             let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "getAssetsIdVotesURL unable to be created."])
+            completion(nil, error)
+        }
+    }
+    
+    
+    func httpGetSpeakers(_ dict: [String:String], completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        if let url = URL(string: RWFrameworkURLFactory.getSpeakersURL(dict)) {
+            getDataFromURL(url, completion: completion)
+        } else {
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "httpGetSpeakers unable to be created."])
             completion(nil, error)
         }
     }

@@ -473,6 +473,24 @@ extension RWFramework {
 // MARK: POST assets
 
     // Not needed on client - not implementing for now
+    
+    
+    public func apiGetAudioTracks(
+        _ dict: [String:String],
+        success:@escaping (_ data: Data?) -> Void,
+        failure:@escaping (_ error: NSError) -> Void
+    ) {
+        httpGetAudioTracks(dict) { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                success(data)
+//                self.rwGetAudioTracksSuccess(data)
+            } else if (error != nil) {
+                failure(error!)
+//                self.rwGetAssetsFailure(error)
+                self.apiProcessError(data, error: error!, caller: "apiGetAudioTracks")
+            }
+        }
+    }
 
 // MARK: GET assets PUBLIC
 
@@ -532,6 +550,20 @@ extension RWFramework {
                 failure(error!)
                 self.rwGetAssetsIdVotesFailure(error)
                 self.apiProcessError(data, error: error!, caller: "apiGetAssetsIdVotes")
+            }
+        }
+    }
+    
+    
+    public func apiGetSpeakers(_ dict: [String:String], success:@escaping (_ data: Data?) -> Void, failure:@escaping (_ error: NSError) -> Void) {
+        httpGetSpeakers(dict) { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                success(data)
+                self.rwGetSpeakersSuccess(data)
+            } else if (error != nil) {
+                failure(error!)
+                self.rwGetSpeakersFailure(error)
+                self.apiProcessError(data, error: error!, caller: "apiGetAssets")
             }
         }
     }

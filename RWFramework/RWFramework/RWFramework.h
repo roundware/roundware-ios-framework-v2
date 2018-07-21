@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "STKAudioPlayer.h"
 
 //! Project version number for RWFramework.
 FOUNDATION_EXPORT double RWFrameworkVersionNumber;

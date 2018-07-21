@@ -113,6 +113,11 @@ import CoreLocation
     @objc optional func rwGetAssetsIdVotesSuccess(_ data: Data?)
     /// Sent in the case that the server can not get vote info for an asset
     @objc optional func rwGetAssetsIdVotesFailure(_ error: NSError?)
+    
+    /// Sent after the server successfully gets speaker info
+    @objc optional func rwGetSpeakersSuccess(_ data: Data?)
+    /// Sent in the case that the server can not get speaker info
+    @objc optional func rwGetSpeakersFailure(_ error: NSError?)
 
     /// Sent after the server successfully posts an event
     @objc optional func rwPostEventsSuccess(_ data: Data?)
@@ -507,6 +512,25 @@ extension RWFramework {
             }
         }
     }
+    
+    
+    func rwGetSpeakersSuccess(_ data: Data?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwGetSpeakersSuccess?(data) }
+        }
+    }
+    
+    func rwGetSpeakersFailure(_ error: NSError?) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwGetSpeakersFailure != nil) {
+                self.dam { rwfp.rwGetSpeakersFailure?(error) }
+            } else {
+                self.alertOK(self.LS("RWFramework - rwGetAssetsFailure"), message: error!.localizedDescription)
+            }
+        }
+    }
+    
+    
 
     func rwPostEventsSuccess(_ data: Data?) {
         protocaller { (rwfp, _) -> Void in

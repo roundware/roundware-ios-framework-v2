@@ -81,6 +81,17 @@ open class RWFrameworkURLFactory {
         }
         return url
     }
+    
+    class func getAudioTracksURL(_ dict: [String:String]) -> String {
+        var url = RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "audiotracks/"
+        if (dict.count > 0) {
+            url += "?"
+        }
+        for (key, value) in dict {
+            url += (key + "=" + value + "&")
+        }
+        return url
+    }
 
     class func getAssetsIdURL(_ asset_id: String) -> String {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "assets/" + asset_id + "/"
@@ -96,6 +107,18 @@ open class RWFrameworkURLFactory {
 
     class func postEventsURL() -> String {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "events/"
+    }
+    
+    
+    class func getSpeakersURL(_ dict: [String:String]) -> String {
+        var url = RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "speakers/"
+        if (dict.count > 0) {
+            url += "?"
+        }
+        for (key, value) in dict {
+            url += (key + "=" + value + "&")
+        }
+        return url
     }
 
 }

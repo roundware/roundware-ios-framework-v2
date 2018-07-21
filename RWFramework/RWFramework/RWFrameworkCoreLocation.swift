@@ -36,11 +36,18 @@ extension RWFramework: CLLocationManagerDelegate {
         if let a = headingAngle { streamOptions["listener_heading"] = a }
         if let w = angularWidth { streamOptions["listener_width"] = w }
         
-        apiPatchStreamsIdWithLocation(
-            lastRecordedLocation,
-            tagIds: getSubmittableListenIDsSetAsTags(),
-            streamPatchOptions: streamOptions
-        )
+//        apiPatchStreamsIdWithLocation(
+//            lastRecordedLocation,
+//            tagIds: getSubmittableListenIDsSetAsTags(),
+//            streamPatchOptions: streamOptions
+//        )
+        playlist.updateParams(StreamParams(
+            location: lastRecordedLocation,
+            minDist: streamOptions["listener_range_min"] as! Int,
+            maxDist: streamOptions["listener_range_max"] as! Int,
+            heading: streamOptions["listener_heading"] as! Float,
+            angularWidth: streamOptions["listener_width"] as! Float
+        ))
     }
 
     /// Called by the CLLocationManager when location has been updated
@@ -54,15 +61,26 @@ extension RWFramework: CLLocationManagerDelegate {
         let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
         if (listen_enabled && geo_listen_enabled) {
             if (!requestStreamInProgress && !requestStreamSucceeded) {
-                apiPostStreams(at: locations[0])
+//                apiPostStreams(at: locations[0])
+                playlist.start()
+                requestStreamSucceeded = true
             } else {
                 // if using range/directional listening, current param values should be inserted here
                 // such that automatic location updates do not turn off range/directional listening by omitting required params
-                apiPatchStreamsIdWithLocation(
-                    locations[0],
-                    tagIds: getSubmittableListenIDsSetAsTags(),
-                    streamPatchOptions: streamOptions
-                )
+//                apiPatchStreamsIdWithLocation(
+//                    locations[0],
+//                    tagIds: getSubmittableListenIDsSetAsTags(),
+//                    streamPatchOptions: streamOptions
+//                )
+                if !streamOptions.isEmpty {
+                    playlist.updateParams(StreamParams(
+                        location: locations[0],
+                        minDist: streamOptions["listener_range_min"] as! Int,
+                        maxDist: streamOptions["listener_range_max"] as! Int,
+                        heading: streamOptions["listener_heading"] as! Float,
+                        angularWidth: streamOptions["listener_width"] as! Float
+                    ))
+                }
             }
         }
 
