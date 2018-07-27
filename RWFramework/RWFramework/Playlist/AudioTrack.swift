@@ -85,7 +85,7 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
     
     func audioPlayer(_ audioPlayer: STKAudioPlayer, didFinishPlayingQueueItemId queueItemId: NSObject, with stopReason: STKAudioPlayerStopReason, andProgress progress: Double, andDuration duration: Double) {
         currentAsset = nextAsset
-        playNext()
+        playNext(premature: false)
     }
     
     func audioPlayer(_ audioPlayer: STKAudioPlayer, unexpectedError errorCode: STKAudioPlayerErrorCode) {
@@ -95,7 +95,7 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
     
     /// Plays the next optimal asset nearby.
     /// @arg premature True if skipping the current asset, rather than fading at the end of it.
-    func playNext() {
+    func playNext(premature: Bool = true) {
         // Stop any timer set to fade at the natural end of an asset
         fadeTimer?.invalidate()
         
@@ -123,6 +123,10 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
 //        }
         
         queueNext()
+        if (premature) {
+            player.playNext()
+            currentAsset = nextAsset
+        }
     }
     
     private func fadeIn() {
