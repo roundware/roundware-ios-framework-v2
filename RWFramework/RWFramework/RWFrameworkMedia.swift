@@ -117,8 +117,21 @@ extension RWFramework {
     func loadMediaArray() -> Array<Media> {
         if let mediaArrayData: Data = RWFrameworkConfig.getConfigValue("mediaArray", group: RWFrameworkConfig.ConfigGroup.client) as? Data {
             if let a = NSKeyedUnarchiver.unarchiveObject(with: mediaArrayData) {
-                let b = a as! Array<Media>
-                println("loadMediaArray loaded \(b.count) items")
+                var b = a as! Array<Media>
+                for item in b {
+                    // validate existence of file at path and delete if doesn't exist
+                    var n = 0
+                    let filePath = item.string as String
+                    let url = URL(string: filePath)
+                    if FileManager.default.fileExists(atPath: url!.path) {
+                        print("file in media queue exists")
+                    } else {
+                        print("file in media queue doesn't exist; deleting media queue item: \(n)")
+                        b.remove(at: n)
+                    }
+                    n += 1
+                }
+                println("POST validation: loadMediaArray loaded \(b.count) items")
                 return b
             }
         }
@@ -139,6 +152,10 @@ extension RWFramework {
                     media.mediaStatus = MediaStatus.Ready
                 }
             }
+            // create and store sharing url for current envelope
+            let sharingUrl = RWFrameworkConfig.getConfigValueAsString("sharing_url")
+            let currentSharingUrl = sharingUrl + "?eid=" + String(envelopeID)
+            RWFrameworkConfig.setConfigValue("sharing_url_current", value: currentSharingUrl as AnyObject, group: RWFrameworkConfig.ConfigGroup.project)
         })
     }
 

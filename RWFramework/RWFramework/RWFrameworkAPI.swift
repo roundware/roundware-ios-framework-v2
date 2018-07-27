@@ -295,13 +295,15 @@ extension RWFramework {
                         self.streamID = stream_id.intValue
                         self.createPlayer()
                         self.requestStreamSucceeded = true
+                        // pause stream on server so that assets aren't added until user is actually listening
+                        apiPostStreamsIdPause()
                     }
                 }
 
                 // TODO: can we still expect this here?
                 func requestStreamDisplayUserMessage(_ userMessage: String?) {
                     if (userMessage != nil && userMessage!.lengthOfBytes(using: String.Encoding.utf8) > 0) {
-                        self.rwUpdateStatus(userMessage!)
+                        self.rwUpdateStatus(userMessage!, title: "Out of Range!")
                     }
                 }
                 requestStreamDisplayUserMessage(dict["user_message"] as? String)
@@ -419,6 +421,69 @@ extension RWFramework {
     
     func postStreamsIdSkipSuccess(_ data: Data) {
         
+    }
+    
+    // MARK: POST streams id pause
+    
+    func apiPostStreamsIdPause() {
+        if (requestStreamSucceeded == false) { return }
+        if (self.streamID == 0) { return }
+        
+        httpPostStreamsIdPause(self.streamID.description, completion: { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                self.postStreamsIdPauseSuccess(data!)
+                self.rwPostStreamsIdPauseSuccess(data)
+            } else if (error != nil) {
+                self.rwPostStreamsIdPauseFailure(error)
+                self.apiProcessError(data, error: error!, caller: "apiPostStreamsIdPause")
+            }
+        })
+    }
+    
+    func postStreamsIdPauseSuccess(_ data: Data) {
+        
+    }
+    
+    // MARK: POST streams id resume
+    
+    func apiPostStreamsIdResume() {
+        if (requestStreamSucceeded == false) { return }
+        if (self.streamID == 0) { return }
+        
+        httpPostStreamsIdResume(self.streamID.description, completion: { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                self.postStreamsIdResumeSuccess(data!)
+                self.rwPostStreamsIdResumeSuccess(data)
+            } else if (error != nil) {
+                self.rwPostStreamsIdResumeFailure(error)
+                self.apiProcessError(data, error: error!, caller: "apiPostStreamsIdResume")
+            }
+        })
+    }
+    
+    func postStreamsIdResumeSuccess(_ data: Data) {
+        
+    }
+    
+    // MARK: GET streams id isactive
+    
+    func apiGetStreamsIdIsActive() {
+        if (requestStreamSucceeded == false) { return }
+        if (self.streamID == 0) { return }
+        
+        httpGetStreamsIdIsActive(self.streamID.description, completion: { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                self.getStreamsIdIsActiveSuccess(data!)
+                self.rwGetStreamsIdIsActiveSuccess(data)
+            } else if (error != nil) {
+                self.rwGetStreamsIdIsActiveFailure(error)
+                self.apiProcessError(data, error: error!, caller: "apiGetStreamsIdIsActive")
+            }
+        })
+    }
+    
+    func getStreamsIdIsActiveSuccess(_ data: Data) {
+
     }
 
 // MARK: POST envelopes

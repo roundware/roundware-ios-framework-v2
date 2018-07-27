@@ -83,6 +83,21 @@ import CoreLocation
     @objc optional func rwGetStreamsIdCurrentSuccess(_ data: Data?)
     /// Sent in the case that getting the current assed ID in the stream fails
     @objc optional func rwGetStreamsIdCurrentFailure(_ error: NSError?)
+    
+    /// Sent to the server when user pauses stream playback locally
+    @objc optional func rwPostStreamsIdPauseSuccess(_ data: Data?)
+    /// Sent in the case that sending the pause request failed
+    @objc optional func rwPostStreamsIdPauseFailure(_ error: NSError?)
+    
+    /// Sent to the server when user un-pauses stream playback locally
+    @objc optional func rwPostStreamsIdResumeSuccess(_ data: Data?)
+    /// Sent in the case that sending the resume request failed
+    @objc optional func rwPostStreamsIdResumeFailure(_ error: NSError?)
+    
+    /// Sent to the server when user checks if stream is active
+    @objc optional func rwGetStreamsIdIsActiveSuccess(_ data: Data?)
+    /// Sent in the case that the isactive request failed
+    @objc optional func rwGetStreamsIdIsActiveFailure(_ error: NSError?)
 
     /// Sent after the server successfully returns a new envelope id
     @objc optional func rwPostEnvelopesSuccess(_ data: Data?)
@@ -416,6 +431,54 @@ extension RWFramework {
             }
         }
     }
+    
+    func rwPostStreamsIdPauseSuccess(_ data: Data?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwPostStreamsIdPauseSuccess?(data) }
+        }
+    }
+    
+    func rwPostStreamsIdPauseFailure(_ error: NSError?) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwPostStreamsIdPauseFailure != nil) {
+                self.dam { rwfp.rwPostStreamsIdPauseFailure?(error) }
+            } else {
+                self.alertOK(self.LS("RWFramework - rwPostStreamsIdPauseFailure"), message: error!.localizedDescription)
+            }
+        }
+    }
+    
+    func rwGetStreamsIdIsActiveSuccess(_ data: Data?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwGetStreamsIdIsActiveSuccess?(data) }
+        }
+    }
+    
+    func rwGetStreamsIdIsActiveFailure(_ error: NSError?) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwGetStreamsIdIsActiveFailure != nil) {
+                self.dam { rwfp.rwGetStreamsIdIsActiveFailure?(error) }
+            } else {
+                self.alertOK(self.LS("RWFramework - rwGetStreamsIdIsActiveFailure"), message: error!.localizedDescription)
+            }
+        }
+    }
+    
+    func rwPostStreamsIdResumeSuccess(_ data: Data?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwPostStreamsIdResumeSuccess?(data) }
+        }
+    }
+    
+    func rwPostStreamsIdResumeFailure(_ error: NSError?) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwPostStreamsIdResumeFailure != nil) {
+                self.dam { rwfp.rwPostStreamsIdResumeFailure?(error) }
+            } else {
+                self.alertOK(self.LS("RWFramework - rwPostStreamsIdResumeFailure"), message: error!.localizedDescription)
+            }
+        }
+    }
 
     func rwPostEnvelopesSuccess(_ data: Data?) {
         protocaller { (rwfp, _) -> Void in
@@ -605,7 +668,7 @@ extension RWFramework {
 
 // MARK: UI/Status
 
-    func rwUpdateStatus(_ message: String) {
+    func rwUpdateStatus(_ message: String, title: String? = "Roundware Notification") {
         var showedAlert = false
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwUpdateStatus != nil) {
@@ -613,7 +676,7 @@ extension RWFramework {
             } else if (showedAlert == false) {
                 showedAlert = true // Only show the alert once per call
                 self.dam {
-                    let alert = UIAlertController(title: self.LS("RWFramework"), message: message, preferredStyle: UIAlertControllerStyle.alert)
+                    let alert = UIAlertController(title: self.LS(title!), message: message, preferredStyle: UIAlertControllerStyle.alert)
                     let OKAction = UIAlertAction(title: self.LS("OK"), style: .default) { (action) in }
                     alert.addAction(OKAction)
                     if let currentViewController = rwfp.rwGetCurrentViewController?() {
