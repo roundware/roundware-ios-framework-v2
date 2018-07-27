@@ -44,7 +44,8 @@ extension RWFramework {
         isPlaying = (player?.rate == 1.0)
         logToServer("start_listen")
         
-        // TODO: Tell server to resume as well (apiPostStreamsIdResume) (do not call if not already playing)
+        // Tell server to resume asset playback
+        apiPostStreamsIdResume()
     }
 
     /// Pause audio
@@ -53,7 +54,8 @@ extension RWFramework {
         player?.pause()
         isPlaying = (player?.rate == 1.0)
         
-        // TODO: Tell server to pause as well (apiPostStreamsIdPause)
+        // Tell server to stop adding assets to stream
+        apiPostStreamsIdPause()
     }
 
     /// Stop audio
@@ -71,6 +73,11 @@ extension RWFramework {
     /// Replay audio
     public func replay() {
         apiPostStreamsIdReplay()
+    }
+    
+    /// Check if stream active
+    public func isActive() {
+        apiGetStreamsIdIsActive()
     }
 
 }
