@@ -79,7 +79,6 @@ class Playlist {
         ], success: { (data) in
             do {
                 self.speakers = try Speaker.fromJson(data!)
-                print("speakers: " + self.speakers.description)
                 self.playNearestSpeaker()
             } catch {}
         }, failure: { err in })
@@ -96,7 +95,6 @@ class Playlist {
                     self.speakerLooper = LoopAudio(nearest.url)
                     self.speakerPlayer.delegate = self.speakerLooper
                     self.speakerPlayer.play(nearest.url)
-                    // TODO: Loop the audio
                 }
                 self.speakerPlayer.volume = nearest.volume(at: params.location)
             } else {
@@ -109,6 +107,7 @@ class Playlist {
     }
     
     func next() -> Asset? {
+        print("asset meta: " + userAssetData.description)
         var next = filteredAssets.first { it in
             return userAssetData[it.id] == nil
         }
@@ -131,22 +130,31 @@ class Playlist {
         if let next = next {
             userAssetData.updateValue(UserAssetData(lastListen: Date()), forKey: next.id)
         }
+        print("picking asset: " + next.debugDescription)
         return next
     }
     
     
     private func updateTracks() {
-        let rw = RWFramework.sharedInstance
-        let projectId = RWFrameworkConfig.getConfigValueAsNumber("project_id")
-        
-        rw.apiGetAudioTracks([
-            "project_id": projectId.stringValue
-        ], success: { data in
-            do {
-                self.tracks = try AudioTrack.fromJson(self, data!)
-                self.tracks.forEach { it in it.playNext() }
-            } catch {}
-        }, failure: { err in })
+        if (self.tracks.isEmpty) {
+            let rw = RWFramework.sharedInstance
+            let projectId = RWFrameworkConfig.getConfigValueAsNumber("project_id")
+            
+            rw.apiGetAudioTracks([
+                "project_id": projectId.stringValue
+            ], success: { data in
+                do {
+                    self.tracks = try AudioTrack.fromJson(self, data!)
+                    self.tracks.forEach { it in it.playNext() }
+                } catch {}
+            }, failure: { err in })
+        } else {
+            self.tracks.forEach { it in
+                if it.currentAsset == nil {
+                    it.playNext()
+                }
+            }
+        }
     }
     
     private func updateAssets(_ cb: @escaping () -> Void = {}) {
@@ -171,7 +179,7 @@ class Playlist {
             self.lastUpdate = Date()
             do {
                 self.allAssets.append(contentsOf: try Asset.fromJson(data!))
-                print(self.allAssets)
+                print("all assets: " + self.allAssets.description)
             } catch {}
             cb()
         }, failure: { err in })
@@ -188,14 +196,17 @@ class Playlist {
             if let loc = item.location {
                 let dist = opts.location.distance(from: loc)
                 if (dist < Double(opts.minDist) || dist > Double(opts.maxDist)) {
+                    print("filtered asset out by dist: " + dist.description)
                     return false
                 }
                 
                 // TODO: Include calculations for overflow (1 being next to 359)
-                let angle = Float(opts.location.bearingToLocationDegrees(loc))
-                if angle < opts.heading - opts.angularWidth
-                    || angle > opts.heading + opts.angularWidth {
-                    return false
+                if (opts.angularWidth <= 359) {
+                    let angle = Float(opts.location.bearingToLocationDegrees(loc))
+                    if angle < opts.heading - opts.angularWidth
+                        || angle > opts.heading + opts.angularWidth {
+                        return false
+                    }
                 }
             }
             
@@ -209,10 +220,16 @@ class Playlist {
             }
         }
         
+        print("prev assets: " + prevFiltered.description)
+        print("filtered assets: " + filteredAssets.description)
+        
         // Clear data for assets we've moved away from.
         prevFiltered.forEach { a in
             if (!filteredAssets.contains { b in a.id == b.id }) {
                 userAssetData.removeValue(forKey: a.id)
+                self.tracks.first { it in
+                    it.currentAsset?.id == a.id
+                }?.playNext(premature: true)
                 
                 // TODO: Move this code to AudioTrack
                 // If we've moved away from the current asset, fade it away.
@@ -221,6 +238,9 @@ class Playlist {
 //                }
             }
         }
+        
+        // Tell our tracks to grab audio if there's any new stuff
+        self.updateTracks()
     }
     
     
@@ -231,14 +251,6 @@ class Playlist {
         // Start playing background music from speakers.
         updateSpeakers()
         
-        // Initial grab of assets and speakers.
-        updateAssets {
-            if let opts = self.currentParams {
-                self.updateParams(opts)
-            }
-            // Load the tracks for assets to play on.
-            self.updateTracks()
-        }
         
         // TODO: pre-iOS10 Timers using trigger function.
         if #available(iOS 10.0, *) {
@@ -254,6 +266,8 @@ class Playlist {
         } else {
             // Fallback on earlier versions
         }
+        // Initial grab of assets and speakers.
+        updateTimer?.fire()
     }
     
     func pause() {

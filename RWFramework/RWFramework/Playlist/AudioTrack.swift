@@ -26,7 +26,7 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
         opts.enableVolumeMixer = true
         return opts
     }())
-    private var currentAsset: Asset? = nil
+    var currentAsset: Asset? = nil
     private var nextAsset: Asset? = nil
     private var fadeTimer: Timer? = nil
     
@@ -100,39 +100,21 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
         fadeTimer?.invalidate()
         
         // Can't fade out if playing the first asset
-        // TODO: Start fade out a bit before an asset finishes playing
-//        if (currentAsset != nil) {
-//            let interval = 0.05 // seconds
-//            if #available(iOS 10.0, *) {
-//                fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
-//                    if self.player.volume > 0.0 {
-//                        self.player.volume -= Float(interval) / self.fadeInTime.lowerBound
-//                    } else {
-//                        self.player.volume = 0.0
-//                        self.fadeTimer?.invalidate()
-//                        self.fadeTimer = nil
-//                        self.fadeIn()
-//                    }
-//                }
-//            } else {
-//                // Fallback on earlier versions
-//            }
-//        } else {
-            // Just fade in for the first asset
-            self.fadeIn()
-//        }
+        if (premature) {
+            fadeOut {
+                self.player.playNext()
+                self.fadeIn()
+            }
+        } else {
+            // TODO: Start fade out a bit before an asset finishes playing?
+            // Just fade in for the first asset or at the end of an asset
+            fadeIn()
+        }
         
         queueNext()
-        if (premature) {
-            player.playNext()
-            currentAsset = nextAsset
-        }
     }
     
-    private func fadeIn() {
-//        if (player.pendingQueueCount > 0 || !premature) {
-//            player.playNext()
-//        }
+    private func fadeIn(cb: @escaping () -> Void = {}) {
         let interval = 0.05 // seconds
         if #available(iOS 10.0, *) {
             fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
@@ -141,12 +123,26 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
                 } else {
                     self.player.volume = self.volume.upperBound
                     self.fadeTimer?.invalidate()
-//                    self.fadeTimer = Timer.scheduledTimer(
-//                        withTimeInterval: self.player.duration - Double(self.fadeInTime.lowerBound),
-//                        repeats: false
-//                    ) { timer in
-//                        self.playNext()
-//                    }
+                    self.fadeTimer = nil
+                    cb()
+                }
+            }
+        } else {
+            // Fallback on earlier versions
+        }
+    }
+    
+    private func fadeOut(cb: @escaping () -> Void = {}) {
+        let interval = 0.05 // seconds
+        if #available(iOS 10.0, *) {
+            fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
+                if self.player.volume > 0.0 {
+                    self.player.volume -= Float(interval) / self.fadeInTime.lowerBound
+                } else {
+                    self.player.volume = 0.0
+                    self.fadeTimer?.invalidate()
+                    self.fadeTimer = nil
+                    cb()
                 }
             }
         } else {
