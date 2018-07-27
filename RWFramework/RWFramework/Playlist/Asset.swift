@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import CoreLocation
 
 struct Asset {
     let id: Int

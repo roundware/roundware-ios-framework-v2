@@ -149,7 +149,7 @@ class Playlist {
         }, failure: { err in })
     }
     
-    private func updateAssets(_ cb: () -> Void = {}) {
+    private func updateAssets(_ cb: @escaping () -> Void = {}) {
         let rw = RWFramework.sharedInstance
         let projectId = RWFrameworkConfig.getConfigValueAsNumber("project_id")
         
@@ -173,6 +173,7 @@ class Playlist {
                 self.allAssets.append(contentsOf: try Asset.fromJson(data!))
                 print(self.allAssets)
             } catch {}
+            cb()
         }, failure: { err in })
     }
     
@@ -227,14 +228,22 @@ class Playlist {
         // Mark start of the session
         startTime = Date()
         
-        // Start playing (procedural?) background music.
+        // Start playing background music from speakers.
         updateSpeakers()
         
-        updateTracks()
+        // Initial grab of assets and speakers.
+        updateAssets {
+            if let opts = self.currentParams {
+                self.updateParams(opts)
+            }
+            // Load the tracks for assets to play on.
+            self.updateTracks()
+        }
         
         // TODO: pre-iOS10 Timers using trigger function.
         if #available(iOS 10.0, *) {
-            updateTimer = Timer(timeInterval: 60, repeats: false) { _ in
+            // Checks every couple minutes for newly published assets
+            updateTimer = Timer(timeInterval: 5*60, repeats: true) { _ in
                 self.updateAssets {
                     // TODO: Stop doing a full filter on every update.
                     if let opts = self.currentParams {
@@ -245,14 +254,6 @@ class Playlist {
         } else {
             // Fallback on earlier versions
         }
-        // Trigger the initial grab.
-        updateTimer?.fire()
-        
-        // Grab all the assets
-        // Determine our filtered assets, held (in order) as 'filteredAssets'
-        // Start up an audio player, start playing the filtered assets!
-//        playNext()
-        
     }
     
     func pause() {

@@ -62,8 +62,8 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
                 volume: (it["minvolume"] as! Float)...(it["maxvolume"] as! Float),
                 duration: (it["minduration"] as! Float)...(it["maxduration"] as! Float),
                 deadAir: (it["mindeadair"] as! Float)...(it["maxdeadair"] as! Float),
-                fadeInTime: (it["minfadeintime"] as! Float)...(it["maxfadeintime"] as! Float),
-                fadeOutTime: (it["minfadeouttime"] as! Float)...(it["maxfadeouttime"] as! Float),
+                fadeInTime: (it["minfadeintime"] as! NSNumber).floatValue...(it["maxfadeintime"] as! NSNumber).floatValue,
+                fadeOutTime: (it["minfadeouttime"] as! NSNumber).floatValue...(it["maxfadeouttime"] as! NSNumber).floatValue,
                 repeatRecordings: it["repeatrecordings"] as! Bool
             )
         }
