@@ -27,6 +27,7 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
         return opts
     }())
     private var currentAsset: Asset? = nil
+    private var nextAsset: Asset? = nil
     private var fadeTimer: Timer? = nil
     
     init(
@@ -83,8 +84,8 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
     }
     
     func audioPlayer(_ audioPlayer: STKAudioPlayer, didFinishPlayingQueueItemId queueItemId: NSObject, with stopReason: STKAudioPlayerStopReason, andProgress progress: Double, andDuration duration: Double) {
-        //        audioPlayer.play(playlist.next())
-        playNext(premature: false)
+        currentAsset = nextAsset
+        playNext()
     }
     
     func audioPlayer(_ audioPlayer: STKAudioPlayer, unexpectedError errorCode: STKAudioPlayerErrorCode) {
@@ -94,32 +95,40 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
     
     /// Plays the next optimal asset nearby.
     /// @arg premature True if skipping the current asset, rather than fading at the end of it.
-    func playNext(premature: Bool = true) {
+    func playNext() {
         // Stop any timer set to fade at the natural end of an asset
         fadeTimer?.invalidate()
         
+        // Can't fade out if playing the first asset
+        // TODO: Start fade out a bit before an asset finishes playing
+//        if (currentAsset != nil) {
+//            let interval = 0.05 // seconds
+//            if #available(iOS 10.0, *) {
+//                fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
+//                    if self.player.volume > 0.0 {
+//                        self.player.volume -= Float(interval) / self.fadeInTime.lowerBound
+//                    } else {
+//                        self.player.volume = 0.0
+//                        self.fadeTimer?.invalidate()
+//                        self.fadeTimer = nil
+//                        self.fadeIn()
+//                    }
+//                }
+//            } else {
+//                // Fallback on earlier versions
+//            }
+//        } else {
+            // Just fade in for the first asset
+            self.fadeIn()
+//        }
+        
         queueNext()
-        let interval = 0.05 // seconds
-        if #available(iOS 10.0, *) {
-            fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
-                if self.player.volume > 0.0 {
-                    self.player.volume -= Float(interval) / self.fadeInTime.lowerBound
-                } else {
-                    self.player.volume = 0.0
-                    self.fadeTimer?.invalidate()
-                    self.fadeTimer = nil
-                    self.fadeInNext(premature: premature)
-                }
-            }
-        } else {
-            // Fallback on earlier versions
-        }
     }
     
-    private func fadeInNext(premature: Bool) {
-        if (player.pendingQueueCount > 0 || !premature) {
-            player.playNext()
-        }
+    private func fadeIn() {
+//        if (player.pendingQueueCount > 0 || !premature) {
+//            player.playNext()
+//        }
         let interval = 0.05 // seconds
         if #available(iOS 10.0, *) {
             fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
@@ -128,12 +137,12 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
                 } else {
                     self.player.volume = self.volume.upperBound
                     self.fadeTimer?.invalidate()
-                    self.fadeTimer = Timer.scheduledTimer(
-                        withTimeInterval: self.player.duration - Double(self.fadeInTime.lowerBound),
-                        repeats: false
-                    ) { timer in
-                        self.playNext(premature: false)
-                    }
+//                    self.fadeTimer = Timer.scheduledTimer(
+//                        withTimeInterval: self.player.duration - Double(self.fadeInTime.lowerBound),
+//                        repeats: false
+//                    ) { timer in
+//                        self.playNext()
+//                    }
                 }
             }
         } else {
@@ -141,11 +150,17 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
         }
     }
     
-    
+    /// Queues the next asset to play
+    /// If there's nothing playing, immediately plays one and queues another.
     private func queueNext() {
         if let next = playlist.next() {
             player.queue(next.file)
-            //            currentAsset = next
+            if (currentAsset == nil) {
+                currentAsset = next
+                queueNext()
+            } else {
+                nextAsset = next
+            }
         }
     }
     
