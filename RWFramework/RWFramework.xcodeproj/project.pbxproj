@@ -29,6 +29,7 @@
 		2C59A4CC20FAAC900035599D /* STKQueueEntry.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C59A4B920FAAC900035599D /* STKQueueEntry.h */; };
 		2C59A4CD20FAAC900035599D /* STKQueueEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C59A4BA20FAAC900035599D /* STKQueueEntry.m */; };
 		2C59A4D020FEB2810035599D /* AudioTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C59A4CF20FEB2810035599D /* AudioTrack.swift */; };
+		2CFB4265211155EE00965CF5 /* AssetFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CFB4264211155EE00965CF5 /* AssetFilter.swift */; };
 		7519C3D01A85511A006A5D1E /* RWFrameworkMedia.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7519C3CF1A85511A006A5D1E /* RWFrameworkMedia.swift */; };
 		7519C3D31A8555DB006A5D1E /* RWFrameworkText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7519C3D21A8555DB006A5D1E /* RWFrameworkText.swift */; };
 		7519C3D51A856518006A5D1E /* RWFrameworkCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7519C3D41A856518006A5D1E /* RWFrameworkCamera.swift */; };
@@ -84,6 +85,7 @@
 		2C59A4B920FAAC900035599D /* STKQueueEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STKQueueEntry.h; sourceTree = "<group>"; };
 		2C59A4BA20FAAC900035599D /* STKQueueEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STKQueueEntry.m; sourceTree = "<group>"; };
 		2C59A4CF20FEB2810035599D /* AudioTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioTrack.swift; sourceTree = "<group>"; };
+		2CFB4264211155EE00965CF5 /* AssetFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetFilter.swift; sourceTree = "<group>"; };
 		7519C3CF1A85511A006A5D1E /* RWFrameworkMedia.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkMedia.swift; sourceTree = "<group>"; };
 		7519C3D21A8555DB006A5D1E /* RWFrameworkText.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkText.swift; sourceTree = "<group>"; };
 		7519C3D41A856518006A5D1E /* RWFrameworkCamera.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkCamera.swift; sourceTree = "<group>"; };
@@ -161,6 +163,7 @@
 				2C59A4CF20FEB2810035599D /* AudioTrack.swift */,
 				2C2D9D1B2102C6EC00940A25 /* Speaker.swift */,
 				2C2D9D1D2102C70800940A25 /* Asset.swift */,
+				2CFB4264211155EE00965CF5 /* AssetFilter.swift */,
 			);
 			path = Playlist;
 			sourceTree = "<group>";
@@ -379,6 +382,7 @@
 				75E7DE9D1A7FE0F300B092AF /* RWFrameworkURLFactory.swift in Sources */,
 				7519C3D31A8555DB006A5D1E /* RWFrameworkText.swift in Sources */,
 				7519C3D51A856518006A5D1E /* RWFrameworkCamera.swift in Sources */,
+				2CFB4265211155EE00965CF5 /* AssetFilter.swift in Sources */,
 				75A2CDC21A8410760052F987 /* RWFrameworkCoreLocation.swift in Sources */,
 				2C59A4CD20FAAC900035599D /* STKQueueEntry.m in Sources */,
 				2C59A4CB20FAAC900035599D /* STKLocalFileDataSource.m in Sources */,
@@ -472,6 +476,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -520,6 +525,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";

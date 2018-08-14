@@ -23,14 +23,16 @@ struct StreamParams {
 }
 
 class LoopAudio: NSObject, STKAudioPlayerDelegate {
-    let current: String
+    var current: String? = nil
     
-    init(_ asset: String) {
+    init(_ asset: String? = nil) {
         self.current = asset
     }
     
     func audioPlayer(_ audioPlayer: STKAudioPlayer, didStartPlayingQueueItemId queueItemId: NSObject) {
-        audioPlayer.queue(current)
+        if let c = current {
+            audioPlayer.queue(c)
+        }
     }
     
     func audioPlayer(_ audioPlayer: STKAudioPlayer, didFinishBufferingSourceWithQueueItemId queueItemId: NSObject) {
@@ -40,7 +42,9 @@ class LoopAudio: NSObject, STKAudioPlayerDelegate {
     }
     
     func audioPlayer(_ audioPlayer: STKAudioPlayer, didFinishPlayingQueueItemId queueItemId: NSObject, with stopReason: STKAudioPlayerStopReason, andProgress progress: Double, andDuration duration: Double) {
-        audioPlayer.queue(current)
+        if let c = current {
+            audioPlayer.queue(c)
+        }
     }
     
     func audioPlayer(_ audioPlayer: STKAudioPlayer, unexpectedError errorCode: STKAudioPlayerErrorCode) {
@@ -49,25 +53,30 @@ class LoopAudio: NSObject, STKAudioPlayerDelegate {
 
 
 class Playlist {
+    private var filters: [AssetFilter]
     private var allAssets = [Asset]()
     private var filteredAssets = [Asset]()
     private var currentAsset: Asset? = nil
     
-    private var speakers = [Speaker]()
-    private var currentSpeaker: Speaker? = nil
+    var speakers = [Speaker]()
+//    private var currentSpeaker: Speaker? = nil
     
-    private var tracks = [AudioTrack]()
+    var tracks = [AudioTrack]()
     
     private var lastUpdate: Date? = nil
     private var updateTimer: Timer? = nil
-    private var currentParams: StreamParams? = nil
+    var currentParams: StreamParams? = nil
     
-    private let speakerPlayer = STKAudioPlayer()
-    private var speakerLooper: LoopAudio? = nil
-    private var startTime = Date()
+//    private let speakerPlayer = STKAudioPlayer()
+//    private var speakerLooper: LoopAudio? = nil
+    var startTime = Date()
     
     /// Map asset ID to data like last listen time.
-    private var userAssetData = [Int: UserAssetData]()
+    var userAssetData = [Int: UserAssetData]()
+    
+    init(filters: [AssetFilter]) {
+        self.filters = filters
+    }
     
     private func updateSpeakers() {
         let rw = RWFramework.sharedInstance
@@ -87,21 +96,8 @@ class Playlist {
     private func playNearestSpeaker() {
         // TODO: Blend all speakers that contain our location.
         if let params = self.currentParams {
-            if let nearest = self.speakers.first(where: { it in
-                it.volume(at: params.location) > 0.0
-            }) {
-                if (self.currentSpeaker?.id != nearest.id) {
-                    self.currentSpeaker = nearest
-                    self.speakerLooper = LoopAudio(nearest.url)
-                    self.speakerPlayer.delegate = self.speakerLooper
-                    self.speakerPlayer.play(nearest.url)
-                }
-                self.speakerPlayer.volume = nearest.volume(at: params.location)
-            } else {
-                // TODO: Fade out!
-                self.speakerLooper = nil
-                self.speakerPlayer.delegate = nil // stop looping
-                self.speakerPlayer.stop()
+            self.speakers.forEach { it in
+                it.updateVolume(at: params.location)
             }
         }
     }
@@ -152,6 +148,8 @@ class Playlist {
             self.tracks.forEach { it in
                 if it.currentAsset == nil {
                     it.playNext()
+                } else {
+                    it.updateParams(currentParams!)
                 }
             }
         }
@@ -193,25 +191,13 @@ class Playlist {
         playNearestSpeaker()
         
         filteredAssets = allAssets.filter { item in
-            if let loc = item.location {
-                let dist = opts.location.distance(from: loc)
-                if (dist < Double(opts.minDist) || dist > Double(opts.maxDist)) {
-                    print("filtered asset out by dist: " + dist.description)
+            for filter in self.filters {
+                if (!filter.apply(playlist: self, asset: item)) {
                     return false
                 }
-                
-                // TODO: Include calculations for overflow (1 being next to 359)
-                if (opts.angularWidth <= 359) {
-                    let angle = Float(opts.location.bearingToLocationDegrees(loc))
-                    if angle < opts.heading - opts.angularWidth
-                        || angle > opts.heading + opts.angularWidth {
-                        return false
-                    }
-                }
             }
-            
-            // TODO: Time dependent assets.
             return true
+            // TODO: Time dependent assets.
         }.sorted { a, b in
             if let locA = a.location, let locB = b.location {
                 return locA.distance(from: opts.location) < locB.distance(from: opts.location)
@@ -220,9 +206,6 @@ class Playlist {
             }
         }
         
-        print("prev assets: " + prevFiltered.description)
-        print("filtered assets: " + filteredAssets.description)
-        
         // Clear data for assets we've moved away from.
         prevFiltered.forEach { a in
             if (!filteredAssets.contains { b in a.id == b.id }) {
@@ -230,12 +213,6 @@ class Playlist {
                 self.tracks.first { it in
                     it.currentAsset?.id == a.id
                 }?.playNext(premature: true)
-                
-                // TODO: Move this code to AudioTrack
-                // If we've moved away from the current asset, fade it away.
-//                if (a.id == self.currentAsset?.id) {
-//                    self.playNext(premature: true)
-//                }
             }
         }
         
@@ -250,7 +227,6 @@ class Playlist {
         
         // Start playing background music from speakers.
         updateSpeakers()
-        
         
         // TODO: pre-iOS10 Timers using trigger function.
         if #available(iOS 10.0, *) {
@@ -271,12 +247,12 @@ class Playlist {
     }
     
     func pause() {
-        speakerPlayer.pause()
+        speakers.forEach { it in it.pause() }
         tracks.forEach { it in it.pause() }
     }
     
     func resume() {
-        speakerPlayer.resume()
+        speakers.forEach { it in it.resume() }
         tracks.forEach { it in it.resume() }
     }
 }

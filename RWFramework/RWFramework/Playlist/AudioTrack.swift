@@ -85,11 +85,37 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
     
     func audioPlayer(_ audioPlayer: STKAudioPlayer, didFinishPlayingQueueItemId queueItemId: NSObject, with stopReason: STKAudioPlayerStopReason, andProgress progress: Double, andDuration duration: Double) {
         currentAsset = nextAsset
-        playNext(premature: false)
+        holdSilence()
     }
     
     func audioPlayer(_ audioPlayer: STKAudioPlayer, unexpectedError errorCode: STKAudioPlayerErrorCode) {
         
+    }
+    
+    private func holdSilence() {
+        player.pause()
+        let time = TimeInterval(self.deadAir.random())
+        if #available(iOS 10.0, *) {
+            fadeTimer?.invalidate()
+            fadeTimer = Timer(timeInterval: time, repeats: false) { _ in
+                self.playNext(premature: false)
+                self.player.resume()
+            }
+        } else {
+            // Fallback on earlier versions
+        }
+    }
+    
+    func updateParams(_ params: StreamParams) {
+        // TODO: Pan based on user and asset positions
+        if let asset = currentAsset {
+            // scale volume based on the asset's distance from us
+            // TODO: Confirm the ratio scaling. Should we be using the dynamic range or a project setting? Probably a setting.
+            let distRange = Float(params.maxDist - params.minDist)
+            let volRange = volume.upperBound - volume.lowerBound
+            let dist = Float(asset.location!.distance(from: params.location))
+            player.volume = volume.lowerBound + (dist / distRange) * volRange
+        }
     }
     
     
@@ -115,13 +141,16 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
     }
     
     private func fadeIn(cb: @escaping () -> Void = {}) {
+        player.volume = 0.0
         let interval = 0.05 // seconds
         if #available(iOS 10.0, *) {
+            let totalTime = fadeInTime.random()
+            let target = volume.upperBound
             fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
                 if self.player.volume < self.volume.upperBound {
-                    self.player.volume += Float(interval) / self.fadeInTime.lowerBound
+                    self.player.volume += Float(interval) / totalTime
                 } else {
-                    self.player.volume = self.volume.upperBound
+                    self.player.volume = target
                     self.fadeTimer?.invalidate()
                     self.fadeTimer = nil
                     cb()
@@ -135,9 +164,10 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
     private func fadeOut(cb: @escaping () -> Void = {}) {
         let interval = 0.05 // seconds
         if #available(iOS 10.0, *) {
+            let totalTime = fadeOutTime.random()
             fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
                 if self.player.volume > 0.0 {
-                    self.player.volume -= Float(interval) / self.fadeInTime.lowerBound
+                    self.player.volume -= Float(interval) / totalTime
                 } else {
                     self.player.volume = 0.0
                     self.fadeTimer?.invalidate()
@@ -170,5 +200,11 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
     
     func resume() {
         player.resume()
+    }
+}
+
+extension ClosedRange where Bound == Float {
+    func random() -> Bound {
+        return lowerBound + Bound(drand48()) * (upperBound - lowerBound)
     }
 }

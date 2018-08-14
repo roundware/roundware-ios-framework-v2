@@ -18,6 +18,7 @@ struct Speaker {
     let shape: [CGPoint]
     let attenuationShape: [CGPoint]
     let attenuationDistance: Int
+    let player = STKAudioPlayer()
     
     private func contains(_ point: CLLocation) -> Bool {
         let path = UIBezierPath()
@@ -41,14 +42,58 @@ struct Speaker {
         return path.contains(CGPoint(x: coord.latitude, y: coord.longitude))
     }
     
+    private static func distance(shape: [CGPoint], _ loc: CLLocation) -> Double {
+        // find distance to nearest point in the shape
+        return shape.map { it in
+            loc.distance(from:
+                CLLocation(latitude: CLLocationDegrees(it.x), longitude: CLLocationDegrees(it.y))
+            )
+        }.min { a, b in a < b }!
+    }
+    
+    private func attenuationRatio(at loc: CLLocation) -> Double {
+        let dist = Speaker.distance(shape: shape, loc)
+        let attenDist = Speaker.distance(shape: attenuationShape, loc)
+        return dist / (dist + attenDist)
+    }
+    
     func volume(at point: CLLocation) -> Float {
         if attenuationShapeContains(point) {
             return volume.upperBound
         } else if contains(point) {
             // TODO: Linearly attenuate instead of just averaging.
-            return (volume.upperBound + volume.lowerBound) / 2
+            let range = volume.upperBound - volume.lowerBound
+            return volume.lowerBound + range * Float(attenuationRatio(at: point))
         } else {
             return volume.lowerBound
+        }
+    }
+    
+    func updateVolume(at point: CLLocation) {
+        let vol = self.volume(at: point)
+        // TODO: Fading
+        if vol <= 0.01 {
+            if player.state == .playing {
+                player.stop()
+            }
+        } else {
+            player.volume = vol
+            if player.state == .stopped {
+                player.delegate = LoopAudio(url)
+                player.play(url)
+            }
+        }
+    }
+    
+    func resume() {
+        if player.state == .paused {
+            player.resume()
+        }
+    }
+    
+    func pause() {
+        if player.state == .playing {
+            player.pause()
         }
     }
     
