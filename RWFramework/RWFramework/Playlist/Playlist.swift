@@ -53,29 +53,29 @@ class LoopAudio: NSObject, STKAudioPlayerDelegate {
 
 
 class Playlist {
-    private var filters: [AssetFilter]
+    // server communication
+    private var lastUpdate: Date? = nil
+    private var updateTimer: Timer? = nil
+    private(set) var currentParams: StreamParams? = nil
+    private(set) var startTime = Date()
+
+    // assets and filters
+    private var playlistFilters: [AssetFilter]
+    private var trackFilters: [TrackFilter]
     private var allAssets = [Asset]()
     private var filteredAssets = [Asset]()
     private var currentAsset: Asset? = nil
-    
-    var speakers = [Speaker]()
-//    private var currentSpeaker: Speaker? = nil
-    
-    var tracks = [AudioTrack]()
-    
-    private var lastUpdate: Date? = nil
-    private var updateTimer: Timer? = nil
-    var currentParams: StreamParams? = nil
-    
-//    private let speakerPlayer = STKAudioPlayer()
-//    private var speakerLooper: LoopAudio? = nil
-    var startTime = Date()
-    
     /// Map asset ID to data like last listen time.
-    var userAssetData = [Int: UserAssetData]()
+    private(set) var userAssetData = [Int: UserAssetData]()
     
-    init(filters: [AssetFilter]) {
-        self.filters = filters
+    // audio tracks, background and foreground
+    private(set) var speakers = [Speaker]()
+    private(set) var tracks = [AudioTrack]()
+    
+
+    init(filters: [AssetFilter], trackFilters: [TrackFilter]) {
+        self.playlistFilters = filters
+        self.trackFilters = trackFilters
     }
     
     private func updateSpeakers() {
@@ -102,8 +102,11 @@ class Playlist {
         }
     }
     
-    func next() -> Asset? {
+    func next(forTrack track: AudioTrack) -> Asset? {
         print("asset meta: " + userAssetData.description)
+        let filteredAssets = self.filteredAssets.filter { asset in
+            self.trackFilters.all { filter in filter(self, track, asset) }
+        }
         var next = filteredAssets.first { it in
             return userAssetData[it.id] == nil
         }
@@ -190,14 +193,9 @@ class Playlist {
         
         playNearestSpeaker()
         
+        // TODO: Time dependent assets.
         filteredAssets = allAssets.filter { item in
-            for filter in self.filters {
-                if (!filter.apply(playlist: self, asset: item)) {
-                    return false
-                }
-            }
-            return true
-            // TODO: Time dependent assets.
+            self.playlistFilters.all { filter in filter(self, item) }
         }.sorted { a, b in
             if let locA = a.location, let locB = b.location {
                 return locA.distance(from: opts.location) < locB.distance(from: opts.location)

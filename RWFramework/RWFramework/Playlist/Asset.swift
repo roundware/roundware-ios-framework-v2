@@ -26,15 +26,44 @@ struct Asset {
         let items = json as! [AnyObject]
         return items.map { obj in
             let it = obj as! [String: AnyObject]
-            return Asset(
-                id: it["id"] as! Int,
-                location: CLLocation(
+            let location
+            if (it.has("latitude") && it.has("longitude")) {
+                location = CLLocation(
                     latitude: it["latitude"] as! Double,
                     longitude: it["longitude"] as! Double
-                ),
+                )
+            } else {
+                location = nil
+            }
+            return Asset(
+                id: it["id"] as! Int,
+                location: location,
                 file: it["file"] as! String,
                 length: it["audio_length_in_seconds"] as! Int,
                 timestamp: dateFormatter.date(from: it["created"] as! String)!
+            )
+        }
+    }
+}
+
+
+struct TimedAsset {
+    let id: Int
+    let assetId: Int
+    let start: Int
+    let end: Int
+
+    static func from(json data: Data) throws -> [TimedAsset] {
+        let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
+
+        let items = json as! [AnyObject]
+        return items.map { obj in 
+            let it = obj as! [String: AnyObject]
+            return TimedAsset(
+                it["id"] as! Int,
+                it["asset_id"] as! Int,
+                it["start"] as! Int,
+                it["end"] as! Int
             )
         }
     }

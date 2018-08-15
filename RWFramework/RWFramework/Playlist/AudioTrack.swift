@@ -183,7 +183,7 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
     /// Queues the next asset to play
     /// If there's nothing playing, immediately plays one and queues another.
     private func queueNext() {
-        if let next = playlist.next() {
+        if let next = playlist.next(forTrack: self) {
             player.queue(next.file)
             if (currentAsset == nil) {
                 currentAsset = next

@@ -8,13 +8,37 @@
 
 import Foundation
 
+/// Filter applied to all assets at the playlist building stage
 protocol AssetFilter {
     /// @return true to keep the given asset
-    func apply(playlist: Playlist, asset: Asset) -> Bool
+    func keep(_ asset: Asset, playlist: Playlist) -> Bool
+}
+
+/// Filter applied to assets as candidates for a specific track
+protocol TrackFilter {
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> Bool
+}
+
+
+/// Keep an asset if it's nearby or if it is timed to play now.
+class FilterByTimeOrLocation: AssetFilter {
+    private let timeFilter = TimedAssetFilter()
+    private let locFilter = LocationFilter()
+    func keep(_ asset: Asset, playlist: Playlist) -> Bool {
+        return timeFilter.keep(asset, playlist)
+            || locFilter.keep(asset, playlist)
+    }
+}
+
+
+class TimedAssetFilter: AssetFilter {
+    func keep(_ asset: Asset, playlist: Playlist) -> Bool {
+        
+    }
 }
 
 class LocationFilter: AssetFilter {
-    func apply(playlist: Playlist, asset: Asset) -> Bool {
+    func keep(_ asset: Asset, playlist: Playlist) -> Bool {
         let opts = playlist.currentParams!
         if let loc = asset.location {
             let dist = opts.location.distance(from: loc)
@@ -24,8 +48,9 @@ class LocationFilter: AssetFilter {
     }
 }
 
+
 class AngleFilter: AssetFilter {
-    func apply(playlist: Playlist, asset: Asset) -> Bool {
+    func keep(_ asset: Asset, playlist: Playlist) -> Bool {
         let opts = playlist.currentParams!
         if let loc = asset.location {
             if (opts.angularWidth <= 359) {
@@ -48,5 +73,12 @@ class AngleFilter: AssetFilter {
             }
         }
         return true
+    }
+}
+
+
+class LengthFilter: TrackFilter {
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> Bool {
+        return track.duration.contains(asset.length)
     }
 }

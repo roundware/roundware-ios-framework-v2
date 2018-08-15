@@ -33,8 +33,9 @@ private lazy var __once: () = { () -> Void in
     var streamOptions = [String: Any]()
     var letFrameworkRequestWhenInUseAuthorizationForLocation = true
     let playlist = Playlist(filters: [
-        LocationFilter(),
-        AngleFilter()
+        filterNearby,
+        filterByAngle,
+        filterByLength
     ])
 
     // Audio - Stream (see RWFrameworkAudioPlayer.swift)
