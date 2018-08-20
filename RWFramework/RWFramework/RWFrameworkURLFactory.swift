@@ -83,26 +83,16 @@ open class RWFrameworkURLFactory {
         return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "envelopes/" + envelope_id + "/"
     }
 
+    class func getTimedAssetsURL(_ dict: [String:String]) -> String {
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "timedassets/" + dict.toUrlQuery()
+    }
+
     class func getAssetsURL(_ dict: [String:String]) -> String {
-        var url = RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "assets/"
-        if (dict.count > 0) {
-            url += "?"
-        }
-        for (key, value) in dict {
-            url += (key + "=" + value + "&")
-        }
-        return url
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "assets/" + dict.toUrlQuery()
     }
     
     class func getAudioTracksURL(_ dict: [String:String]) -> String {
-        var url = RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "audiotracks/"
-        if (dict.count > 0) {
-            url += "?"
-        }
-        for (key, value) in dict {
-            url += (key + "=" + value + "&")
-        }
-        return url
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "audiotracks/" + dict.toUrlQuery()
     }
 
     class func getAssetsIdURL(_ asset_id: String) -> String {
@@ -123,14 +113,20 @@ open class RWFrameworkURLFactory {
     
     
     class func getSpeakersURL(_ dict: [String:String]) -> String {
-        var url = RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "speakers/"
-        if (dict.count > 0) {
-            url += "?"
-        }
-        for (key, value) in dict {
-            url += (key + "=" + value + "&")
-        }
-        return url
+        return RWFrameworkConfig.getConfigValueAsString("base_url") + api2() + "speakers/" + dict.toUrlQuery()
     }
 
+}
+
+fileprivate extension Dictionary where Key == String, Value == String {
+    func toUrlQuery() {
+        var result = ""
+        if (self.count > 0) {
+            result += "?"
+        }
+        for (key, value) in self {
+            result += (key + "=" + value + "&")
+        }
+        return result
+    }
 }

@@ -572,6 +572,21 @@ extension RWFramework {
         }
     }
 
+    public func apiGetTimedAssets(
+        _ dict: [String:String],
+        success:@escaping (_ data: Data?) -> Void,
+        failure:@escaping (_ error: NSError) -> Void
+    ) {
+        httpGetTimedAssets(dict) { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                success(data)
+            } else if (error != nil) {
+                failure(error!)
+                self.apiProcessError(data, error: error!, caller: "apiGetTimedAssets")
+            }
+        }
+    }
+
 // MARK: GET assets id PUBLIC
 
     public func apiGetAssetsId(_ asset_id: String, success:@escaping (_ data: Data?) -> Void, failure:@escaping (_ error: NSError) -> Void) {

@@ -213,6 +213,15 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         }
     }
 
+    func httpGetTimedAssets(_ dict: [String:String], completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        if let url = URL(string: RWFrameworkURLFactory.getTimedAssetsURL(dict)) {
+            getDataFromURL(url, completion: completion)
+        } else {
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "httpGetTimedAssets unable to be created."])
+            completion(nil, error)
+        }
+    }
+
     func httpGetAssets(_ dict: [String:String], completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.getAssetsURL(dict)) {
             getDataFromURL(url, completion: completion)
