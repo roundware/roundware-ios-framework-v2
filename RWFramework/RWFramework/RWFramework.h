@@ -7,7 +7,6 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "STKAudioPlayer.h"
 
 //! Project version number for RWFramework.
 FOUNDATION_EXPORT double RWFrameworkVersionNumber;
@@ -17,4 +16,4 @@ FOUNDATION_EXPORT const unsigned char RWFrameworkVersionString[];
 
 // In this header, you should import all the public headers of your framework using statements like #import <RWFramework/PublicHeader.h>
 
-#import <RWFramework/RWFrameworkAudioRecorder.h>
+#import <RWFrameworkAudioRecorder.h>
