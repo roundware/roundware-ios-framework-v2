@@ -33,8 +33,10 @@ private lazy var __once: () = { () -> Void in
     var streamOptions = [String: Any]()
     var letFrameworkRequestWhenInUseAuthorizationForLocation = true
     let playlist = Playlist(filters: [
-        LocationFilter(),
-        AngleFilter()
+        AnyFilters([
+            AllFilters([LocationFilter(), AngleFilter()]),
+            TimedAssetFilter()
+        ])
     ], trackFilters: [
         LengthFilter()
     ])

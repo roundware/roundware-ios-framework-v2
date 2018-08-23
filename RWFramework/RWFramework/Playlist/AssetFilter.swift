@@ -17,32 +17,57 @@ protocol AssetFilter {
 
 /// Filter applied to assets as candidates for a specific track
 protocol TrackFilter {
+    /// @return true to keep the given asset
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> Bool
 }
 
 
 /// Keep an asset if it's nearby or if it is timed to play now.
 /// TODO: Really, we need to prioritize timed assets above nearby ones, so returning some kind of priority here might be best. <0 means don't keep, 0 = top priority
-class FilterByTimeOrLocation: AssetFilter {
-    private let timeFilter = TimedAssetFilter()
-    private let locFilter = LocationFilter()
+
+struct AnyFilters: AssetFilter {
+    let filters: [AssetFilter]
+    init(_ filters: [AssetFilter]) {
+        self.filters = filters
+    }
     func keep(_ asset: Asset, playlist: Playlist) -> Bool {
-        return timeFilter.keep(asset, playlist: playlist)
-            || locFilter.keep(asset, playlist: playlist)
+        return filters.reduce(false) { res, it in
+            res || it.keep(asset, playlist: playlist)
+        }
+    }
+}
+
+struct AllFilters: AssetFilter {
+    let filters: [AssetFilter]
+    init(_ filters: [AssetFilter]) {
+        self.filters = filters
+    }
+    func keep(_ asset: Asset, playlist: Playlist) -> Bool {
+        return filters.reduce(true) { res, it in
+            res && it.keep(asset, playlist: playlist)
+        }
     }
 }
 
 
 class TimedAssetFilter: AssetFilter {
     private var timedAssets: [TimedAsset]? = nil
+
     func keep(_ asset: Asset, playlist: Playlist) -> Bool {
-        if (timedAssets == nil) {
+        if timedAssets == nil {
             // load the timed assets
-            RWFramework.sharedInstance.apiGetTimedAssets([:]).then { timedAssets in
-                self.timedAssets = timedAssets
-            }.catch { err in }
+            do {
+                timedAssets = try await(RWFramework.sharedInstance.apiGetTimedAssets([:]))
+            } catch {
+                return true
+            }
         }
-        return true
+        // keep assets that are slated to start now or before
+        //      AND hasn't been played before
+        let now = Int(Date().timeIntervalSince(playlist.startTime))
+        return timedAssets!.reduce(true) { res, it in
+            return res && it.start <= now && playlist.userAssetData[it.assetId] == nil
+        }
     }
 }
 
