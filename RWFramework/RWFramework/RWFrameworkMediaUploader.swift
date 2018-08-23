@@ -62,14 +62,15 @@ extension RWFramework {
         })
 
         // upload here
-        apiPatchEnvelopesId(media, success:{ () -> Void in
+        apiPatchEnvelopesId(media).then { () -> Void in
             self.println("apiPatchEnvelopesId success")
             media.mediaStatus = MediaStatus.UploadCompleted
             self.deleteMediaFile(media)
             self.removeMedia(media)
             UIApplication.shared.endBackgroundTask(bti)
             self.uploaderUploading = false
-        }, failure:{ (error: NSError) -> Void in
+        }.catch { (error: Error) -> Void in
+            let error = error as NSError
             self.println("apiPatchEnvelopesId failure")
             if (error.code == 400) {
                 self.deleteMediaFile(media)
@@ -80,7 +81,7 @@ extension RWFramework {
             }
             UIApplication.shared.endBackgroundTask(bti)
             self.uploaderUploading = false
-        })
+        }
     }
 
 // MARK: Cleanup

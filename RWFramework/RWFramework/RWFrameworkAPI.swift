@@ -8,6 +8,7 @@
 
 import Foundation
 import CoreLocation
+import Promises
 
 extension RWFramework {
 
@@ -15,18 +16,21 @@ extension RWFramework {
 
     func apiPostUsers(_ device_id: String, client_type: String, client_system: String) {
         let token = RWFrameworkConfig.getConfigValueAsString("token", group: RWFrameworkConfig.ConfigGroup.client)
+        
         if (token.lengthOfBytes(using: String.Encoding.utf8) > 0) {
             postUsersSucceeded = true
             apiPostSessions()
         } else {
-            httpPostUsers(device_id, client_type: client_type, client_system: client_system) { (data, error) -> Void in
-                if (data != nil) && (error == nil) {
-                    self.postUsersSuccess(data!)
-                    self.rwPostUsersSuccess(data)
-                } else if (error != nil) {
-                    self.rwPostUsersFailure(error)
-                    self.apiProcessError(data, error: error!, caller: "apiPostUsers")
-                }
+            httpPostUsers(
+                device_id,
+                client_type: client_type,
+                client_system: client_system
+            ).then { data in
+                self.postUsersSuccess(data)
+                self.rwPostUsersSuccess(data)
+            }.catch { error in
+                self.rwPostUsersFailure(error)
+                self.apiProcessError(nil, error: error, caller: "apiPostUsers")
             }
         }
     }
@@ -48,8 +52,7 @@ extension RWFramework {
             postUsersSucceeded = true
 
             apiPostSessions()
-        }
-        catch {
+        } catch {
             print(error)
         }
     }
@@ -66,14 +69,17 @@ extension RWFramework {
         dateFormatter.dateFormat = "ZZZ"
         let timezone = dateFormatter.string(from: Date())
 
-        httpPostSessions(project_id, timezone: timezone, client_system: client_system, language: language) { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                self.postSessionsSuccess(data!)
-                self.rwPostSessionsSuccess(data)
-            } else if (error != nil) {
-                self.rwPostSessionsFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiPostSessions")
-            }
+        httpPostSessions(
+            project_id,
+            timezone: timezone,
+            client_system: client_system,
+            language: language
+        ).then { data in
+            self.postSessionsSuccess(data)
+            self.rwPostSessionsSuccess(data)
+        }.catch { error in
+            self.rwPostSessionsFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiPostSessions")
         }
     }
 
@@ -103,14 +109,12 @@ extension RWFramework {
 // MARK: GET projects id
 
     func apiGetProjectsId(_ project_id: NSNumber, session_id: NSNumber) {
-        httpGetProjectsId(project_id, session_id: session_id) { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                self.getProjectsIdSuccess(data!, project_id: project_id, session_id: session_id)
-                self.rwGetProjectsIdSuccess(data)
-            } else if (error != nil) {
-                self.rwGetProjectsIdFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiGetProjectsId")
-            }
+        httpGetProjectsId(project_id, session_id: session_id).then { data in
+            self.getProjectsIdSuccess(data, project_id: project_id, session_id: session_id)
+            self.rwGetProjectsIdSuccess(data)
+        }.catch { error in
+            self.rwGetProjectsIdFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiGetProjectsId")
         }
     }
 
@@ -167,14 +171,12 @@ extension RWFramework {
     // MARK: GET ui config
     
     func apiGetUIConfig(_ project_id: NSNumber, session_id: NSNumber) {
-        httpGetUIConfig(project_id, session_id: session_id) { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                self.getUIConfigSuccess(data!, project_id: project_id)
-                self.rwGetUIConfigSuccess(data)
-            } else if (error != nil) {
-                self.rwGetUIConfigFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiGetUIConfig")
-            }
+        httpGetUIConfig(project_id, session_id: session_id).then { data in
+            self.getUIConfigSuccess(data, project_id: project_id)
+            self.rwGetUIConfigSuccess(data)
+        }.catch { error in
+            self.rwGetUIConfigFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiGetUIConfig")
         }
     }
     
@@ -188,14 +190,14 @@ extension RWFramework {
 // MARK: GET projects id tags
 
     func apiGetProjectsIdTags(_ project_id: NSNumber, session_id: NSNumber) {
-        httpGetProjectsIdTags(project_id, session_id: session_id) { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                self.getProjectsIdTagsSuccess(data!, project_id: project_id, session_id: session_id)
-                self.rwGetProjectsIdTagsSuccess(data)
-            } else if (error != nil) {
-                self.rwGetProjectsIdTagsFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiGetProjectsIdTags")
-            }
+        httpGetProjectsIdTags(project_id, session_id: session_id).then { data in
+            self.getProjectsIdTagsSuccess(data, project_id: project_id, session_id: session_id)
+            self.rwGetProjectsIdTagsSuccess(data)
+            
+        }.catch { error in
+            self.rwGetProjectsIdTagsFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiGetProjectsIdTags")
+                
         }
     }
     
@@ -210,14 +212,12 @@ extension RWFramework {
 // MARK: GET projects id uigroups
     
     func apiGetProjectsIdUIGroups(_ project_id: NSNumber, session_id: NSNumber) {
-        httpGetProjectsIdUIGroups(project_id, session_id: session_id) { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                self.getProjectsIdUIGroupsSuccess(data!, project_id: project_id)
-                self.rwGetProjectsIdUIGroupsSuccess(data)
-            } else if (error != nil) {
-                self.rwGetProjectsIdUIGroupsFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiGetProjectsIdUIGroups")
-            }
+        httpGetProjectsIdUIGroups(project_id, session_id: session_id).then { data in
+            self.getProjectsIdUIGroupsSuccess(data, project_id: project_id)
+            self.rwGetProjectsIdUIGroupsSuccess(data)
+        }.catch { error in
+            self.rwGetProjectsIdUIGroupsFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiGetProjectsIdUIGroups")
         }
     }
     
@@ -235,14 +235,12 @@ extension RWFramework {
 // MARK: GET tagcategories
     
     func apiGetTagCategories() {
-        httpGetTagCategories() { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                self.getTagCategoriesSuccess(data!)
-                self.rwGetTagCategoriesSuccess(data)
-            } else if (error != nil) {
-                self.rwGetTagCategoriesFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiGetTagCategories")
-            }
+        httpGetTagCategories().then { data in
+            self.getTagCategoriesSuccess(data)
+            self.rwGetTagCategoriesSuccess(data)
+        }.catch { error in
+            self.rwGetTagCategoriesFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiGetTagCategories")
         }
     }
     
@@ -271,15 +269,15 @@ extension RWFramework {
             lng = doubleToStringWithZeroAsEmptyString(loc.longitude)
         }
 
-        httpPostStreams(session_id, latitude: lat, longitude: lng) { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                self.postStreamsSuccess(data!, session_id: session_id)
-                self.rwPostStreamsSuccess(data)
-            } else if (error != nil) {
-                self.rwPostStreamsFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiPostStreams")
-            }
+        httpPostStreams(session_id, latitude: lat, longitude: lng).always {
             self.requestStreamInProgress = false
+        }.then { data -> Data in
+            self.postStreamsSuccess(data, session_id: session_id)
+            self.rwPostStreamsSuccess(data)
+            return data
+        }.catch { error in 
+            self.rwPostStreamsFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiPostStreams")
         }
     }
 
@@ -316,28 +314,26 @@ extension RWFramework {
 
 // MARK: PATCH streams id
     public func apiPatchStreamsIdWithLocation(
-            _ newLocation: CLLocation,
-            tagIds: String? = nil,
-            streamPatchOptions: [String: Any] = [:]
-        ) {
-            if (requestStreamSucceeded == false || self.streamID == 0) { return }
-    
-            let latitude = doubleToStringWithZeroAsEmptyString(newLocation.coordinate.latitude)
-            let longitude = doubleToStringWithZeroAsEmptyString(newLocation.coordinate.longitude)
-            httpPatchStreamsId(
-                self.streamID.description,
-                tagIds: tagIds,
-                latitude: latitude,
-                longitude: longitude,
-                streamPatchOptions: streamPatchOptions
-            ) { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                self.patchStreamsIdSuccess(data!)
-                self.rwPatchStreamsIdSuccess(data)
-            } else if (error != nil) {
-                self.rwPatchStreamsIdFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiPatchStreamsIdWithLocation")
-            }
+        _ newLocation: CLLocation,
+        tagIds: String? = nil,
+        streamPatchOptions: [String: Any] = [:]
+    ) {
+        if (requestStreamSucceeded == false || self.streamID == 0) { return }
+
+        let latitude = doubleToStringWithZeroAsEmptyString(newLocation.coordinate.latitude)
+        let longitude = doubleToStringWithZeroAsEmptyString(newLocation.coordinate.longitude)
+        httpPatchStreamsId(
+            self.streamID.description,
+            tagIds: tagIds,
+            latitude: latitude,
+            longitude: longitude,
+            streamPatchOptions: streamPatchOptions
+        ).then { data in
+            self.patchStreamsIdSuccess(data)
+            self.rwPatchStreamsIdSuccess(data)
+        }.catch { error in 
+            self.rwPatchStreamsIdFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiPatchStreamsIdWithLocation")
         }
     }
 
@@ -345,15 +341,13 @@ extension RWFramework {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
 
-        httpPatchStreamsId(self.streamID.description, tagIds: tag_ids, completion: { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                self.patchStreamsIdSuccess(data!)
-                self.rwPatchStreamsIdSuccess(data)
-            } else if (error != nil) {
-                self.rwPatchStreamsIdFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiPatchStreamsIdWithTags")
-            }
-        })
+        httpPatchStreamsId(self.streamID.description, tagIds: tag_ids).then { data in
+            self.patchStreamsIdSuccess(data)
+            self.rwPatchStreamsIdSuccess(data)
+        }.catch { error in
+            self.rwPatchStreamsIdFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiPatchStreamsIdWithTags")
+        }
     }
 
     func patchStreamsIdSuccess(_ data: Data) {
@@ -366,15 +360,15 @@ extension RWFramework {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
 
-        httpPostStreamsIdHeartbeat(self.streamID.description, completion: { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                self.postStreamsIdHeartbeatSuccess(data!)
+        httpPostStreamsIdHeartbeat(self.streamID.description).then { data in
+                self.postStreamsIdHeartbeatSuccess(data)
                 self.rwPostStreamsIdHeartbeatSuccess(data)
-            } else if (error != nil) {
+            
+            }.catch { error in
                 self.rwPostStreamsIdHeartbeatFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiPostStreamsIdHeartbeat")
-            }
-        })
+                self.apiProcessError(nil, error: error, caller: "apiPostStreamsIdHeartbeat")
+                
+        }
     }
 
     func postStreamsIdHeartbeatSuccess(_ data: Data) {
@@ -387,15 +381,15 @@ extension RWFramework {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
         
-        httpPostStreamsIdReplay(self.streamID.description, completion: { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                self.postStreamsIdReplaySuccess(data!)
+        httpPostStreamsIdReplay(self.streamID.description).then { data in
+                self.postStreamsIdReplaySuccess(data)
                 self.rwPostStreamsIdReplaySuccess(data)
-            } else if (error != nil) {
+            
+            }.catch { error in
                 self.rwPostStreamsIdReplayFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiPostStreamsIdReplay")
-            }
-        })
+                self.apiProcessError(nil, error: error, caller: "apiPostStreamsIdReplay")
+                
+        }
     }
     
     func postStreamsIdReplaySuccess(_ data: Data) {
@@ -408,15 +402,15 @@ extension RWFramework {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
         
-        httpPostStreamsIdSkip(self.streamID.description, completion: { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                self.postStreamsIdSkipSuccess(data!)
+        httpPostStreamsIdSkip(self.streamID.description).then { data in
+                self.postStreamsIdSkipSuccess(data)
                 self.rwPostStreamsIdSkipSuccess(data)
-            } else if (error != nil) {
+            
+            }.catch { error in
                 self.rwPostStreamsIdSkipFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiPostStreamsIdSkip")
-            }
-        })
+                self.apiProcessError(nil, error: error, caller: "apiPostStreamsIdSkip")
+                
+        }
     }
     
     func postStreamsIdSkipSuccess(_ data: Data) {
@@ -429,15 +423,15 @@ extension RWFramework {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
         
-        httpPostStreamsIdPause(self.streamID.description, completion: { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                self.postStreamsIdPauseSuccess(data!)
+        httpPostStreamsIdPause(self.streamID.description).then { data in
+                self.postStreamsIdPauseSuccess(data)
                 self.rwPostStreamsIdPauseSuccess(data)
-            } else if (error != nil) {
+            
+            }.catch { error in
                 self.rwPostStreamsIdPauseFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiPostStreamsIdPause")
-            }
-        })
+                self.apiProcessError(nil, error: error, caller: "apiPostStreamsIdPause")
+                
+        }
     }
     
     func postStreamsIdPauseSuccess(_ data: Data) {
@@ -450,15 +444,13 @@ extension RWFramework {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
         
-        httpPostStreamsIdResume(self.streamID.description, completion: { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                self.postStreamsIdResumeSuccess(data!)
-                self.rwPostStreamsIdResumeSuccess(data)
-            } else if (error != nil) {
-                self.rwPostStreamsIdResumeFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiPostStreamsIdResume")
-            }
-        })
+        httpPostStreamsIdResume(self.streamID.description).then { data in
+            self.postStreamsIdResumeSuccess(data)
+            self.rwPostStreamsIdResumeSuccess(data)
+        }.catch { error in
+            self.rwPostStreamsIdResumeFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiPostStreamsIdResume")
+        }
     }
     
     func postStreamsIdResumeSuccess(_ data: Data) {
@@ -471,15 +463,13 @@ extension RWFramework {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
         
-        httpGetStreamsIdIsActive(self.streamID.description, completion: { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                self.getStreamsIdIsActiveSuccess(data!)
-                self.rwGetStreamsIdIsActiveSuccess(data)
-            } else if (error != nil) {
-                self.rwGetStreamsIdIsActiveFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiGetStreamsIdIsActive")
-            }
-        })
+        httpGetStreamsIdIsActive(self.streamID.description).then { data in
+            self.getStreamsIdIsActiveSuccess(data)
+            self.rwGetStreamsIdIsActiveSuccess(data)
+        }.catch { error in
+            self.rwGetStreamsIdIsActiveFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiGetStreamsIdIsActive")
+        }
     }
     
     func getStreamsIdIsActiveSuccess(_ data: Data) {
@@ -488,50 +478,35 @@ extension RWFramework {
 
 // MARK: POST envelopes
 
-    func apiPostEnvelopes(_ success:@escaping (_ envelopeID: Int) -> Void) {
+    func apiPostEnvelopes() -> Promise<Int> {
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
 
-        httpPostEnvelopes(session_id) { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                self.postEnvelopesSuccess(data!, session_id: session_id, success: success)
-                self.rwPostEnvelopesSuccess(data)
-            } else if (error != nil) {
-                self.rwPostEnvelopesFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiPostEnvelopes")
-            }
+        return httpPostEnvelopes(session_id).then { data -> Int in
+            self.rwPostEnvelopesSuccess(data)
+            return try self.postEnvelopesSuccess(data, session_id: session_id)
+        }.catch { error in
+            self.rwPostEnvelopesFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiPostEnvelopes")
         }
     }
 
-    func postEnvelopesSuccess(_ data: Data, session_id: NSNumber, success:(_ envelopeID: Int) -> Void) {
-
-        do {
-            let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
-            if let dict = json as? [String: AnyObject] {
-                if let envelope_id = dict["id"] as? NSNumber {
-                    success(envelope_id.intValue)
-                }
-            }
-        }
-        catch {
-            print(error)
-        }
-
+    func postEnvelopesSuccess(_ data: Data, session_id: NSNumber) throws -> Int {
+        let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
+        let dict = json as! [String: AnyObject]
+        let envelope_id = dict["id"] as! NSNumber
+        return envelope_id.intValue
     }
 
 // MARK: PATCH envelopes id
 
-    func apiPatchEnvelopesId(_ media: Media, success:@escaping () -> Void, failure:@escaping (_ error: NSError) -> Void) {
+    func apiPatchEnvelopesId(_ media: Media) -> Promise<Void> {
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
 
-        httpPatchEnvelopesId(media, session_id: session_id) { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                success()
-                self.rwPatchEnvelopesIdSuccess(data)
-            } else if (error != nil) {
-                failure(error!)
-                self.rwPatchEnvelopesIdFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiPatchEnvelopesId")
-            }
+        return httpPatchEnvelopesId(media, session_id: session_id).then { data -> Void in
+            self.rwPatchEnvelopesIdSuccess(data)
+        }.catch { error in
+            self.rwPatchEnvelopesIdFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiPatchEnvelopesId")
         }
     }
 
@@ -540,117 +515,87 @@ extension RWFramework {
     // Not needed on client - not implementing for now
     
     
-    public func apiGetAudioTracks(
-        _ dict: [String:String],
-        success:@escaping (_ data: Data?) -> Void,
-        failure:@escaping (_ error: NSError) -> Void
-    ) {
-        httpGetAudioTracks(dict) { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                success(data)
-//                self.rwGetAudioTracksSuccess(data)
-            } else if (error != nil) {
-                failure(error!)
-//                self.rwGetAssetsFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiGetAudioTracks")
-            }
+    public func apiGetAudioTracks(_ dict: [String:String]) -> Promise<Data> {
+        return httpGetAudioTracks(dict).catch { error in
+            self.apiProcessError(nil, error: error, caller: "apiGetAudioTracks")
+            
         }
     }
 
 // MARK: GET assets PUBLIC
 
-    public func apiGetAssets(_ dict: [String:String], success:@escaping (_ data: Data?) -> Void, failure:@escaping (_ error: NSError) -> Void) {
-        httpGetAssets(dict) { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                success(data)
-                self.rwGetAssetsSuccess(data)
-            } else if (error != nil) {
-                failure(error!)
-                self.rwGetAssetsFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiGetAssets")
-            }
+    public func apiGetAssets(_ dict: [String:String]) -> Promise<Data> {
+        return httpGetAssets(dict).then { data -> Data in
+            self.rwGetAssetsSuccess(data)
+            return data
+        }.catch { error in
+            self.rwGetAssetsFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiGetAssets")
         }
     }
 
-    public func apiGetTimedAssets(
-        _ dict: [String:String],
-        success:@escaping (_ data: Data?) -> Void,
-        failure:@escaping (_ error: NSError) -> Void
-    ) {
-        httpGetTimedAssets(dict) { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                success(data)
-            } else if (error != nil) {
-                failure(error!)
-                self.apiProcessError(data, error: error!, caller: "apiGetTimedAssets")
-            }
+    public func apiGetTimedAssets(_ dict: [String:String]) -> Promise<[TimedAsset]> {
+        return httpGetTimedAssets(dict).then { data -> [TimedAsset] in
+            return try TimedAsset.from(json: data)
+        }.catch { error in
+            self.apiProcessError(nil, error: error, caller: "apiGetTimedAssets")
         }
     }
 
 // MARK: GET assets id PUBLIC
 
-    public func apiGetAssetsId(_ asset_id: String, success:@escaping (_ data: Data?) -> Void, failure:@escaping (_ error: NSError) -> Void) {
-        httpGetAssetsId(asset_id) { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                success(data)
-                self.rwGetAssetsIdSuccess(data)
-            } else if (error != nil) {
-                failure(error!)
-                self.rwGetAssetsIdFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiGetAssetsId")
-            }
+    public func apiGetAssetsId(_ asset_id: String) -> Promise<Data> {
+        return httpGetAssetsId(asset_id).then { data -> Data in
+            self.rwGetAssetsIdSuccess(data)
+            return data
+        }.catch { error in
+            self.rwGetAssetsIdFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiGetAssetsId")
         }
     }
 
 // MARK: POST assets id votes
 
-    public func apiPostAssetsIdVotes(_ asset_id: String, vote_type: String, value: NSNumber = 0, success:@escaping (_ data: Data?) -> Void, failure:@escaping (_ error: NSError) -> Void) {
+    public func apiPostAssetsIdVotes(_ asset_id: String, vote_type: String, value: NSNumber = 0) -> Promise<Data> {
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
 
-        httpPostAssetsIdVotes(asset_id, session_id: session_id, vote_type: vote_type, value: value) { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                success(data)
-                self.rwPostAssetsIdVotesSuccess(data)
-            } else if (error != nil) {
-                failure(error!)
-                self.rwPostAssetsIdVotesFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiPostAssetsIdVotes")
-            }
+        return httpPostAssetsIdVotes(asset_id, session_id: session_id, vote_type: vote_type, value: value).then { data -> Data in
+            self.rwPostAssetsIdVotesSuccess(data)
+            return data
+        }.catch { error in
+            self.rwPostAssetsIdVotesFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiPostAssetsIdVotes")
+            
         }
     }
 
 // MARK: GET assets id votes
 
-    public func apiGetAssetsIdVotes(_ asset_id: String, success:@escaping (_ data: Data?) -> Void, failure:@escaping (_ error: NSError) -> Void) {
-        httpGetAssetsIdVotes(asset_id) { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                success(data)
-                self.rwGetAssetsIdVotesSuccess(data)
-            } else if (error != nil) {
-                failure(error!)
-                self.rwGetAssetsIdVotesFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiGetAssetsIdVotes")
-            }
+    public func apiGetAssetsIdVotes(_ asset_id: String) -> Promise<Data> {
+        return httpGetAssetsIdVotes(asset_id).then { data -> Data in
+            self.rwGetAssetsIdVotesSuccess(data)
+            return data
+        }.catch { error in
+            self.rwGetAssetsIdVotesFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiGetAssetsIdVotes")
         }
     }
     
     
-    public func apiGetSpeakers(_ dict: [String:String], success:@escaping (_ data: Data?) -> Void, failure:@escaping (_ error: NSError) -> Void) {
-        httpGetSpeakers(dict) { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                success(data)
-                self.rwGetSpeakersSuccess(data)
-            } else if (error != nil) {
-                failure(error!)
-                self.rwGetSpeakersFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiGetAssets")
-            }
+    public func apiGetSpeakers(_ dict: [String:String]) -> Promise<Data> {
+        return httpGetSpeakers(dict).then { data -> Data in
+            self.rwGetSpeakersSuccess(data)
+            return data
+        }.catch { error in
+            self.rwGetSpeakersFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiGetAssets")
+            
         }
     }
 
 // MARK: POST events
 
-    func apiPostEvents(_ event_type: String, data: String?, success:@escaping (_ data: Data?) -> Void, failure:@escaping (_ error: NSError) -> Void) {
+    func apiPostEvents(_ event_type: String, data: String?) -> Promise<Data> {
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
         let latitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.latitude)
         let longitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.longitude)
@@ -660,15 +605,13 @@ extension RWFramework {
         let client_time = dateFormatter.string(from: Date())
         let tag_ids = getSubmittableListenIDsSetAsTags() + "," + getSubmittableSpeakIDsSetAsTags()
 
-        httpPostEvents(session_id, event_type: event_type, data: data, latitude: latitude, longitude: longitude, client_time: client_time, tag_ids: tag_ids) { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                success(data)
-                self.rwPostEventsSuccess(data)
-            } else if (error != nil) {
-                failure(error!)
-                self.rwPostEventsFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiPostEvents")
-            }
+        return httpPostEvents(session_id, event_type: event_type, data: data, latitude: latitude, longitude: longitude, client_time: client_time, tag_ids: tag_ids).then { data -> Data in
+            self.rwPostEventsSuccess(data)
+            return data
+        }.catch { error in
+            self.rwPostEventsFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiPostEvents")
+            
         }
     }
 
@@ -686,10 +629,11 @@ extension RWFramework {
 
 // MARK: utilities
 
-    func apiProcessError(_ data: Data?, error: NSError, caller: String) {
+    func apiProcessError(_ data: Data?, error: Error, caller: String) {
+        let error = error as NSError
         let detailStringValue = ""
 //        if (data != nil) {
-//            let dict = JSON(data: data!)
+//            let dict = JSON(data: data)
 //            let detail = dict["detail"]
 //            detailStringValue = detail.stringValue
 //            self.println("API ERROR: \(caller): \(detailStringValue) NSError = \(error.code) \(error.description)")

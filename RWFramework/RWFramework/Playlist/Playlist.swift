@@ -9,6 +9,8 @@
 import Foundation
 import CoreLocation
 import AVKit
+import StreamingKit
+import Promises
 
 struct UserAssetData {
     let lastListen: Date
@@ -85,12 +87,10 @@ class Playlist {
         rw.apiGetSpeakers([
             "project_id": projectId.stringValue,
             "activeyn": "true"
-        ], success: { (data) in
-            do {
-                self.speakers = try Speaker.fromJson(data!)
-                self.playNearestSpeaker()
-            } catch {}
-        }, failure: { err in })
+        ]).then { data in
+            self.speakers = try Speaker.fromJson(data)
+            self.playNearestSpeaker()
+        }.catch { err in }
     }
     
     private func playNearestSpeaker() {
@@ -105,7 +105,9 @@ class Playlist {
     func next(forTrack track: AudioTrack) -> Asset? {
         print("asset meta: " + userAssetData.description)
         let filteredAssets = self.filteredAssets.filter { asset in
-            self.trackFilters.all { filter in filter(self, track, asset) }
+            !self.trackFilters.contains { filter in
+                !filter.keep(asset, playlist: self, track: track)
+            }
         }
         var next = filteredAssets.first { it in
             return userAssetData[it.id] == nil
@@ -141,12 +143,10 @@ class Playlist {
             
             rw.apiGetAudioTracks([
                 "project_id": projectId.stringValue
-            ], success: { data in
-                do {
-                    self.tracks = try AudioTrack.fromJson(self, data!)
-                    self.tracks.forEach { it in it.playNext() }
-                } catch {}
-            }, failure: { err in })
+            ]).then { data in
+                self.tracks = try AudioTrack.fromJson(self, data)
+                self.tracks.forEach { it in it.playNext() }
+            }.catch { err in }
         } else {
             self.tracks.forEach { it in
                 if it.currentAsset == nil {
@@ -158,7 +158,7 @@ class Playlist {
         }
     }
     
-    private func updateAssets(_ cb: @escaping () -> Void = {}) {
+    private func updateAssets() -> Promise<Void> {
         let rw = RWFramework.sharedInstance
         let projectId = RWFrameworkConfig.getConfigValueAsNumber("project_id")
         
@@ -176,14 +176,11 @@ class Playlist {
             opts["created__gte"] = dateFormatter.string(from: date)
         }
         
-        rw.apiGetAssets(opts, success: { (data) in
+        return rw.apiGetAssets(opts).then { data -> Void in
             self.lastUpdate = Date()
-            do {
-                self.allAssets.append(contentsOf: try Asset.fromJson(data!))
-                print("all assets: " + self.allAssets.description)
-            } catch {}
-            cb()
-        }, failure: { err in })
+            self.allAssets.append(contentsOf: try Asset.fromJson(data))
+            print("all assets: " + self.allAssets.description)
+        }.catch { err in }
     }
     
     /// Framework should call this when stream parameters are updated.
@@ -195,7 +192,9 @@ class Playlist {
         
         // TODO: Time dependent assets.
         filteredAssets = allAssets.filter { item in
-            self.playlistFilters.all { filter in filter(self, item) }
+            !self.playlistFilters.contains { filter in
+                !filter.keep(item, playlist: self)
+            }
         }.sorted { a, b in
             if let locA = a.location, let locB = b.location {
                 return locA.distance(from: opts.location) < locB.distance(from: opts.location)
@@ -230,7 +229,7 @@ class Playlist {
         if #available(iOS 10.0, *) {
             // Checks every couple minutes for newly published assets
             updateTimer = Timer(timeInterval: 5*60, repeats: true) { _ in
-                self.updateAssets {
+                self.updateAssets().then {
                     // TODO: Stop doing a full filter on every update.
                     if let opts = self.currentParams {
                         self.updateParams(opts)

@@ -119,7 +119,7 @@ open class RWFrameworkURLFactory {
 }
 
 fileprivate extension Dictionary where Key == String, Value == String {
-    func toUrlQuery() {
+    func toUrlQuery() -> String {
         var result = ""
         if (self.count > 0) {
             result += "?"

@@ -33,9 +33,10 @@ private lazy var __once: () = { () -> Void in
     var streamOptions = [String: Any]()
     var letFrameworkRequestWhenInUseAuthorizationForLocation = true
     let playlist = Playlist(filters: [
-        filterNearby,
-        filterByAngle,
-        filterByLength
+        LocationFilter(),
+        AngleFilter()
+    ], trackFilters: [
+        LengthFilter()
     ])
 
     // Audio - Stream (see RWFrameworkAudioPlayer.swift)
@@ -247,9 +248,9 @@ private lazy var __once: () = { () -> Void in
 
     /// Log to server
     open func logToServer(_ event_type: String, data: String? = "") {
-        apiPostEvents(event_type, data: data, success: { (data) -> Void in
+        apiPostEvents(event_type, data: data).then { data in
             self.println("LOGGED TO SERVER: \(event_type)")
-        }) { (error) -> Void in
+        }.catch { error in
             self.println("ERROR LOGGING TO SERVER \(error)")
         }
     }

@@ -26,11 +26,11 @@ struct Asset {
         let items = json as! [AnyObject]
         return items.map { obj in
             let it = obj as! [String: AnyObject]
-            let location
-            if (it.has("latitude") && it.has("longitude")) {
+            let location: CLLocation?
+            if let lat = it["latitude"], let lng = it["longitude"] {
                 location = CLLocation(
-                    latitude: it["latitude"] as! Double,
-                    longitude: it["longitude"] as! Double
+                    latitude: lat as! Double,
+                    longitude: lng as! Double
                 )
             } else {
                 location = nil
@@ -47,7 +47,7 @@ struct Asset {
 }
 
 
-struct TimedAsset {
+public struct TimedAsset {
     let id: Int
     let assetId: Int
     let start: Int
@@ -60,10 +60,10 @@ struct TimedAsset {
         return items.map { obj in 
             let it = obj as! [String: AnyObject]
             return TimedAsset(
-                it["id"] as! Int,
-                it["asset_id"] as! Int,
-                it["start"] as! Int,
-                it["end"] as! Int
+                id: it["id"] as! Int,
+                assetId: it["asset_id"] as! Int,
+                start: it["start"] as! Int,
+                end: it["end"] as! Int
             )
         }
     }

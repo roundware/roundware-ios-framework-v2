@@ -8,7 +8,7 @@
 
 import Foundation
 import CoreLocation
-
+import StreamingKit
 
 struct Speaker {
     let id: Int

@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Promises
 
 /// Filter applied to all assets at the playlist building stage
 protocol AssetFilter {
@@ -26,16 +27,22 @@ class FilterByTimeOrLocation: AssetFilter {
     private let timeFilter = TimedAssetFilter()
     private let locFilter = LocationFilter()
     func keep(_ asset: Asset, playlist: Playlist) -> Bool {
-        return timeFilter.keep(asset, playlist)
-            || locFilter.keep(asset, playlist)
+        return timeFilter.keep(asset, playlist: playlist)
+            || locFilter.keep(asset, playlist: playlist)
     }
 }
 
 
 class TimedAssetFilter: AssetFilter {
-    private var timedAssets = [TimedAsset]()
+    private var timedAssets: [TimedAsset]? = nil
     func keep(_ asset: Asset, playlist: Playlist) -> Bool {
-        
+        if (timedAssets == nil) {
+            // load the timed assets
+            RWFramework.sharedInstance.apiGetTimedAssets([:]).then { timedAssets in
+                self.timedAssets = timedAssets
+            }.catch { err in }
+        }
+        return true
     }
 }
 
@@ -81,6 +88,6 @@ class AngleFilter: AssetFilter {
 
 class LengthFilter: TrackFilter {
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> Bool {
-        return track.duration.contains(asset.length)
+        return track.duration.contains(Float(asset.length))
     }
 }

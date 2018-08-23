@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import StreamingKit
 
 /// An AudioTrack has a set of parameters determining how its audio is played.
 /// Assets are provided by the Playlist, so they must match any geometric parameters.
@@ -132,7 +133,7 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
         if (premature) {
             fadeOut {
                 self.currentAssetDuration = nil
-                self.player.playNext()
+//                self.player.playNext()
                 self.fadeIn()
                 self.setupFadeEndTimer()
             }
@@ -210,18 +211,22 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
 
     func setupFadeEndTimer() {
         // pick a fade-out length
-        let fadeDur
-        if (currentAssetDuration == nil) {
-            fadeDur = currentAsset.length - self.fadeOutTime.random()
-            self.currentAssetDuration = fadeDur
+        let fadeDur: Double
+        if let assetDur = currentAssetDuration {
+            fadeDur = Double(assetDur) - player.progress
         } else {
-            fadeDur = currentAssetDuration - player.progress
+            self.currentAssetDuration = Float(currentAsset!.length) - self.fadeOutTime.random()
+            fadeDur = Double(self.currentAssetDuration!)
         }
         fadeOutTimer?.invalidate()
-        fadeOutTimer = Timer.scheduledTimer(withTimeInterval: fadeDur) { timer in 
-            self.fadeOut {
-                self.currentAssetDuration = nil
+        if #available(iOS 10.0, *) {
+            fadeOutTimer = Timer(timeInterval: fadeDur, repeats: false) { timer in
+                self.fadeOut {
+                    self.currentAssetDuration = nil
+                }
             }
+        } else {
+            // Fallback on earlier versions
         }
     }
 }

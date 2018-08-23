@@ -144,7 +144,7 @@ extension RWFramework {
     /// Mark all media on MediaStatus.Hold as MediaStatus.Ready and add current speak tags and envelope ID (called from apiPostEnvelopesSuccess)
     public func uploadAllMedia() {
         if (countMedia() == 0) { return }
-        apiPostEnvelopes({ (envelopeID: Int) -> Void in
+        apiPostEnvelopes().then { (envelopeID: Int) -> Void in
             for media: Media in self.mediaArray {
                 if media.mediaStatus == MediaStatus.Hold {
                     media.envelopeID = NSNumber(value: envelopeID)
@@ -156,7 +156,7 @@ extension RWFramework {
             let sharingUrl = RWFrameworkConfig.getConfigValueAsString("sharing_url")
             let currentSharingUrl = sharingUrl + "?eid=" + String(envelopeID)
             RWFrameworkConfig.setConfigValue("sharing_url_current", value: currentSharingUrl as AnyObject, group: RWFrameworkConfig.ConfigGroup.project)
-        })
+        }
     }
 
     /// Reset any retryCounts for failed uploads, effectively making them try again, can be called at application startup
