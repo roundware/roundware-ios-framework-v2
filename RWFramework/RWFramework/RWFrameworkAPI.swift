@@ -13,7 +13,6 @@ import Promises
 extension RWFramework {
 
 // MARK: POST users
-
     func apiPostUsers(_ device_id: String, client_type: String, client_system: String) {
         let token = RWFrameworkConfig.getConfigValueAsString("token", group: RWFrameworkConfig.ConfigGroup.client)
         
@@ -35,7 +34,7 @@ extension RWFramework {
         }
     }
 
-    func postUsersSuccess(_ data: Data) {
+    private func postUsersSuccess(_ data: Data) {
         // http://stackoverflow.com/questions/24671249/parse-json-in-swift-anyobject-type/27206145#27206145
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
@@ -83,7 +82,7 @@ extension RWFramework {
         }
     }
 
-    func postSessionsSuccess(_ data: Data) {
+    private func postSessionsSuccess(_ data: Data) {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
 
@@ -118,7 +117,7 @@ extension RWFramework {
         }
     }
 
-    func getProjectsIdSuccess(_ data: Data, project_id: NSNumber, session_id: NSNumber) {
+    private func getProjectsIdSuccess(_ data: Data, project_id: NSNumber, session_id: NSNumber) {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
 
@@ -180,7 +179,7 @@ extension RWFramework {
         }
     }
     
-    func getUIConfigSuccess(_ data: Data, project_id: NSNumber) {
+    private func getUIConfigSuccess(_ data: Data, project_id: NSNumber) {
         // Save data to UserDefaults for later access
         UserDefaults.standard.set(data, forKey: "uiconfig")
         
@@ -201,7 +200,7 @@ extension RWFramework {
         }
     }
     
-    func getProjectsIdTagsSuccess(_ data: Data, project_id: NSNumber, session_id: NSNumber) {
+    private func getProjectsIdTagsSuccess(_ data: Data, project_id: NSNumber, session_id: NSNumber) {
         // Save data to UserDefaults for later access
         UserDefaults.standard.set(data, forKey: "tags")
         
@@ -221,7 +220,7 @@ extension RWFramework {
         }
     }
     
-    func getProjectsIdUIGroupsSuccess(_ data: Data, project_id: NSNumber) {
+    private func getProjectsIdUIGroupsSuccess(_ data: Data, project_id: NSNumber) {
         // Save data to UserDefaults for later access
         UserDefaults.standard.set(data, forKey: "ui_groups")
         
@@ -244,7 +243,7 @@ extension RWFramework {
         }
     }
     
-    func getTagCategoriesSuccess(_ data: Data) {
+    private func getTagCategoriesSuccess(_ data: Data) {
         // Save data to UserDefaults for later access
         UserDefaults.standard.set(data, forKey: "tagcategories")
         
@@ -342,16 +341,11 @@ extension RWFramework {
         if (self.streamID == 0) { return }
 
         httpPatchStreamsId(self.streamID.description, tagIds: tag_ids).then { data in
-            self.patchStreamsIdSuccess(data)
             self.rwPatchStreamsIdSuccess(data)
         }.catch { error in
             self.rwPatchStreamsIdFailure(error)
             self.apiProcessError(nil, error: error, caller: "apiPatchStreamsIdWithTags")
         }
-    }
-
-    func patchStreamsIdSuccess(_ data: Data) {
-
     }
 
 // MARK: POST streams id heartbeat
@@ -361,91 +355,60 @@ extension RWFramework {
         if (self.streamID == 0) { return }
 
         httpPostStreamsIdHeartbeat(self.streamID.description).then { data in
-                self.postStreamsIdHeartbeatSuccess(data)
-                self.rwPostStreamsIdHeartbeatSuccess(data)
-            
-            }.catch { error in
-                self.rwPostStreamsIdHeartbeatFailure(error)
-                self.apiProcessError(nil, error: error, caller: "apiPostStreamsIdHeartbeat")
-                
+            self.rwPostStreamsIdHeartbeatSuccess(data)
+        }.catch { error in
+            self.rwPostStreamsIdHeartbeatFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiPostStreamsIdHeartbeat")  
         }
     }
 
-    func postStreamsIdHeartbeatSuccess(_ data: Data) {
-
-    }
-
     // MARK: POST streams id replay
-    
     func apiPostStreamsIdReplay() {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
         
         httpPostStreamsIdReplay(self.streamID.description).then { data in
-                self.postStreamsIdReplaySuccess(data)
-                self.rwPostStreamsIdReplaySuccess(data)
-            
-            }.catch { error in
-                self.rwPostStreamsIdReplayFailure(error)
-                self.apiProcessError(nil, error: error, caller: "apiPostStreamsIdReplay")
-                
+            self.rwPostStreamsIdReplaySuccess(data)
+        }.catch { error in
+            self.rwPostStreamsIdReplayFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiPostStreamsIdReplay")
         }
-    }
-    
-    func postStreamsIdReplaySuccess(_ data: Data) {
-        
     }
 
     // MARK: POST streams id skip
-    
     func apiPostStreamsIdSkip() {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
         
         httpPostStreamsIdSkip(self.streamID.description).then { data in
-                self.postStreamsIdSkipSuccess(data)
-                self.rwPostStreamsIdSkipSuccess(data)
-            
-            }.catch { error in
-                self.rwPostStreamsIdSkipFailure(error)
-                self.apiProcessError(nil, error: error, caller: "apiPostStreamsIdSkip")
-                
+            self.rwPostStreamsIdSkipSuccess(data)
+        }.catch { error in
+            self.rwPostStreamsIdSkipFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiPostStreamsIdSkip")     
         }
     }
     
-    func postStreamsIdSkipSuccess(_ data: Data) {
-        
-    }
     
     // MARK: POST streams id pause
-    
     func apiPostStreamsIdPause() {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
         
         httpPostStreamsIdPause(self.streamID.description).then { data in
-                self.postStreamsIdPauseSuccess(data)
-                self.rwPostStreamsIdPauseSuccess(data)
-            
-            }.catch { error in
-                self.rwPostStreamsIdPauseFailure(error)
-                self.apiProcessError(nil, error: error, caller: "apiPostStreamsIdPause")
-                
+            self.rwPostStreamsIdPauseSuccess(data)
+        }.catch { error in
+            self.rwPostStreamsIdPauseFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiPostStreamsIdPause")
         }
     }
     
-    func postStreamsIdPauseSuccess(_ data: Data) {
-        
-    }
     
     // MARK: POST streams id resume
-    
     func apiPostStreamsIdResume() {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
         
         httpPostStreamsIdResume(self.streamID.description).then { data in
-            self.postStreamsIdResumeSuccess(data)
             self.rwPostStreamsIdResumeSuccess(data)
         }.catch { error in
             self.rwPostStreamsIdResumeFailure(error)
@@ -453,18 +416,13 @@ extension RWFramework {
         }
     }
     
-    func postStreamsIdResumeSuccess(_ data: Data) {
-        
-    }
     
     // MARK: GET streams id isactive
-    
     func apiGetStreamsIdIsActive() {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
         
         httpGetStreamsIdIsActive(self.streamID.description).then { data in
-            self.getStreamsIdIsActiveSuccess(data)
             self.rwGetStreamsIdIsActiveSuccess(data)
         }.catch { error in
             self.rwGetStreamsIdIsActiveFailure(error)
@@ -472,12 +430,8 @@ extension RWFramework {
         }
     }
     
-    func getStreamsIdIsActiveSuccess(_ data: Data) {
 
-    }
-
-// MARK: POST envelopes
-
+    // MARK: POST envelopes
     func apiPostEnvelopes() -> Promise<Int> {
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
 
@@ -490,15 +444,14 @@ extension RWFramework {
         }
     }
 
-    func postEnvelopesSuccess(_ data: Data, session_id: NSNumber) throws -> Int {
+    private func postEnvelopesSuccess(_ data: Data, session_id: NSNumber) throws -> Int {
         let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
         let dict = json as! [String: AnyObject]
         let envelope_id = dict["id"] as! NSNumber
         return envelope_id.intValue
     }
 
-// MARK: PATCH envelopes id
-
+    // MARK: PATCH envelopes id
     func apiPatchEnvelopesId(_ media: Media) -> Promise<Void> {
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
 
@@ -515,19 +468,20 @@ extension RWFramework {
     // Not needed on client - not implementing for now
     
     
-    public func apiGetAudioTracks(_ dict: [String:String]) -> Promise<Data> {
-        return httpGetAudioTracks(dict).catch { error in
+    public func apiGetAudioTracks(_ dict: [String:String]) -> Promise<[AudioTrack]> {
+        return httpGetAudioTracks(dict).then { data in
+            try AudioTrack.from(data: data)
+        }.catch { error in
             self.apiProcessError(nil, error: error, caller: "apiGetAudioTracks")
-            
         }
     }
 
 // MARK: GET assets PUBLIC
 
-    public func apiGetAssets(_ dict: [String:String]) -> Promise<Data> {
-        return httpGetAssets(dict).then { data -> Data in
+    public func apiGetAssets(_ dict: [String:String]) -> Promise<[Asset]> {
+        return httpGetAssets(dict).then { data -> [Asset] in
             self.rwGetAssetsSuccess(data)
-            return data
+            return try Asset.from(data: data)
         }.catch { error in
             self.rwGetAssetsFailure(error)
             self.apiProcessError(nil, error: error, caller: "apiGetAssets")
@@ -582,14 +536,13 @@ extension RWFramework {
     }
     
     
-    public func apiGetSpeakers(_ dict: [String:String]) -> Promise<Data> {
-        return httpGetSpeakers(dict).then { data -> Data in
+    public func apiGetSpeakers(_ dict: [String:String]) -> Promise<[Speaker]> {
+        return httpGetSpeakers(dict).then { data -> [Speaker] in
             self.rwGetSpeakersSuccess(data)
-            return data
+            return try Speaker.from(data: data)
         }.catch { error in
             self.rwGetSpeakersFailure(error)
             self.apiProcessError(nil, error: error, caller: "apiGetAssets")
-            
         }
     }
 
@@ -629,7 +582,7 @@ extension RWFramework {
 
 // MARK: utilities
 
-    func apiProcessError(_ data: Data?, error: Error, caller: String) {
+    private func apiProcessError(_ data: Data?, error: Error, caller: String) {
         let error = error as NSError
         let detailStringValue = ""
 //        if (data != nil) {

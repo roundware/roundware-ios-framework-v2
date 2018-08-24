@@ -31,8 +31,8 @@ struct AnyFilters: AssetFilter {
         self.filters = filters
     }
     func keep(_ asset: Asset, playlist: Playlist) -> Bool {
-        return filters.reduce(false) { res, it in
-            res || it.keep(asset, playlist: playlist)
+        return filters.contains { it in
+            it.keep(asset, playlist: playlist)
         }
     }
 }
@@ -43,8 +43,8 @@ struct AllFilters: AssetFilter {
         self.filters = filters
     }
     func keep(_ asset: Asset, playlist: Playlist) -> Bool {
-        return filters.reduce(true) { res, it in
-            res && it.keep(asset, playlist: playlist)
+        return !filters.contains { it in
+            !it.keep(asset, playlist: playlist)
         }
     }
 }
@@ -93,10 +93,12 @@ class AngleFilter: AssetFilter {
                 let upper = opts.heading + opts.angularWidth
                 
                 if (lower < 0) {
+                    // wedge spans from just above zero to below it.
                     // Check between lower...360 and 0...upper
                     return ((360 + lower)...360).contains(angle)
                         || (0...upper).contains(angle)
                 } else if (upper >= 360) {
+                    // wedge spans from just below 360 to above it.
                     // Check between lower...360 and 0...upper
                     return (lower...360).contains(angle)
                         || (0...(upper - 360)).contains(angle)

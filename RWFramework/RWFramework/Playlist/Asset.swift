@@ -9,14 +9,14 @@
 import Foundation
 import CoreLocation
 
-struct Asset {
+public struct Asset {
     let id: Int
     let location: CLLocation?
     let file: String
     let length: Int
     let timestamp: Date
     
-    static func fromJson(_ data: Data) throws -> [Asset] {
+    static func from(data: Data) throws -> [Asset] {
         let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
         
         let dateFormatter = DateFormatter()

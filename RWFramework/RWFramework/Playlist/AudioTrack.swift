@@ -13,8 +13,7 @@ import StreamingKit
 /// Assets are provided by the Playlist, so they must match any geometric parameters.
 /// There can be an arbitrary number of audio tracks playing at once
 /// When one needs an asset, it simply grabs the next available matching one from the Playlist.
-class AudioTrack: NSObject, STKAudioPlayerDelegate {
-    let playlist: Playlist
+public class AudioTrack: NSObject, STKAudioPlayerDelegate {
     let id: Int
     let volume: ClosedRange<Float>
     let duration: ClosedRange<Float>
@@ -27,6 +26,7 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
         opts.enableVolumeMixer = true
         return opts
     }())
+    var playlist: Playlist? = nil
     var currentAsset: Asset? = nil
     private var nextAsset: Asset? = nil
     private var fadeTimer: Timer? = nil
@@ -34,7 +34,6 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
     private var fadeOutTimer: Timer? = nil
     
     init(
-        playlist: Playlist,
         id: Int,
         volume: ClosedRange<Float>,
         duration: ClosedRange<Float>,
@@ -43,7 +42,6 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
         fadeOutTime: ClosedRange<Float>,
         repeatRecordings: Bool
     ) {
-        self.playlist = playlist
         self.id = id
         self.volume = volume
         self.duration = duration
@@ -54,14 +52,13 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
     }
     
     
-    static func fromJson(_ pl: Playlist, _ data: Data) throws -> [AudioTrack] {
+    static func from(data: Data) throws -> [AudioTrack] {
         let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
         
         let items = json as! [AnyObject]
         return items.map { obj in
             let it = obj as! [String: AnyObject]
             return AudioTrack(
-                playlist: pl,
                 id: it["id"] as! Int,
                 volume: (it["minvolume"] as! Float)...(it["maxvolume"] as! Float),
                 duration: (it["minduration"] as! Float)...(it["maxduration"] as! Float),
@@ -74,24 +71,24 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
     }
     
     
-    func audioPlayer(_ audioPlayer: STKAudioPlayer, didStartPlayingQueueItemId queueItemId: NSObject) {
+    public func audioPlayer(_ audioPlayer: STKAudioPlayer, didStartPlayingQueueItemId queueItemId: NSObject) {
         
     }
     
-    func audioPlayer(_ audioPlayer: STKAudioPlayer, didFinishBufferingSourceWithQueueItemId queueItemId: NSObject) {
+    public func audioPlayer(_ audioPlayer: STKAudioPlayer, didFinishBufferingSourceWithQueueItemId queueItemId: NSObject) {
         
     }
     
-    func audioPlayer(_ audioPlayer: STKAudioPlayer, stateChanged state: STKAudioPlayerState, previousState: STKAudioPlayerState) {
+    public func audioPlayer(_ audioPlayer: STKAudioPlayer, stateChanged state: STKAudioPlayerState, previousState: STKAudioPlayerState) {
         
     }
     
-    func audioPlayer(_ audioPlayer: STKAudioPlayer, didFinishPlayingQueueItemId queueItemId: NSObject, with stopReason: STKAudioPlayerStopReason, andProgress progress: Double, andDuration duration: Double) {
+    public func audioPlayer(_ audioPlayer: STKAudioPlayer, didFinishPlayingQueueItemId queueItemId: NSObject, with stopReason: STKAudioPlayerStopReason, andProgress progress: Double, andDuration duration: Double) {
         currentAsset = nextAsset
         holdSilence()
     }
     
-    func audioPlayer(_ audioPlayer: STKAudioPlayer, unexpectedError errorCode: STKAudioPlayerErrorCode) {
+    public func audioPlayer(_ audioPlayer: STKAudioPlayer, unexpectedError errorCode: STKAudioPlayerErrorCode) {
         
     }
     
@@ -188,7 +185,7 @@ class AudioTrack: NSObject, STKAudioPlayerDelegate {
     /// Queues the next asset to play
     /// If there's nothing playing, immediately plays one and queues another.
     private func queueNext() {
-        if let next = playlist.next(forTrack: self) {
+        if let next = playlist!.next(forTrack: self) {
             player.queue(next.file)
             if (currentAsset == nil) {
                 currentAsset = next

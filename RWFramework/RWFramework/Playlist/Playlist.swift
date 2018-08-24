@@ -87,8 +87,8 @@ class Playlist {
         rw.apiGetSpeakers([
             "project_id": projectId.stringValue,
             "activeyn": "true"
-        ]).then { data in
-            self.speakers = try Speaker.fromJson(data)
+        ]).then { speakers in
+            self.speakers = speakers
             self.playNearestSpeaker()
         }.catch { err in }
     }
@@ -144,8 +144,12 @@ class Playlist {
             rw.apiGetAudioTracks([
                 "project_id": projectId.stringValue
             ]).then { data in
-                self.tracks = try AudioTrack.fromJson(self, data)
-                self.tracks.forEach { it in it.playNext() }
+                self.tracks = data
+                self.tracks.forEach { it in
+                    // TODO: Try to remove playlist dependency. Maybe pass into method?
+                    it.playlist = self
+                    it.playNext()
+                }
             }.catch { err in }
         } else {
             self.tracks.forEach { it in
@@ -176,9 +180,9 @@ class Playlist {
             opts["created__gte"] = dateFormatter.string(from: date)
         }
         
-        return rw.apiGetAssets(opts).then { data -> Void in
+        return rw.apiGetAssets(opts).then { data -> () in
             self.lastUpdate = Date()
-            self.allAssets.append(contentsOf: try Asset.fromJson(data))
+            self.allAssets.append(contentsOf: data)
             print("all assets: " + self.allAssets.description)
         }.catch { err in }
     }

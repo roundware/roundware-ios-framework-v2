@@ -10,7 +10,7 @@ import Foundation
 import CoreLocation
 import StreamingKit
 
-struct Speaker {
+public struct Speaker {
     let id: Int
     let volume: ClosedRange<Float>
     let url: String
@@ -97,7 +97,7 @@ struct Speaker {
         }
     }
     
-    static func fromJson(_ data: Data) throws -> [Speaker] {
+    static func from(data: Data) throws -> [Speaker] {
         let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
         
         let dateFormatter = DateFormatter()
