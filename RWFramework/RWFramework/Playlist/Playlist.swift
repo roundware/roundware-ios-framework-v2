@@ -259,7 +259,7 @@ class Playlist {
 }
 
 
-public extension CLLocation {
+extension CLLocation {
     func bearingToLocationRadian(_ destinationLocation: CLLocation) -> Double {
         
         let lat1 = self.coordinate.latitude.degreesToRadians

@@ -328,7 +328,6 @@ extension RWFramework {
             longitude: longitude,
             streamPatchOptions: streamPatchOptions
         ).then { data in
-            self.patchStreamsIdSuccess(data)
             self.rwPatchStreamsIdSuccess(data)
         }.catch { error in 
             self.rwPatchStreamsIdFailure(error)
