@@ -12,21 +12,39 @@ import Promises
 
 extension RWFramework {
 
-// MARK: POST users
-    func apiPostUsers(_ device_id: String, client_type: String, client_system: String) {
+    func apiStartForClientMixing(_ device_id: String, client_type: String, client_system: String) -> Promise<Data> {
+        return apiPostUsers(device_id, client_type: client_type, client_system: client_system)
+            // start a session
+            .then { _ in self.apiPostSessions() }
+            .then { data in try self.setupClientSession(data) }
+    }
+    
+    func apiStartUp(_ device_id: String, client_type: String, client_system: String) {
+        // Create new user for the session and save its info
+        apiPostUsers(device_id, client_type: client_type, client_system: client_system)
+            // start a session
+            .then { _ in self.apiPostSessions() }
+            // initialize all info associated with a session (UI config, tags, etc.)
+            .then { data in try self.setupSession(data) }
+    }
+
+    /// MARK: POST users
+    func apiPostUsers(_ device_id: String, client_type: String, client_system: String) -> Promise<Data> {
         let token = RWFrameworkConfig.getConfigValueAsString("token", group: RWFrameworkConfig.ConfigGroup.client)
         
         if (token.lengthOfBytes(using: String.Encoding.utf8) > 0) {
-            postUsersSucceeded = true
-            apiPostSessions()
+            // postUsersSucceeded = true
+            return apiPostSessions()
         } else {
-            httpPostUsers(
+            return httpPostUsers(
                 device_id,
                 client_type: client_type,
                 client_system: client_system
-            ).then { data in
-                self.postUsersSuccess(data)
+            ).then { data -> Data in
+                // save our user info for future operations
+                try self.saveUserInfo(data)
                 self.rwPostUsersSuccess(data)
+                return data
             }.catch { error in
                 self.rwPostUsersFailure(error)
                 self.apiProcessError(nil, error: error, caller: "apiPostUsers")
@@ -34,32 +52,25 @@ extension RWFramework {
         }
     }
 
-    private func postUsersSuccess(_ data: Data) {
+    private func saveUserInfo(_ data: Data) throws {
         // http://stackoverflow.com/questions/24671249/parse-json-in-swift-anyobject-type/27206145#27206145
-        do {
-            let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
+        let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
 
-            if let dict = json as? [String:AnyObject] {
-                if let username = dict["username"] as? String {
-                    RWFrameworkConfig.setConfigValue("username", value: username, group: RWFrameworkConfig.ConfigGroup.client)
-                } // TODO: Handle missing value
-                if let token = dict["token"] as? String {
-                    RWFrameworkConfig.setConfigValue("token", value: token, group: RWFrameworkConfig.ConfigGroup.client)
-                } // TODO: Handle missing value
-            }
-
-            postUsersSucceeded = true
-
-            apiPostSessions()
-        } catch {
-            print(error)
+        if let dict = json as? [String:AnyObject] {
+            if let username = dict["username"] as? String {
+                RWFrameworkConfig.setConfigValue("username", value: username, group: RWFrameworkConfig.ConfigGroup.client)
+            } // TODO: Handle missing value
+            if let token = dict["token"] as? String {
+                RWFrameworkConfig.setConfigValue("token", value: token, group: RWFrameworkConfig.ConfigGroup.client)
+            } // TODO: Handle missing value
         }
+
+        // postUsersSucceeded = true
     }
 
 
-// MARK: POST sessions
-
-    func apiPostSessions() {
+    /// MARK: POST sessions
+    func apiPostSessions() -> Promise<Data> {
         let project_id = RWFrameworkConfig.getConfigValueAsNumber("project_id")
         let client_system = clientSystem()
         let language = preferredLanguage()
@@ -68,194 +79,182 @@ extension RWFramework {
         dateFormatter.dateFormat = "ZZZ"
         let timezone = dateFormatter.string(from: Date())
 
-        httpPostSessions(
+        return httpPostSessions(
             project_id,
             timezone: timezone,
             client_system: client_system,
             language: language
-        ).then { data in
-            self.postSessionsSuccess(data)
+        ).then { data -> Data in
             self.rwPostSessionsSuccess(data)
+            return data
         }.catch { error in
             self.rwPostSessionsFailure(error)
             self.apiProcessError(nil, error: error, caller: "apiPostSessions")
         }
     }
 
-    private func postSessionsSuccess(_ data: Data) {
-        do {
-            let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
+    private func setupClientSession(_ data: Data) throws {
+        let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
 
-            var session_id : NSNumber = 0
-            if let dict = json as? [String: AnyObject] {
-                if let _session_id = dict["id"] as? NSNumber {
-                    session_id = _session_id
-                    RWFrameworkConfig.setConfigValue("session_id", value: session_id, group: RWFrameworkConfig.ConfigGroup.client)
-                } // TODO: Handle missing value
-            }
-
-            postSessionsSucceeded = true
-
-            let project_id = RWFrameworkConfig.getConfigValueAsNumber("project_id")
-            apiGetProjectsId(project_id, session_id: session_id)
+        var session_id : NSNumber = 0
+        if let dict = json as? [String: AnyObject] {
+            if let _session_id = dict["id"] as? NSNumber {
+                session_id = _session_id
+                RWFrameworkConfig.setConfigValue("session_id", value: session_id, group: RWFrameworkConfig.ConfigGroup.client)
+            } // TODO: Handle missing value
         }
-        catch {
-            print(error)
+
+        let project_id = RWFrameworkConfig.getConfigValueAsNumber("project_id")
+        self.apiGetProjectsIdTags(project_id, session_id: session_id)
+    }
+
+    private func setupSession(_ data: Data) throws {
+        let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
+
+        var session_id : NSNumber = 0
+        if let dict = json as? [String: AnyObject] {
+            if let _session_id = dict["id"] as? NSNumber {
+                session_id = _session_id
+                RWFrameworkConfig.setConfigValue("session_id", value: session_id, group: RWFrameworkConfig.ConfigGroup.client)
+            } // TODO: Handle missing value
         }
+
+        postSessionsSucceeded = true
+
+        let project_id = RWFrameworkConfig.getConfigValueAsNumber("project_id")
+        
+        apiGetProjectsId(project_id, session_id: session_id)
+            .then { data in try self.setupStream(data, project_id: project_id, session_id: session_id) }
+            .then { self.apiGetProjectsIdTags(project_id, session_id: session_id) }
+            .then { _ in self.apiGetUIConfig(project_id, session_id: session_id) }
+            .then { _ in self.apiGetProjectsIdUIGroups(project_id, session_id: session_id) }
+            .then { _ in self.apiGetTagCategories() }
     }
 
 
-// MARK: GET projects id
-
-    func apiGetProjectsId(_ project_id: NSNumber, session_id: NSNumber) {
-        httpGetProjectsId(project_id, session_id: session_id).then { data in
-            self.getProjectsIdSuccess(data, project_id: project_id, session_id: session_id)
+    /// MARK: GET projects id
+    func apiGetProjectsId(_ project_id: NSNumber, session_id: NSNumber) -> Promise<Data> {
+        return httpGetProjectsId(project_id, session_id: session_id).then { data -> Data in
             self.rwGetProjectsIdSuccess(data)
+            return data
         }.catch { error in
             self.rwGetProjectsIdFailure(error)
             self.apiProcessError(nil, error: error, caller: "apiGetProjectsId")
         }
     }
 
-    private func getProjectsIdSuccess(_ data: Data, project_id: NSNumber, session_id: NSNumber) {
-        do {
-            let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
+    private func setupStream(_ data: Data, project_id: NSNumber, session_id: NSNumber) throws {
+        let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
 
-            if let dict = json as? [String: AnyObject] {
-                RWFrameworkConfig.setConfigDataAsDictionary(data, key: "project")
+        if let dict = json as? [String: AnyObject] {
+            RWFrameworkConfig.setConfigDataAsDictionary(data, key: "project")
 
-                // TODO: where is this going to come from?
-                func configDisplayStartupMessage() {
-                    let startupMessage = RWFrameworkConfig.getConfigValueAsString("startup_message", group: RWFrameworkConfig.ConfigGroup.notifications)
-                    if (startupMessage.lengthOfBytes(using: String.Encoding.utf8) > 0) {
-                        self.rwUpdateStatus(startupMessage)
-                    }
+            // TODO: where is this going to come from?
+            func configDisplayStartupMessage() {
+                let startupMessage = RWFrameworkConfig.getConfigValueAsString("startup_message", group: RWFrameworkConfig.ConfigGroup.notifications)
+                if (startupMessage.lengthOfBytes(using: String.Encoding.utf8) > 0) {
+                    self.rwUpdateStatus(startupMessage)
                 }
-                configDisplayStartupMessage()
-
-                if letFrameworkRequestWhenInUseAuthorizationForLocation {
-                    _ = requestWhenInUseAuthorizationForLocation()
-                }
-
-                let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
-                if (listen_enabled) {
-                    let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
-                    if (!geo_listen_enabled) {
-                        apiPostStreams()
-                    }
-                    startHeartbeatTimer()
-                }
-
-                let speak_enabled = RWFrameworkConfig.getConfigValueAsBool("speak_enabled")
-                if (speak_enabled) {
-                    startAudioTimer()
-                    startUploadTimer()
-                    rwReadyToRecord()
-                }
-
-                getProjectsIdSucceeded = true
-                
-                apiGetProjectsIdTags(project_id, session_id: session_id)
-                
-                // a simpler alternative to apiGetProjectsIdTags and it's subsequent calls but needs
-                // to be properly vetted before turning off the more complex calls
-                apiGetUIConfig(project_id, session_id: session_id)
             }
-        }
-        catch {
-            print(error)
+            configDisplayStartupMessage()
+
+            if letFrameworkRequestWhenInUseAuthorizationForLocation {
+                _ = requestWhenInUseAuthorizationForLocation()
+            }
+
+            let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
+            if (listen_enabled) {
+                let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
+                if (!geo_listen_enabled) {
+                    apiPostStreams()
+                }
+                startHeartbeatTimer()
+            }
+
+            let speak_enabled = RWFrameworkConfig.getConfigValueAsBool("speak_enabled")
+            if (speak_enabled) {
+                startAudioTimer()
+                startUploadTimer()
+                rwReadyToRecord()
+            }
+
+            // getProjectsIdSucceeded = true
+            
+//                apiGetProjectsIdTags(project_id, session_id: session_id)
+            
+            // a simpler alternative to apiGetProjectsIdTags and it's subsequent calls but needs
+            // to be properly vetted before turning off the more complex calls
+//                apiGetUIConfig(project_id, session_id: session_id)
         }
     }
 
-    // MARK: GET ui config
-    
+    /// MARK: GET ui config
     func apiGetUIConfig(_ project_id: NSNumber, session_id: NSNumber) {
         httpGetUIConfig(project_id, session_id: session_id).then { data in
-            self.getUIConfigSuccess(data, project_id: project_id)
+            // Save data to UserDefaults for later access
+            UserDefaults.standard.set(data, forKey: "uiconfig")
+            self.getUIConfigSucceeded = true
+            
             self.rwGetUIConfigSuccess(data)
         }.catch { error in
             self.rwGetUIConfigFailure(error)
             self.apiProcessError(nil, error: error, caller: "apiGetUIConfig")
         }
     }
-    
-    private func getUIConfigSuccess(_ data: Data, project_id: NSNumber) {
-        // Save data to UserDefaults for later access
-        UserDefaults.standard.set(data, forKey: "uiconfig")
-        
-        getUIConfigSucceeded = true
-    }
 
-// MARK: GET projects id tags
 
-    func apiGetProjectsIdTags(_ project_id: NSNumber, session_id: NSNumber) {
-        httpGetProjectsIdTags(project_id, session_id: session_id).then { data in
-            self.getProjectsIdTagsSuccess(data, project_id: project_id, session_id: session_id)
-            self.rwGetProjectsIdTagsSuccess(data)
+    /// MARK: GET projects id tags
+    func apiGetProjectsIdTags(_ project_id: NSNumber, session_id: NSNumber) -> Promise<Data> {
+        return httpGetProjectsIdTags(project_id, session_id: session_id).then { data -> Data in
+            // Save data to UserDefaults for later access
+            UserDefaults.standard.set(data, forKey: "tags")
+            self.getProjectsIdTagsSucceeded = true
             
+            self.rwGetProjectsIdTagsSuccess(data)
+            return data
         }.catch { error in
             self.rwGetProjectsIdTagsFailure(error)
             self.apiProcessError(nil, error: error, caller: "apiGetProjectsIdTags")
-                
         }
     }
-    
-    private func getProjectsIdTagsSuccess(_ data: Data, project_id: NSNumber, session_id: NSNumber) {
-        // Save data to UserDefaults for later access
-        UserDefaults.standard.set(data, forKey: "tags")
-        
-        getProjectsIdTagsSucceeded = true
-        apiGetProjectsIdUIGroups(project_id, session_id: session_id)
-    }
 
-// MARK: GET projects id uigroups
-    
-    func apiGetProjectsIdUIGroups(_ project_id: NSNumber, session_id: NSNumber) {
-        httpGetProjectsIdUIGroups(project_id, session_id: session_id).then { data in
-            self.getProjectsIdUIGroupsSuccess(data, project_id: project_id)
+    /// MARK: GET projects id uigroups
+    func apiGetProjectsIdUIGroups(_ project_id: NSNumber, session_id: NSNumber) -> Promise<Data> {
+        return httpGetProjectsIdUIGroups(project_id, session_id: session_id).then { data -> Data in
+            // Save data to UserDefaults for later access
+            UserDefaults.standard.set(data, forKey: "ui_groups")
+            
+            let reset_tag_defaults_on_startup = RWFrameworkConfig.getConfigValueAsBool("reset_tag_defaults_on_startup")
+            self.println("TODO: honor reset_tag_defaults_on_startup = \(reset_tag_defaults_on_startup.description)")
+            
+            self.getProjectsIdUIGroupsSucceeded = true
+            
             self.rwGetProjectsIdUIGroupsSuccess(data)
+            return data
         }.catch { error in
             self.rwGetProjectsIdUIGroupsFailure(error)
             self.apiProcessError(nil, error: error, caller: "apiGetProjectsIdUIGroups")
         }
     }
     
-    private func getProjectsIdUIGroupsSuccess(_ data: Data, project_id: NSNumber) {
-        // Save data to UserDefaults for later access
-        UserDefaults.standard.set(data, forKey: "ui_groups")
-        
-        let reset_tag_defaults_on_startup = RWFrameworkConfig.getConfigValueAsBool("reset_tag_defaults_on_startup")
-        println("TODO: honor reset_tag_defaults_on_startup = \(reset_tag_defaults_on_startup.description)")
-
-        getProjectsIdUIGroupsSucceeded = true
-        apiGetTagCategories()
-    }
-    
-// MARK: GET tagcategories
-    
-    func apiGetTagCategories() {
-        httpGetTagCategories().then { data in
-            self.getTagCategoriesSuccess(data)
+    /// MARK: GET tagcategories
+    func apiGetTagCategories() -> Promise<Data> {
+        return httpGetTagCategories().then { data -> Data in
+            UserDefaults.standard.set(data, forKey: "tagcategories")
+            self.getTagCategoriesSucceeded = true
             self.rwGetTagCategoriesSuccess(data)
+            return data
         }.catch { error in
             self.rwGetTagCategoriesFailure(error)
             self.apiProcessError(nil, error: error, caller: "apiGetTagCategories")
         }
     }
-    
-    private func getTagCategoriesSuccess(_ data: Data) {
-        // Save data to UserDefaults for later access
-        UserDefaults.standard.set(data, forKey: "tagcategories")
-        
-        getTagCategoriesSucceeded = true
-    }
 
-// MARK: POST streams
-
+    /// MARK: POST streams
     func apiPostStreams(at location: CLLocation? = nil) {
-        if (requestStreamInProgress == true) { return }
-        if (requestStreamSucceeded == true) { return }
-        if (postSessionsSucceeded == false) { return }
+        if requestStreamInProgress
+            || requestStreamSucceeded
+            || !postSessionsSucceeded { return }
 
         requestStreamInProgress = true
         lastRecordedLocation = locationManager.location!
@@ -271,7 +270,7 @@ extension RWFramework {
         httpPostStreams(session_id, latitude: lat, longitude: lng).always {
             self.requestStreamInProgress = false
         }.then { data -> Data in
-            self.postStreamsSuccess(data, session_id: session_id)
+            try self.postStreamsSuccess(data, session_id: session_id)
             self.rwPostStreamsSuccess(data)
             return data
         }.catch { error in 
@@ -280,38 +279,32 @@ extension RWFramework {
         }
     }
 
-    private func postStreamsSuccess(_ data: Data, session_id: NSNumber) {
-        do {
+    private func postStreamsSuccess(_ data: Data, session_id: NSNumber) throws {
+        let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
 
-            let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
-
-            if let dict = json as? [String: AnyObject] {
-                if let stream_url = dict["stream_url"] as? String {
-                    self.streamURL = URL(string: stream_url)! as NSURL as URL
-                    if let stream_id = dict["stream_id"] as? NSNumber {
-                        self.streamID = stream_id.intValue
-                        self.createPlayer()
-                        self.requestStreamSucceeded = true
-                        // pause stream on server so that assets aren't added until user is actually listening
-                        apiPostStreamsIdPause()
-                    }
+        if let dict = json as? [String: AnyObject] {
+            if let stream_url = dict["stream_url"] as? String {
+                self.streamURL = URL(string: stream_url)! as NSURL as URL
+                if let stream_id = dict["stream_id"] as? NSNumber {
+                    self.streamID = stream_id.intValue
+                    self.createPlayer()
+                    self.requestStreamSucceeded = true
+                    // pause stream on server so that assets aren't added until user is actually listening
+                    apiPostStreamsIdPause()
                 }
-
-                // TODO: can we still expect this here?
-                func requestStreamDisplayUserMessage(_ userMessage: String?) {
-                    if (userMessage != nil && userMessage!.lengthOfBytes(using: String.Encoding.utf8) > 0) {
-                        self.rwUpdateStatus(userMessage!, title: "Out of Range!")
-                    }
-                }
-                requestStreamDisplayUserMessage(dict["user_message"] as? String)
             }
-        }
-        catch {
-            print(error)
+
+            // TODO: can we still expect this here?
+            func requestStreamDisplayUserMessage(_ userMessage: String?) {
+                if (userMessage != nil && userMessage!.lengthOfBytes(using: String.Encoding.utf8) > 0) {
+                    self.rwUpdateStatus(userMessage!, title: "Out of Range!")
+                }
+            }
+            requestStreamDisplayUserMessage(dict["user_message"] as? String)
         }
     }
 
-// MARK: PATCH streams id
+    /// MARK: PATCH streams id
     public func apiPatchStreamsIdWithLocation(
         _ newLocation: CLLocation,
         tagIds: String? = nil,
@@ -347,8 +340,7 @@ extension RWFramework {
         }
     }
 
-// MARK: POST streams id heartbeat
-
+    /// MARK: POST streams id heartbeat
     func apiPostStreamsIdHeartbeat() {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
@@ -361,7 +353,7 @@ extension RWFramework {
         }
     }
 
-    // MARK: POST streams id replay
+    /// MARK: POST streams id replay
     func apiPostStreamsIdReplay() {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
@@ -374,7 +366,7 @@ extension RWFramework {
         }
     }
 
-    // MARK: POST streams id skip
+    /// MARK: POST streams id skip
     func apiPostStreamsIdSkip() {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
@@ -388,7 +380,7 @@ extension RWFramework {
     }
     
     
-    // MARK: POST streams id pause
+    /// MARK: POST streams id pause
     func apiPostStreamsIdPause() {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
@@ -402,7 +394,7 @@ extension RWFramework {
     }
     
     
-    // MARK: POST streams id resume
+    /// MARK: POST streams id resume
     func apiPostStreamsIdResume() {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
@@ -416,7 +408,7 @@ extension RWFramework {
     }
     
     
-    // MARK: GET streams id isactive
+    /// MARK: GET streams id isactive
     func apiGetStreamsIdIsActive() {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
@@ -430,27 +422,25 @@ extension RWFramework {
     }
     
 
-    // MARK: POST envelopes
+    /// MARK: POST envelopes
     func apiPostEnvelopes() -> Promise<Int> {
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
 
         return httpPostEnvelopes(session_id).then { data -> Int in
             self.rwPostEnvelopesSuccess(data)
-            return try self.postEnvelopesSuccess(data, session_id: session_id)
+            
+            // return the id of the created envelope
+            let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
+            let dict = json as! [String: AnyObject]
+            let envelope_id = dict["id"] as! NSNumber
+            return envelope_id.intValue
         }.catch { error in
             self.rwPostEnvelopesFailure(error)
             self.apiProcessError(nil, error: error, caller: "apiPostEnvelopes")
         }
     }
 
-    private func postEnvelopesSuccess(_ data: Data, session_id: NSNumber) throws -> Int {
-        let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
-        let dict = json as! [String: AnyObject]
-        let envelope_id = dict["id"] as! NSNumber
-        return envelope_id.intValue
-    }
-
-    // MARK: PATCH envelopes id
+    /// MARK: PATCH envelopes id
     func apiPatchEnvelopesId(_ media: Media) -> Promise<Void> {
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
 
@@ -475,8 +465,7 @@ extension RWFramework {
         }
     }
 
-// MARK: GET assets PUBLIC
-
+    /// MARK: GET assets PUBLIC
     public func apiGetAssets(_ dict: [String:String]) -> Promise<[Asset]> {
         return httpGetAssets(dict).then { data -> [Asset] in
             self.rwGetAssetsSuccess(data)
@@ -495,8 +484,7 @@ extension RWFramework {
         }
     }
 
-// MARK: GET assets id PUBLIC
-
+    /// MARK: GET assets id PUBLIC
     public func apiGetAssetsId(_ asset_id: String) -> Promise<Data> {
         return httpGetAssetsId(asset_id).then { data -> Data in
             self.rwGetAssetsIdSuccess(data)
@@ -507,8 +495,7 @@ extension RWFramework {
         }
     }
 
-// MARK: POST assets id votes
-
+    /// MARK: POST assets id votes
     public func apiPostAssetsIdVotes(_ asset_id: String, vote_type: String, value: NSNumber = 0) -> Promise<Data> {
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
 
@@ -522,8 +509,7 @@ extension RWFramework {
         }
     }
 
-// MARK: GET assets id votes
-
+    /// MARK: GET assets id votes
     public func apiGetAssetsIdVotes(_ asset_id: String) -> Promise<Data> {
         return httpGetAssetsIdVotes(asset_id).then { data -> Data in
             self.rwGetAssetsIdVotesSuccess(data)
@@ -533,7 +519,6 @@ extension RWFramework {
             self.apiProcessError(nil, error: error, caller: "apiGetAssetsIdVotes")
         }
     }
-    
     
     public func apiGetSpeakers(_ dict: [String:String]) -> Promise<[Speaker]> {
         return httpGetSpeakers(dict).then { data -> [Speaker] in
@@ -545,8 +530,7 @@ extension RWFramework {
         }
     }
 
-// MARK: POST events
-
+    /// MARK: POST events
     func apiPostEvents(_ event_type: String, data: String?) -> Promise<Data> {
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
         let latitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.latitude)
@@ -567,19 +551,16 @@ extension RWFramework {
         }
     }
 
-// MARK: GET events id
-
+    // MARK: GET events id
     // Not needed on client - not implementing for now
 
-// MARK: GET listenevents
-
+    // MARK: GET listenevents
     // Not needed on client - not implementing for now
 
-// MARK: GET listenevents id
-
+    // MARK: GET listenevents id
     // Not needed on client - not implementing for now
 
-// MARK: utilities
+    // MARK: utilities
 
     private func apiProcessError(_ data: Data?, error: Error, caller: String) {
         let error = error as NSError

@@ -9,12 +9,29 @@
 import Foundation
 import CoreLocation
 
-public struct Asset {
+public class Asset {
     let id: Int
     let location: CLLocation?
     let file: String
     let length: Int
     let timestamp: Date
+    let tags: [Int]
+
+    init(
+        id: Int,
+        location: CLLocation?,
+        file: String,
+        length: Int,
+        timestamp: Date,
+        tags: [Int]
+    ) {
+        self.id = id
+        self.location = location
+        self.file = file
+        self.length = length
+        self.timestamp = timestamp
+        self.tags = tags
+    }
     
     static func from(data: Data) throws -> [Asset] {
         let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
@@ -40,18 +57,31 @@ public struct Asset {
                 location: location,
                 file: it["file"] as! String,
                 length: it["audio_length_in_seconds"] as! Int,
-                timestamp: dateFormatter.date(from: it["created"] as! String)!
+                timestamp: dateFormatter.date(from: it["created"] as! String)!,
+                tags: it["tag_ids"] as! [Int]
             )
         }
     }
 }
 
 
-public struct TimedAsset {
+public class TimedAsset {
     let id: Int
     let assetId: Int
     let start: Int
     let end: Int
+
+    init(
+        id: Int,
+        assetId: Int,
+        start: Int,
+        end: Int
+    ) {
+        self.id = id
+        self.assetId = assetId
+        self.start = start
+        self.end = end
+    }
 
     static func from(json data: Data) throws -> [TimedAsset] {
         let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)

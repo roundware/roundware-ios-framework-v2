@@ -33,8 +33,11 @@ private lazy var __once: () = { () -> Void in
     var streamOptions = [String: Any]()
     var letFrameworkRequestWhenInUseAuthorizationForLocation = true
     let playlist = Playlist(filters: [
-        AnyFilters([
-            AllFilters([LocationFilter(), AngleFilter()]),
+        // assets must have a matching tag
+        TagsFilter(),
+        // and are either geographically or temporally nearby.
+        AnyAssetFilters([
+            AllAssetFilters([LocationFilter(), AngleFilter()]),
             TimedAssetFilter()
         ])
     ], trackFilters: [
@@ -73,9 +76,9 @@ private lazy var __once: () = { () -> Void in
     }
 
     // Flags
-    var postUsersSucceeded = false
+    // var postUsersSucceeded = false
     var postSessionsSucceeded = false
-    var getProjectsIdSucceeded = false
+    // var getProjectsIdSucceeded = false
     var getProjectsIdTagsSucceeded = false {
         didSet {
             if getProjectsIdTagsSucceeded && requestStreamSucceeded {
@@ -94,7 +97,7 @@ private lazy var __once: () = { () -> Void in
             }
         }
     }
-    var timeToSendTheListenTagsOnceToken: Int = 0
+    // var timeToSendTheListenTagsOnceToken: Int = 0
     var timeToSendTheListenTags = false {
         didSet {
             if timeToSendTheListenTags {
@@ -154,7 +157,8 @@ private lazy var __once: () = { () -> Void in
         self.letFrameworkRequestWhenInUseAuthorizationForLocation = letFrameworkRequestWhenInUseAuthorizationForLocation
 
         println("start")
-        apiPostUsers(UIDevice().identifierForVendor!.uuidString, client_type: UIDevice().model, client_system: clientSystem())
+        // apiStartUp(UIDevice().identifierForVendor!.uuidString, client_type: UIDevice().model, client_system: clientSystem())
+        self.playlist.start()
 
         preflightRecording()
     }

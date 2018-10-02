@@ -62,13 +62,16 @@ class Playlist {
     private(set) var startTime = Date()
 
     // assets and filters
-    private var playlistFilters: [AssetFilter]
+
+    private var playlistFilter: AssetFilter
     private var trackFilters: [TrackFilter]
     private var allAssets = [Asset]()
     private var filteredAssets = [Asset]()
     private var currentAsset: Asset? = nil
     /// Map asset ID to data like last listen time.
     private(set) var userAssetData = [Int: UserAssetData]()
+
+    private(set) var listenTags = [Int]()
     
     // audio tracks, background and foreground
     private(set) var speakers = [Speaker]()
@@ -76,10 +79,11 @@ class Playlist {
     
 
     init(filters: [AssetFilter], trackFilters: [TrackFilter]) {
-        self.playlistFilters = filters
+        self.playlistFilter = AllAssetFilters(filters)
         self.trackFilters = trackFilters
     }
     
+    /// Prepares all the speakers for this project.
     private func updateSpeakers() {
         let rw = RWFramework.sharedInstance
         let projectId = RWFrameworkConfig.getConfigValueAsNumber("project_id")
@@ -89,12 +93,13 @@ class Playlist {
             "activeyn": "true"
         ]).then { speakers in
             self.speakers = speakers
-            self.playNearestSpeaker()
+            self.updateSpeakerVolumes()
         }.catch { err in }
     }
     
-    private func playNearestSpeaker() {
-        // TODO: Blend all speakers that contain our location.
+    /// Update the volumes of all speakers depending
+    /// our proximity to each one.
+    private func updateSpeakerVolumes() {
         if let params = self.currentParams {
             self.speakers.forEach { it in
                 it.updateVolume(at: params.location)
@@ -102,11 +107,13 @@ class Playlist {
         }
     }
     
+    /// Picks the next-up asset to play on the given track.
+    /// Applies all the playlist-level and track-level filters to make the decision.
     func next(forTrack track: AudioTrack) -> Asset? {
         print("asset meta: " + userAssetData.description)
         let filteredAssets = self.filteredAssets.filter { asset in
             !self.trackFilters.contains { filter in
-                !filter.keep(asset, playlist: self, track: track)
+                filter.keep(asset, playlist: self, track: track) < 0
             }
         }
         var next = filteredAssets.first { it in
@@ -135,7 +142,7 @@ class Playlist {
         return next
     }
     
-    
+    /// Grab the list of `AudioTrack`s for the current project.
     private func updateTracks() {
         if (self.tracks.isEmpty) {
             let rw = RWFramework.sharedInstance
@@ -162,6 +169,9 @@ class Playlist {
         }
     }
     
+    /// Retrieve audio assets stored on the server.
+    /// At the start of a session, gets all the assets.
+    /// After that, only adds the assets uploaded since the last call of this function.
     private func updateAssets() -> Promise<Void> {
         let rw = RWFramework.sharedInstance
         let projectId = RWFrameworkConfig.getConfigValueAsNumber("project_id")
@@ -192,39 +202,44 @@ class Playlist {
         currentParams = opts
         let prevFiltered = filteredAssets
         
-        playNearestSpeaker()
+        updateSpeakerVolumes()
         
         // TODO: Time dependent assets.
-        filteredAssets = allAssets.filter { item in
-            !self.playlistFilters.contains { filter in
-                !filter.keep(item, playlist: self)
-            }
+        filteredAssets = allAssets.lazy.map { item in
+            (item, self.playlistFilter.keep(item, playlist: self))
+        }.filter { (item, rank) in
+            rank >= 0
         }.sorted { a, b in
-            if let locA = a.location, let locB = b.location {
-                return locA.distance(from: opts.location) < locB.distance(from: opts.location)
-            } else {
-                return true
-            }
-        }
+            return a.1 < b.1
+        }.map { x in x.0 }
         
         // Clear data for assets we've moved away from.
         prevFiltered.forEach { a in
             if (!filteredAssets.contains { b in a.id == b.id }) {
                 userAssetData.removeValue(forKey: a.id)
+                // stop a playing asset if we move away from it.
                 self.tracks.first { it in
                     it.currentAsset?.id == a.id
                 }?.playNext(premature: true)
             }
         }
         
-        // Tell our tracks to grab audio if there's any new stuff
+        // Tell our tracks to play any new assets.
         self.updateTracks()
+    }
+
+    private func updateTags() {
+        let rw = RWFramework.sharedInstance
+        self.listenTags = rw.getListenIDsSet()!.map { x in x }
     }
     
     
     func start() {
         // Mark start of the session
         startTime = Date()
+
+        // Update the tags we want to listen for.
+        updateTags()
         
         // Start playing background music from speakers.
         updateSpeakers()
@@ -235,6 +250,7 @@ class Playlist {
             updateTimer = Timer(timeInterval: 5*60, repeats: true) { _ in
                 self.updateAssets().then {
                     // TODO: Stop doing a full filter on every update.
+                    // Update filtered assets given any newly uploaded assets
                     if let opts = self.currentParams {
                         self.updateParams(opts)
                     }

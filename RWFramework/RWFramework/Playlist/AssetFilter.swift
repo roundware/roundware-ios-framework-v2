@@ -11,80 +11,108 @@ import Promises
 
 /// Filter applied to all assets at the playlist building stage
 protocol AssetFilter {
-    /// @return true to keep the given asset
-    func keep(_ asset: Asset, playlist: Playlist) -> Bool
+    /// Determines whether to keep an asset in the `Playlist` for any track.
+    /// @return -1 to discard the asset, otherwise rank it where 0 is most important
+    func keep(_ asset: Asset, playlist: Playlist) -> Int
 }
 
 /// Filter applied to assets as candidates for a specific track
 protocol TrackFilter {
-    /// @return true to keep the given asset
-    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> Bool
+    /// Determines whether the given asset should be played on a particular track.
+    /// @return -1 to discard the asset, otherwise rank it where 0 is most important
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> Int
 }
 
 
 /// Keep an asset if it's nearby or if it is timed to play now.
-/// TODO: Really, we need to prioritize timed assets above nearby ones, so returning some kind of priority here might be best. <0 means don't keep, 0 = top priority
+/// Really, we need to prioritize timed assets above nearby ones, so returning some kind of priority here might be best. <0 means don't keep, 0 = top priority, >0 = rank
+/// Maybe an enum is our best bet here.
 
-struct AnyFilters: AssetFilter {
+class AnyAssetFilters: AssetFilter {
     let filters: [AssetFilter]
     init(_ filters: [AssetFilter]) {
         self.filters = filters
     }
-    func keep(_ asset: Asset, playlist: Playlist) -> Bool {
-        return filters.contains { it in
-            it.keep(asset, playlist: playlist)
-        }
+    func keep(_ asset: Asset, playlist: Playlist) -> Int {
+        return filters.lazy
+            .map { it in it.keep(asset, playlist: playlist) }
+            .first { it in it >= 0 } ?? -1
     }
 }
 
-struct AllFilters: AssetFilter {
+class AllAssetFilters: AssetFilter {
     let filters: [AssetFilter]
     init(_ filters: [AssetFilter]) {
         self.filters = filters
     }
-    func keep(_ asset: Asset, playlist: Playlist) -> Bool {
-        return !filters.contains { it in
-            !it.keep(asset, playlist: playlist)
-        }
+    func keep(_ asset: Asset, playlist: Playlist) -> Int {
+        return filters.lazy
+            .map { it in it.keep(asset, playlist: playlist) }
+            .min { a, b in a < b } ?? -1
     }
 }
 
+class TagsFilter: AssetFilter {
+    func keep(_ asset: Asset, playlist: Playlist) -> Int {
+        let matches = asset.tags.contains { assetTag in
+            playlist.listenTags.contains { $0 == assetTag }
+        }
+        if (matches) {
+            // matching only by tag should be the least important filter.
+            return 999
+        } else {
+            return -1
+        }
+    }
+}
 
 class TimedAssetFilter: AssetFilter {
     private var timedAssets: [TimedAsset]? = nil
 
-    func keep(_ asset: Asset, playlist: Playlist) -> Bool {
+    func keep(_ asset: Asset, playlist: Playlist) -> Int {
         if timedAssets == nil {
             // load the timed assets
             do {
                 timedAssets = try await(RWFramework.sharedInstance.apiGetTimedAssets([:]))
             } catch {
-                return true
+                return -1
             }
         }
-        // keep assets that are slated to start now or before
-        //      AND hasn't been played before
+        // keep assets that are slated to start now or in the past few minutes
+        //      AND haven't been played before
+        // Units: seconds
         let now = Int(Date().timeIntervalSince(playlist.startTime))
-        return timedAssets!.reduce(true) { res, it in
-            return res && it.start <= now && playlist.userAssetData[it.assetId] == nil
+        let earliest = now - 60*2 // few minutes ago
+        if (timedAssets!.contains { it in
+            return it.assetId == asset.id &&
+                it.start <= now &&
+                it.start > earliest &&
+                // it hasn't been played before.
+                playlist.userAssetData[it.assetId] == nil
+        }) {
+            return 0
         }
+        
+        return -1
     }
 }
 
 class LocationFilter: AssetFilter {
-    func keep(_ asset: Asset, playlist: Playlist) -> Bool {
+    func keep(_ asset: Asset, playlist: Playlist) -> Int {
         let opts = playlist.currentParams!
         if let loc = asset.location {
             let dist = opts.location.distance(from: loc)
-            return dist >= Double(opts.minDist) && dist <= Double(opts.maxDist)
+            if (dist >= Double(opts.minDist) && dist <= Double(opts.maxDist)) {
+                return 1
+            }
         }
-        return true
+        return -1
     }
 }
 
 
 class AngleFilter: AssetFilter {
-    func keep(_ asset: Asset, playlist: Playlist) -> Bool {
+    func keep(_ asset: Asset, playlist: Playlist) -> Int {
         let opts = playlist.currentParams!
         if let loc = asset.location {
             if (opts.angularWidth <= 359) {
@@ -95,26 +123,36 @@ class AngleFilter: AssetFilter {
                 if (lower < 0) {
                     // wedge spans from just above zero to below it.
                     // Check between lower...360 and 0...upper
-                    return ((360 + lower)...360).contains(angle)
-                        || (0...upper).contains(angle)
+                    if(((360 + lower)...360).contains(angle)
+                        || (0...upper).contains(angle)) {
+                        return 1
+                    }
                 } else if (upper >= 360) {
                     // wedge spans from just below 360 to above it.
                     // Check between lower...360 and 0...upper
-                    return (lower...360).contains(angle)
-                        || (0...(upper - 360)).contains(angle)
+                    if((lower...360).contains(angle)
+                        || (0...(upper - 360)).contains(angle)) {
+                        return 1
+                    }
                 } else {
-                    return angle >= lower
-                        && angle <= upper
+                    if (angle >= lower
+                        && angle <= upper) {
+                        return 1
+                    }
                 }
             }
         }
-        return true
+        return -1
     }
 }
 
 
 class LengthFilter: TrackFilter {
-    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> Bool {
-        return track.duration.contains(Float(asset.length))
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> Int {
+        if (track.duration.contains(Float(asset.length))) {
+            return 1
+        } else {
+            return -1
+        }
     }
 }

@@ -10,7 +10,7 @@ import Foundation
 import CoreLocation
 import StreamingKit
 
-public struct Speaker {
+public class Speaker {
     let id: Int
     let volume: ClosedRange<Float>
     let url: String
@@ -19,6 +19,24 @@ public struct Speaker {
     let attenuationShape: [CGPoint]
     let attenuationDistance: Int
     let player = STKAudioPlayer()
+
+    init(
+        id: Int,
+        volume: ClosedRange<Float>,
+        url: String,
+        backupUrl: String,
+        shape: [CGPoint],
+        attenuationShape: [CGPoint],
+        attenuationDistance: Int
+    ) {
+        self.id = id
+        self.volume = volume
+        self.url = url
+        self.backupUrl = backupUrl
+        self.shape = shape
+        self.attenuationShape = attenuationShape
+        self.attenuationDistance = attenuationDistance
+    }
     
     private func contains(_ point: CLLocation) -> Bool {
         let path = UIBezierPath()
