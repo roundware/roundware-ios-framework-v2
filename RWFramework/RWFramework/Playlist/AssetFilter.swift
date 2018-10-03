@@ -36,7 +36,7 @@ class AnyAssetFilters: AssetFilter {
     func keep(_ asset: Asset, playlist: Playlist) -> Int {
         return filters.lazy
             .map { it in it.keep(asset, playlist: playlist) }
-            .first { it in it >= 0 } ?? -1
+            .first { it in it >= 0 } ?? 1
     }
 }
 
@@ -48,7 +48,7 @@ class AllAssetFilters: AssetFilter {
     func keep(_ asset: Asset, playlist: Playlist) -> Int {
         return filters.lazy
             .map { it in it.keep(asset, playlist: playlist) }
-            .min { a, b in a < b } ?? -1
+            .min { a, b in a < b } ?? 1
     }
 }
 
@@ -149,10 +149,29 @@ class AngleFilter: AssetFilter {
 
 class LengthFilter: TrackFilter {
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> Int {
-        if (track.duration.contains(Float(asset.length))) {
+        if track.duration.contains(Float(asset.length)) {
             return 1
         } else {
             return -1
+        }
+    }
+}
+
+/**
+ *  Prevents assets from playing repeatedly if the track
+ *  doesn't have `repeatRecordings` enabled.
+ */
+class RepeatFilter: TrackFilter {
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> Int {
+        if track.repeatRecordings {
+            return 1
+        } else {
+            if let listenData = playlist.userAssetData[asset.id] {
+                // if this asset has been listened to at all, skip it.
+                return -1
+            } else {
+                return 1
+            }
         }
     }
 }

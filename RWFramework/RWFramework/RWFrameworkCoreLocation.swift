@@ -29,6 +29,7 @@ extension RWFramework: CLLocationManagerDelegate {
         headingAngle: Float?,
         angularWidth: Float?
     ) {
+        print("assets updating stream params")
         if let r = range { 
             streamOptions["listener_range_min"] = r.lowerBound
             streamOptions["listener_range_max"] = r.upperBound
@@ -60,10 +61,10 @@ extension RWFramework: CLLocationManagerDelegate {
         let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
         let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
         if (listen_enabled && geo_listen_enabled) {
-            if (!requestStreamInProgress && !requestStreamSucceeded) {
-//                playlist.start()
-                requestStreamSucceeded = true
-            } else {
+//             if (!requestStreamInProgress && !requestStreamSucceeded) {
+// //                playlist.start()
+//                 requestStreamSucceeded = true
+//             } else {
                 // if using range/directional listening, current param values should be inserted here
                 // such that automatic location updates do not turn off range/directional listening by omitting required params
                 if !streamOptions.isEmpty {
@@ -75,7 +76,7 @@ extension RWFramework: CLLocationManagerDelegate {
                         angularWidth: streamOptions["listener_width"] as! Float
                     ))
                 }
-            }
+            // }
         }
 
         // TODO: Set theme

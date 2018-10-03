@@ -111,6 +111,7 @@ class Playlist {
     /// Applies all the playlist-level and track-level filters to make the decision.
     func next(forTrack track: AudioTrack) -> Asset? {
         print("asset meta: " + userAssetData.description)
+        print("assets filtered: " + self.filteredAssets.description)
         let filteredAssets = self.filteredAssets.filter { asset in
             !self.trackFilters.contains { filter in
                 filter.keep(asset, playlist: self, track: track) < 0
@@ -199,9 +200,15 @@ class Playlist {
     
     /// Framework should call this when stream parameters are updated.
     func updateParams(_ opts: StreamParams) {
-        currentParams = opts
+        print("assets: updating params")
+        self.currentParams = opts
+        self.updateParams()
+    }
+    
+    private func updateParams() {
         let prevFiltered = filteredAssets
         
+        print("assets: updating speakers")
         updateSpeakerVolumes()
         
         // TODO: Time dependent assets.
@@ -212,6 +219,7 @@ class Playlist {
         }.sorted { a, b in
             return a.1 < b.1
         }.map { x in x.0 }
+        print("assets filtered: " + filteredAssets.description)
         
         // Clear data for assets we've moved away from.
         prevFiltered.forEach { a in
@@ -228,37 +236,42 @@ class Playlist {
         self.updateTracks()
     }
 
+    /// Obtain list of tags to listen for.
     private func updateTags() {
         let rw = RWFramework.sharedInstance
         self.listenTags = rw.getListenIDsSet()!.map { x in x }
+//        rw.apiStartForClientMixing(UIDevice().identifierForVendor!.uuidString, client_type: UIDevice().model, client_system: clientSystem())
     }
     
+    /// Periodically check for newly published assets
+    @objc private func heartbeat() {
+        self.updateAssets().then {
+            // Update filtered assets given any newly uploaded assets
+            self.updateParams()
+        }
+    }
     
+    /**
+     * Retrieve tags to filter by for the current project.
+     * Setup the speakers for background audio.
+     * Retrieve the list of all assets and check for new assets every few minutes.
+    **/
     func start() {
         // Mark start of the session
         startTime = Date()
 
-        // Update the tags we want to listen for.
         updateTags()
         
         // Start playing background music from speakers.
         updateSpeakers()
         
-        // TODO: pre-iOS10 Timers using trigger function.
-        if #available(iOS 10.0, *) {
-            // Checks every couple minutes for newly published assets
-            updateTimer = Timer(timeInterval: 5*60, repeats: true) { _ in
-                self.updateAssets().then {
-                    // TODO: Stop doing a full filter on every update.
-                    // Update filtered assets given any newly uploaded assets
-                    if let opts = self.currentParams {
-                        self.updateParams(opts)
-                    }
-                }
-            }
-        } else {
-            // Fallback on earlier versions
-        }
+        updateTimer = Timer(
+            timeInterval: 5*60,
+            target: self,
+            selector: #selector(self.heartbeat),
+            userInfo: nil,
+            repeats: true
+        )
         // Initial grab of assets and speakers.
         updateTimer?.fire()
     }

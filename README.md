@@ -33,7 +33,24 @@ When you are completely done with the framework you should call `rwf.end()` to g
 
 ### Listening
 
-##### Playing or stopping a stream
+
+##### Client-side Mixing
+This branch develops a client-side mixing solution rather than deferring that work to the server.
+Assets are gathered on the client and each `Track` associated with the current session decides if each `Asset` should be played based on the currently applied filters, of which there are two kinds:
+- `AssetFilter`: determines whether to keep an asset in the `Playlist`
+- `TrackFilter`: determines whether a given asset should be played on a particular `Track`
+Each filter determines whether an asset might be played or not and in what ranking order. View the code documentation for each filter for further details on the exact ones used.
+
+The external usage of the framework remains the same with these changes. Simply call this at the start of your application:
+```
+RWFramework.sharedInstance.start()
+```
+If the app provides location and orientation information to the framework, it will take that into account:
+```
+RWFramework.sharedInstance.updateStreamParams(range, heading, angularWidth)
+```
+
+##### Playing or stopping a stream (BECOMING OBSOLETE)
 
 Anytime after receiving the `rwPostStreamsSuccess()` delegate method callback you can instruct the framework to play or pause the audio stream.
 
