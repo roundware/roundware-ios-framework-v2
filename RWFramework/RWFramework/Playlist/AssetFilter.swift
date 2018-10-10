@@ -53,9 +53,14 @@ class AllAssetFilters: AssetFilter {
 }
 
 class TagsFilter: AssetFilter {
+    /// List of tags to listen for.
+    lazy var listenTags: [Int] =
+        RWFramework.sharedInstance.getListenIDsSet()!.map { x in x }
+    
     func keep(_ asset: Asset, playlist: Playlist) -> Int {
+        print("listening for tags: " + listenTags.description)
         let matches = asset.tags.contains { assetTag in
-            playlist.listenTags.contains { $0 == assetTag }
+            self.listenTags.contains { $0 == assetTag }
         }
         if (matches) {
             // matching only by tag should be the least important filter.
@@ -147,7 +152,7 @@ class AngleFilter: AssetFilter {
 }
 
 
-class LengthFilter: TrackFilter {
+class DurationFilter: TrackFilter {
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> Int {
         if track.duration.contains(Float(asset.length)) {
             return 1
@@ -163,11 +168,13 @@ class LengthFilter: TrackFilter {
  */
 class RepeatFilter: TrackFilter {
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> Int {
+        print("track repeats stuff? " + track.repeatRecordings.description)
         if track.repeatRecordings {
-            return 1
+            return 999
         } else {
-            if let listenData = playlist.userAssetData[asset.id] {
+            if let lastListen = playlist.lastListenDate(for: asset) {
                 // if this asset has been listened to at all, skip it.
+                // TODO: Only reject an asset until a certain time has passed?
                 return -1
             } else {
                 return 1
