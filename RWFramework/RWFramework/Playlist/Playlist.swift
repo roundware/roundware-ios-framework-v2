@@ -24,34 +24,6 @@ struct StreamParams {
     let angularWidth: Float
 }
 
-class LoopAudio: NSObject, STKAudioPlayerDelegate {
-    var current: String? = nil
-    
-    init(_ asset: String? = nil) {
-        self.current = asset
-    }
-    
-    func audioPlayer(_ audioPlayer: STKAudioPlayer, didStartPlayingQueueItemId queueItemId: NSObject) {
-        if let c = current {
-            audioPlayer.queue(c)
-        }
-    }
-    
-    func audioPlayer(_ audioPlayer: STKAudioPlayer, didFinishBufferingSourceWithQueueItemId queueItemId: NSObject) {
-    }
-    
-    func audioPlayer(_ audioPlayer: STKAudioPlayer, stateChanged state: STKAudioPlayerState, previousState: STKAudioPlayerState) {
-    }
-    
-    func audioPlayer(_ audioPlayer: STKAudioPlayer, didFinishPlayingQueueItemId queueItemId: NSObject, with stopReason: STKAudioPlayerStopReason, andProgress progress: Double, andDuration duration: Double) {
-        if let c = current {
-            audioPlayer.queue(c)
-        }
-    }
-    
-    func audioPlayer(_ audioPlayer: STKAudioPlayer, unexpectedError errorCode: STKAudioPlayerErrorCode) {
-    }
-}
 
 
 class Playlist {
@@ -70,8 +42,6 @@ class Playlist {
     private var currentAsset: Asset? = nil
     /// Map asset ID to data like last listen time.
     private(set) var userAssetData = [Int: UserAssetData]()
-
-    private(set) var listenTags = [Int]()
     
     // audio tracks, background and foreground
     private(set) var speakers = [Speaker]()
@@ -81,6 +51,10 @@ class Playlist {
     init(filters: [AssetFilter], trackFilters: [TrackFilter]) {
         self.playlistFilter = AllAssetFilters(filters)
         self.trackFilters = trackFilters
+    }
+    
+    func lastListenDate(for asset: Asset) -> Date? {
+        return self.userAssetData[asset.id]?.lastListen
     }
     
     /// Prepares all the speakers for this project.
@@ -110,8 +84,6 @@ class Playlist {
     /// Picks the next-up asset to play on the given track.
     /// Applies all the playlist-level and track-level filters to make the decision.
     func next(forTrack track: AudioTrack) -> Asset? {
-        print("asset meta: " + userAssetData.description)
-        print("assets filtered: " + self.filteredAssets.description)
         let filteredAssets = self.filteredAssets.filter { asset in
             !self.trackFilters.contains { filter in
                 filter.keep(asset, playlist: self, track: track) < 0
@@ -152,17 +124,18 @@ class Playlist {
             rw.apiGetAudioTracks([
                 "project_id": projectId.stringValue
             ]).then { data in
+                print("assets: using " + data.count.description + " tracks")
                 self.tracks = data
                 self.tracks.forEach { it in
                     // TODO: Try to remove playlist dependency. Maybe pass into method?
                     it.playlist = self
-                    it.playNext()
+                    it.playNext(premature: false)
                 }
             }.catch { err in }
         } else {
             self.tracks.forEach { it in
                 if it.currentAsset == nil {
-                    it.playNext()
+                    it.playNext(premature: false)
                 } else {
                     it.updateParams(currentParams!)
                 }
@@ -211,7 +184,6 @@ class Playlist {
         print("assets: updating speakers")
         updateSpeakerVolumes()
         
-        // TODO: Time dependent assets.
         filteredAssets = allAssets.lazy.map { item in
             (item, self.playlistFilter.keep(item, playlist: self))
         }.filter { (item, rank) in
@@ -226,21 +198,14 @@ class Playlist {
             if (!filteredAssets.contains { b in a.id == b.id }) {
                 userAssetData.removeValue(forKey: a.id)
                 // stop a playing asset if we move away from it.
-                self.tracks.first { it in
-                    it.currentAsset?.id == a.id
-                }?.playNext(premature: true)
+               self.tracks.first { it in
+                   it.currentAsset?.id == a.id
+               }?.playNext(premature: true)
             }
         }
         
         // Tell our tracks to play any new assets.
         self.updateTracks()
-    }
-
-    /// Obtain list of tags to listen for.
-    private func updateTags() {
-        let rw = RWFramework.sharedInstance
-        self.listenTags = rw.getListenIDsSet()!.map { x in x }
-//        rw.apiStartForClientMixing(UIDevice().identifierForVendor!.uuidString, client_type: UIDevice().model, client_system: clientSystem())
     }
     
     /// Periodically check for newly published assets
@@ -259,8 +224,6 @@ class Playlist {
     func start() {
         // Mark start of the session
         startTime = Date()
-
-        updateTags()
         
         // Start playing background music from speakers.
         updateSpeakers()
