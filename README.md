@@ -50,6 +50,18 @@ If the app provides location and orientation information to the framework, it wi
 RWFramework.sharedInstance.updateStreamParams(range, heading, angularWidth)
 ```
 
+If you want to provide filters for Roundware to consider when choosing assets to play, apply them before calling `start()`:
+```
+let rw = RWFramework.sharedInstance
+rw.playlist.apply(filter: RepeatFilter())
+rw.playlist.apply(filter: TagsFilter())
+rw.playlist.apply(filter: AnyAssetFilters([
+    AllAssetFilters([LocationFilter(), AngleFilter()]),
+    TimedAssetFilter()
+]))
+rw.start()
+```
+
 ##### Playing or stopping a stream (BECOMING OBSOLETE)
 
 Anytime after receiving the `rwPostStreamsSuccess()` delegate method callback you can instruct the framework to play or pause the audio stream.

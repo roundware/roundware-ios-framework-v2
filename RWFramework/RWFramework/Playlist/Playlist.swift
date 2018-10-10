@@ -35,7 +35,7 @@ class Playlist {
 
     // assets and filters
 
-    private var playlistFilter: AssetFilter
+    private var playlistFilter: AllAssetFilters
     private var trackFilters: [TrackFilter]
     private var allAssets = [Asset]()
     private var filteredAssets = [Asset]()
@@ -46,11 +46,17 @@ class Playlist {
     // audio tracks, background and foreground
     private(set) var speakers = [Speaker]()
     private(set) var tracks = [AudioTrack]()
-    
 
     init(filters: [AssetFilter], trackFilters: [TrackFilter]) {
         self.playlistFilter = AllAssetFilters(filters)
         self.trackFilters = trackFilters
+    }
+    
+    func apply(filter: AssetFilter) {
+        playlistFilter.filters.append(filter)
+    }
+    func apply(filter: TrackFilter) {
+        self.trackFilters.append(filter)
     }
     
     func lastListenDate(for asset: Asset) -> Date? {

@@ -29,7 +29,7 @@ protocol TrackFilter {
 /// Maybe an enum is our best bet here.
 
 class AnyAssetFilters: AssetFilter {
-    let filters: [AssetFilter]
+    var filters: [AssetFilter]
     init(_ filters: [AssetFilter]) {
         self.filters = filters
     }
