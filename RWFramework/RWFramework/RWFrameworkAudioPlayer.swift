@@ -36,26 +36,28 @@ extension RWFramework {
 
     /// Begin playing audio
     public func play() {
-        if (canPlay() == false) { return }
-        if (player == nil) {
-            createPlayer()
-        }
-        player?.play()
-        isPlaying = (player?.rate == 1.0)
-        logToServer("start_listen")
-        
-        // Tell server to resume asset playback
-        apiPostStreamsIdResume()
+//        if (canPlay() == false) { return }
+        self.playlist.resume()
+//        if (player == nil) {
+//            createPlayer()
+//        }
+//        player?.play()
+//        isPlaying = (player?.rate == 1.0)
+//        logToServer("start_listen")
+//
+//        // Tell server to resume asset playback
+//        apiPostStreamsIdResume()
     }
 
     /// Pause audio
     public func pause() {
-        if (canPlay() == false) { return }
-        player?.pause()
-        isPlaying = (player?.rate == 1.0)
-        
-        // Tell server to stop adding assets to stream
-        apiPostStreamsIdPause()
+//        if (canPlay() == false) { return }
+        self.playlist.pause()
+//        player?.pause()
+//        isPlaying = (player?.rate == 1.0)
+//
+//        // Tell server to stop adding assets to stream
+//        apiPostStreamsIdPause()
     }
 
     /// Stop audio

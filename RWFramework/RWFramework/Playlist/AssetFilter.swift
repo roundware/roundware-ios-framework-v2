@@ -41,7 +41,7 @@ class AnyAssetFilters: AssetFilter {
 }
 
 class AllAssetFilters: AssetFilter {
-    let filters: [AssetFilter]
+    var filters: [AssetFilter]
     init(_ filters: [AssetFilter]) {
         self.filters = filters
     }
