@@ -72,7 +72,8 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
     
     
     public func audioPlayer(_ audioPlayer: STKAudioPlayer, didStartPlayingQueueItemId queueItemId: NSObject) {
-        
+        fadeIn()
+        setupFadeEndTimer()
     }
     
     public func audioPlayer(_ audioPlayer: STKAudioPlayer, didFinishBufferingSourceWithQueueItemId queueItemId: NSObject) {
@@ -80,11 +81,9 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
     }
     
     public func audioPlayer(_ audioPlayer: STKAudioPlayer, stateChanged state: STKAudioPlayerState, previousState: STKAudioPlayerState) {
-        
     }
     
     public func audioPlayer(_ audioPlayer: STKAudioPlayer, didFinishPlayingQueueItemId queueItemId: NSObject, with stopReason: STKAudioPlayerStopReason, andProgress progress: Double, andDuration duration: Double) {
-        currentAsset = nextAsset
         holdSilence()
     }
     
@@ -97,7 +96,8 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
         let time = TimeInterval(self.deadAir.random())
         if #available(iOS 10.0, *) {
             fadeTimer?.invalidate()
-            fadeTimer = Timer(timeInterval: time, repeats: false) { _ in
+            fadeTimer = Timer.scheduledTimer(withTimeInterval: time, repeats: false) { _ in
+                self.currentAsset = nil
                 self.playNext(premature: false)
                 self.player.resume()
             }
@@ -122,6 +122,8 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
     /// Plays the next optimal asset nearby.
     /// @arg premature True if skipping the current asset, rather than fading at the end of it.
     func playNext(premature: Bool = true) {
+        self.player.delegate = self
+        
         // Stop any timer set to fade at the natural end of an asset
         fadeTimer?.invalidate()
         
@@ -131,23 +133,20 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
             fadeOut {
                 self.currentAssetDuration = nil
 //                self.player.playNext()
-                self.fadeIn()
-                self.setupFadeEndTimer()
             }
         } else {
             // TODO: Start fade out a bit before an asset finishes playing?
             // Just fade in for the first asset or at the end of an asset
-            fadeIn()
-            setupFadeEndTimer()
         }
     }
     
     private func fadeIn(cb: @escaping () -> Void = {}) {
         player.volume = 0.0
-        let interval = 0.05 // seconds
+        let interval = 0.075 // seconds
         if #available(iOS 10.0, *) {
             let totalTime = fadeInTime.random()
-            let target = volume.upperBound
+            let target = volume.random()
+            print("asset: fading in for " + totalTime.description)
             fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
                 if self.player.volume < self.volume.upperBound {
                     self.player.volume += Float(interval) / totalTime
@@ -164,9 +163,10 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
     }
     
     private func fadeOut(cb: @escaping () -> Void = {}) {
-        let interval = 0.05 // seconds
+        let interval = 0.075 // seconds
         if #available(iOS 10.0, *) {
             let totalTime = fadeOutTime.random()
+            print("asset: fade out for " + totalTime.description)
             fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
                 if self.player.volume > 0.0 {
                     self.player.volume -= Float(interval) / totalTime
@@ -187,12 +187,7 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
     private func queueNext() {
         if let next = playlist!.next(forTrack: self) {
             player.queue(next.file)
-            if (currentAsset == nil) {
-                currentAsset = next
-                queueNext()
-            } else {
-                nextAsset = next
-            }
+            currentAsset = next
         }
     }
     
@@ -206,7 +201,7 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
         setupFadeEndTimer()
     }
 
-    func setupFadeEndTimer() {
+    private func setupFadeEndTimer() {
         // pick a fade-out length
         let fadeDur: Double
         if let assetDur = currentAssetDuration {
@@ -217,7 +212,7 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
         }
         fadeOutTimer?.invalidate()
         if #available(iOS 10.0, *) {
-            fadeOutTimer = Timer(timeInterval: fadeDur, repeats: false) { timer in
+            fadeOutTimer = Timer.scheduledTimer(withTimeInterval: fadeDur, repeats: false) { timer in
                 self.fadeOut {
                     self.currentAssetDuration = nil
                 }
