@@ -34,14 +34,15 @@ private lazy var __once: () = { () -> Void in
     var letFrameworkRequestWhenInUseAuthorizationForLocation = true
     let playlist = Playlist(filters: [
         // assets must have a matching tag
-//        TagsFilter(),
+        TagsFilter()
         // and are either geographically or temporally nearby.
 //        AnyAssetFilters([
 //            AllAssetFilters([LocationFilter(), AngleFilter()]),
 //            TimedAssetFilter()
 //        ])
     ], trackFilters: [
-//        LengthFilter()
+        DurationFilter(),
+        RepeatFilter()
     ])
 
     // Audio - Stream (see RWFrameworkAudioPlayer.swift)
