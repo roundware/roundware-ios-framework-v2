@@ -36,6 +36,7 @@ public class Speaker {
         self.shape = shape
         self.attenuationShape = attenuationShape
         self.attenuationDistance = attenuationDistance
+        player.stop()
     }
     
     private func contains(_ point: CLLocation) -> Bool {
@@ -91,7 +92,8 @@ public class Speaker {
         let vol = self.volume(at: point)
         // TODO: Fading
         if vol <= 0.01 {
-            if player.state == .playing {
+            if player.state != .stopped {
+                player.delegate = nil
                 player.stop()
             }
         } else {
