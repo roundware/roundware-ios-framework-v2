@@ -13,7 +13,7 @@ public class Asset {
     let id: Int
     let location: CLLocation?
     let file: String
-    let length: Int
+    let length: Int // in seconds
     let timestamp: Date
     let tags: [Int]
 

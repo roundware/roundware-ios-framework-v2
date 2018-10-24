@@ -12,7 +12,10 @@ import Promises
 
 extension RWFramework {
 
-    func apiStartForClientMixing(_ device_id: String, client_type: String, client_system: String) -> Promise<Data> {
+    func apiStartForClientMixing() -> Promise<Project> {
+        let device_id = UIDevice().identifierForVendor!.uuidString
+        let client_type = UIDevice().model
+        let client_system = clientSystem()
         return apiPostUsers(device_id, client_type: client_type, client_system: client_system)
             // start a session
             .then { _ in self.apiPostSessions() }
@@ -93,7 +96,7 @@ extension RWFramework {
         }
     }
 
-    private func setupClientSession(_ data: Data) throws {
+    private func setupClientSession(_ data: Data) throws -> Promise<Project> {
         let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
 
         var session_id : NSNumber = 0
@@ -106,6 +109,9 @@ extension RWFramework {
 
         let project_id = RWFrameworkConfig.getConfigValueAsNumber("project_id")
         self.apiGetProjectsIdTags(project_id, session_id: session_id)
+        return self.apiGetProjectsId(project_id, session_id: session_id).then { data in
+            try JSONDecoder().decode(Project.self, from: data)
+        }
     }
 
     private func setupSession(_ data: Data) throws {

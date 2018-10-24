@@ -46,6 +46,8 @@ class Playlist {
     // audio tracks, background and foreground
     private(set) var speakers = [Speaker]()
     private(set) var tracks = [AudioTrack]()
+    
+    var project: Project? = nil
 
     init(filters: [AssetFilter], trackFilters: [TrackFilter]) {
         self.playlistFilter = AllAssetFilters(filters)
@@ -222,12 +224,21 @@ class Playlist {
         }
     }
     
+    func start() {
+        // Starts a session and retrieves project-wide config.
+        RWFramework.sharedInstance.apiStartForClientMixing().then { project in
+            print("project: " + project.name)
+            self.project = project
+            self.afterSessionInit()
+        }
+    }
+    
     /**
      * Retrieve tags to filter by for the current project.
      * Setup the speakers for background audio.
      * Retrieve the list of all assets and check for new assets every few minutes.
     **/
-    func start() {
+    private func afterSessionInit() {
         // Mark start of the session
         startTime = Date()
         
@@ -246,13 +257,18 @@ class Playlist {
     }
     
     func pause() {
-        speakers.forEach { it in it.pause() }
-        tracks.forEach { it in it.pause() }
+        speakers.forEach { $0.pause() }
+        tracks.forEach { $0.pause() }
     }
     
     func resume() {
-        speakers.forEach { it in it.resume() }
-        tracks.forEach { it in it.resume() }
+        speakers.forEach { $0.resume() }
+        tracks.forEach { $0.resume() }
+    }
+    
+    func skip() {
+        // Fade out the currently playing assets on all tracks.
+        tracks.forEach { $0.playNext(premature: true) }
     }
 }
 

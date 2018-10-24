@@ -69,7 +69,8 @@ extension RWFramework {
 
     /// Next audio
     public func skip() {
-        apiPostStreamsIdSkip()
+//        apiPostStreamsIdSkip()
+        playlist.skip()
     }
 
     /// Replay audio

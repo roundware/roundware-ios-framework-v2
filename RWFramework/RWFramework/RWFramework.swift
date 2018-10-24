@@ -34,7 +34,7 @@ private lazy var __once: () = { () -> Void in
     var letFrameworkRequestWhenInUseAuthorizationForLocation = true
     let playlist = Playlist(filters: [
         // assets must have a matching tag
-        TagsFilter()
+        TagsFilter(),
         // and are either geographically or temporally nearby.
 //        AnyAssetFilters([
 //            AllAssetFilters([LocationFilter(), AngleFilter()]),
@@ -42,7 +42,7 @@ private lazy var __once: () = { () -> Void in
 //        ])
     ], trackFilters: [
         DurationFilter(),
-        RepeatFilter()
+//        RepeatFilter()
     ])
 
     // Audio - Stream (see RWFrameworkAudioPlayer.swift)
@@ -158,7 +158,6 @@ private lazy var __once: () = { () -> Void in
         self.letFrameworkRequestWhenInUseAuthorizationForLocation = letFrameworkRequestWhenInUseAuthorizationForLocation
 
         println("start")
-        // apiStartUp(UIDevice().identifierForVendor!.uuidString, client_type: UIDevice().model, client_system: clientSystem())
         self.playlist.start()
 
         preflightRecording()
