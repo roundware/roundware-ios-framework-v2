@@ -127,16 +127,17 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
         // Stop any timer set to fade at the natural end of an asset
         fadeTimer?.invalidate()
         
-        queueNext()
         // Can't fade out if playing the first asset
         if (premature) {
-            fadeOut {
+            fadeOut(forSeconds: fadeOutTime.lowerBound) {
+                self.player.stop()
+                self.playNext(premature: false)
                 self.currentAssetDuration = nil
-//                self.player.playNext()
             }
         } else {
             // TODO: Start fade out a bit before an asset finishes playing?
             // Just fade in for the first asset or at the end of an asset
+            queueNext()
         }
     }
     
@@ -162,10 +163,13 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
         }
     }
     
-    private func fadeOut(cb: @escaping () -> Void = {}) {
+    private func fadeOut(forSeconds fadeTime: Float = 0, cb: @escaping () -> Void = {}) {
         let interval = 0.075 // seconds
         if #available(iOS 10.0, *) {
-            let totalTime = fadeOutTime.random()
+            var totalTime = fadeTime
+            if (totalTime == 0) {
+                totalTime = fadeOutTime.random()
+            }
             print("asset: fade out for " + totalTime.description)
             fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
                 if self.player.volume > 0.0 {
