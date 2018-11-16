@@ -73,7 +73,6 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
     
     public func audioPlayer(_ audioPlayer: STKAudioPlayer, didStartPlayingQueueItemId queueItemId: NSObject) {
         fadeIn()
-        setupFadeEndTimer()
     }
     
     public func audioPlayer(_ audioPlayer: STKAudioPlayer, didFinishBufferingSourceWithQueueItemId queueItemId: NSObject) {
@@ -108,13 +107,23 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
     
     func updateParams(_ params: StreamParams) {
         // TODO: Pan based on user and asset positions
-        if let asset = currentAsset {
+        if let asset = currentAsset, asset.location != nil {
             // scale volume based on the asset's distance from us
             // TODO: Confirm the ratio scaling. Should we be using the dynamic range or a project setting? Probably a setting.
-            let distRange = Float(params.maxDist - params.minDist)
-            let volRange = volume.upperBound - volume.lowerBound
             let dist = Float(asset.location!.distance(from: params.location))
-            player.volume = volume.lowerBound + (dist / distRange) * volRange
+            let distRange: ClosedRange<Float>
+            if let maxDist = params.maxDist, let minDist = params.minDist {
+                // if we have a custom distance range,
+                // interpolate asset volume within that.
+                distRange = Float(minDist)...Float(maxDist)
+            } else {
+                // otherwise, just use the default project distance to scale the asset volume
+                distRange = 0...Float(playlist!.project.recording_radius)
+            }
+            let distRatio = (dist - distRange.lowerBound) / distRange.difference
+            let clampedRatio = distRatio.clamp(to: 0...1)
+
+            player.volume = volume.lowerBound + (distRatio * volume.difference)
         }
     }
     
@@ -142,6 +151,14 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
     }
     
     private func fadeIn(cb: @escaping () -> Void = {}) {
+        // pick a random duration
+        // start at a random position between start and end - duration
+        let duration = self.duration.random()
+        let latestStart = currentAsset!.length - duration
+        let start = (0...latestStart).random()
+        
+        player.seek(toTime: Double(start))
+        
         player.volume = 0.0
         let interval = 0.075 // seconds
         if #available(iOS 10.0, *) {
@@ -161,6 +178,8 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
         } else {
             // Fallback on earlier versions
         }
+        
+        setupFadeEndTimer(endTime: start + duration)
     }
     
     private func fadeOut(forSeconds fadeTime: Float = 0, cb: @escaping () -> Void = {}) {
@@ -205,15 +224,17 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
         setupFadeEndTimer()
     }
 
-    private func setupFadeEndTimer() {
+    private func setupFadeEndTimer(endTime: Float = 0) {
         // pick a fade-out length
-        let fadeDur: Double
-        if let assetDur = currentAssetDuration {
-            fadeDur = Double(assetDur) - player.progress
-        } else {
-            self.currentAssetDuration = Float(currentAsset!.length) - self.fadeOutTime.random()
-            fadeDur = Double(self.currentAssetDuration!)
+        if currentAssetDuration == nil {
+            var assetEndTime = endTime
+            if assetEndTime == 0 {
+                assetEndTime = currentAsset!.length
+            }
+            currentAssetDuration = assetEndTime - fadeOutTime.random()
         }
+        let fadeDur = Double(currentAssetDuration!) - player.progress
+        
         fadeOutTimer?.invalidate()
         if #available(iOS 10.0, *) {
             fadeOutTimer = Timer.scheduledTimer(withTimeInterval: fadeDur, repeats: false) { timer in
@@ -230,5 +251,17 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
 extension ClosedRange where Bound == Float {
     func random() -> Bound {
         return lowerBound + Bound(drand48()) * (upperBound - lowerBound)
+    }
+}
+
+extension ClosedRange where Bound: Numeric {
+    var difference: Bound {
+        return upperBound - lowerBound
+    }
+}
+
+extension Comparable {
+    func clamp(to: ClosedRange<Self>) -> Self {
+        return max(to.lowerBound, min(to.upperBound, self))
     }
 }

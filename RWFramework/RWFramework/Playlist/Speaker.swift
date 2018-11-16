@@ -40,34 +40,26 @@ public class Speaker {
     }
     
     private func contains(_ point: CLLocation) -> Bool {
-        let path = UIBezierPath()
-        path.move(to: shape[0])
-        for idx in 1...shape.count-1 {
-            path.addLine(to: shape[idx])
-        }
-        path.close()
+        let path = UIBezierPath.from(points: shape)
         let coord = point.coordinate
         return path.contains(CGPoint(x: coord.latitude, y: coord.longitude))
     }
     
     private func attenuationShapeContains(_ point: CLLocation) -> Bool {
-        let path = UIBezierPath()
-        path.move(to: attenuationShape[0])
-        for idx in 1...attenuationShape.count-1 {
-            path.addLine(to: attenuationShape[idx])
-        }
-        path.close()
+        let path = UIBezierPath.from(points: attenuationShape)
         let coord = point.coordinate
         return path.contains(CGPoint(x: coord.latitude, y: coord.longitude))
     }
     
     private static func distance(shape: [CGPoint], _ loc: CLLocation) -> Double {
         // find distance to nearest point in the shape
-        return shape.map { it in
-            loc.distance(from:
-                CLLocation(latitude: CLLocationDegrees(it.x), longitude: CLLocationDegrees(it.y))
-            )
-        }.min { a, b in a < b }!
+        // TODO: Find distance to side, not vertex
+        return shape.lazy.map { it in
+            loc.distance(from: CLLocation(
+                    latitude: CLLocationDegrees(it.x),
+                    longitude: CLLocationDegrees(it.y)
+            ))
+        }.min()!
     }
     
     private func attenuationRatio(at loc: CLLocation) -> Double {
@@ -87,21 +79,27 @@ public class Speaker {
             return volume.lowerBound
         }
     }
-    
-    func updateVolume(at point: CLLocation) {
+
+    /**
+     @return true if we're within range of the speaker
+    */
+    func updateVolume(at point: CLLocation) -> Bool {
         let vol = self.volume(at: point)
+        print("speaker volume = \(vol)")
         // TODO: Fading
         if vol <= 0.01 {
             if player.state != .stopped {
                 player.delegate = nil
                 player.stop()
             }
+            return false
         } else {
             player.volume = vol
             if player.state == .stopped {
                 player.delegate = LoopAudio(url)
                 player.play(url)
             }
+            return true
         }
     }
     
@@ -139,5 +137,23 @@ public class Speaker {
                 attenuationDistance: it["attenuation_distance"] as! Int
             )
         }
+    }
+}
+
+extension UIBezierPath {
+    static func from(points: [CGPoint]) -> UIBezierPath {
+        let path = UIBezierPath()
+        path.move(to: points[0])
+        for idx in 1..<points.count {
+            path.addLine(to: points[idx])
+        }
+        path.close()
+        return path
+    }
+}
+
+extension CLLocation {
+    func toCGPoint() -> CGPoint {
+        return CGPoint(x: coordinate.latitude, y: coordinate.longitude)
     }
 }

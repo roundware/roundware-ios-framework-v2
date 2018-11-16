@@ -25,9 +25,9 @@ extension RWFramework: CLLocationManagerDelegate {
     
     /// Update parameters to future stream requests
     public func updateStreamParams(
-        range: ClosedRange<Int>?,
-        headingAngle: Float?,
-        angularWidth: Float?
+        range: ClosedRange<Double>?,
+        headingAngle: Double?,
+        angularWidth: Double?
     ) {
         print("assets updating stream params")
         if let r = range { 
@@ -44,10 +44,10 @@ extension RWFramework: CLLocationManagerDelegate {
 //        )
         playlist.updateParams(StreamParams(
             location: lastRecordedLocation,
-            minDist: streamOptions["listener_range_min"] as! Int,
-            maxDist: streamOptions["listener_range_max"] as! Int,
-            heading: streamOptions["listener_heading"] as! Float,
-            angularWidth: streamOptions["listener_width"] as! Float
+            minDist: streamOptions["listener_range_min"] as? Double,
+            maxDist: streamOptions["listener_range_max"] as? Double,
+            heading: streamOptions["listener_heading"] as? Double,
+            angularWidth: streamOptions["listener_width"] as? Double
         ))
     }
 
@@ -70,10 +70,10 @@ extension RWFramework: CLLocationManagerDelegate {
                 if !streamOptions.isEmpty {
                     playlist.updateParams(StreamParams(
                         location: locations[0],
-                        minDist: streamOptions["listener_range_min"] as! Int,
-                        maxDist: streamOptions["listener_range_max"] as! Int,
-                        heading: streamOptions["listener_heading"] as! Float,
-                        angularWidth: streamOptions["listener_width"] as! Float
+                        minDist: streamOptions["listener_range_min"] as? Double,
+                        maxDist: streamOptions["listener_range_max"] as? Double,
+                        heading: streamOptions["listener_heading"] as? Double,
+                        angularWidth: streamOptions["listener_width"] as? Double
                     ))
                 }
             // }

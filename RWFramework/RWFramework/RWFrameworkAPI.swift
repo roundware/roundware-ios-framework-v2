@@ -472,7 +472,7 @@ extension RWFramework {
     }
 
     /// MARK: GET assets PUBLIC
-    public func apiGetAssets(_ dict: [String:String]) -> Promise<[Asset]> {
+    func apiGetAssets(_ dict: [String:String]) -> Promise<[Asset]> {
         return httpGetAssets(dict).then { data -> [Asset] in
             self.rwGetAssetsSuccess(data)
             return try Asset.from(data: data)
@@ -484,7 +484,7 @@ extension RWFramework {
 
     public func apiGetTimedAssets(_ dict: [String:String]) -> Promise<[TimedAsset]> {
         return httpGetTimedAssets(dict).then { data -> [TimedAsset] in
-            return try TimedAsset.from(json: data)
+            return try JSONDecoder().decode([TimedAsset].self, from: data)
         }.catch { error in
             self.apiProcessError(nil, error: error, caller: "apiGetTimedAssets")
         }

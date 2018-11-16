@@ -36,13 +36,16 @@ private lazy var __once: () = { () -> Void in
         // assets must have a matching tag
         TagsFilter(),
         // and are either geographically or temporally nearby.
-//        AnyAssetFilters([
-//            AllAssetFilters([LocationFilter(), AngleFilter()]),
+        AnyAssetFilters([
+            DistanceFixedFilter(),
+            AllAssetFilters([DistanceRangesFilter(), AngleFilter()]),
 //            TimedAssetFilter()
-//        ])
+        ])
     ], trackFilters: [
-        DurationFilter(),
+//        DurationFilter(),
 //        RepeatFilter()
+    ], sortBy: [
+        SortRandomly()
     ])
 
     // Audio - Stream (see RWFrameworkAudioPlayer.swift)
@@ -157,8 +160,9 @@ private lazy var __once: () = { () -> Void in
 
         self.letFrameworkRequestWhenInUseAuthorizationForLocation = letFrameworkRequestWhenInUseAuthorizationForLocation
 
+        
         println("start")
-        self.playlist.start()
+        self.playlist.start() {}
 
         preflightRecording()
     }

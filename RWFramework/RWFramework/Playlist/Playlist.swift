@@ -16,15 +16,14 @@ struct UserAssetData {
     let lastListen: Date
 }
 
+/// TODO: Make each of these optional and provide a default constructor
 struct StreamParams {
     let location: CLLocation
-    let minDist: Int
-    let maxDist: Int
-    let heading: Float
-    let angularWidth: Float
+    let minDist: Double?
+    let maxDist: Double?
+    let heading: Double?
+    let angularWidth: Double?
 }
-
-
 
 class Playlist {
     // server communication
@@ -37,6 +36,7 @@ class Playlist {
 
     private var playlistFilter: AllAssetFilters
     private var trackFilters: [TrackFilter]
+    private var sortMethods: [SortMethod]
     private var allAssets = [Asset]()
     private var filteredAssets = [Asset]()
     private var currentAsset: Asset? = nil
@@ -46,12 +46,15 @@ class Playlist {
     // audio tracks, background and foreground
     private(set) var speakers = [Speaker]()
     private(set) var tracks = [AudioTrack]()
-    
-    var project: Project? = nil
 
-    init(filters: [AssetFilter], trackFilters: [TrackFilter]) {
+    private lazy var demoStream = STKAudioPlayer()
+    
+    private(set) var project: Project!
+
+    init(filters: [AssetFilter], trackFilters: [TrackFilter], sortBy: [SortMethod]) {
         self.playlistFilter = AllAssetFilters(filters)
         self.trackFilters = trackFilters
+        self.sortMethods = sortBy
     }
     
     func apply(filter: AssetFilter) {
@@ -78,14 +81,34 @@ class Playlist {
             self.updateSpeakerVolumes()
         }.catch { err in }
     }
-    
-    /// Update the volumes of all speakers depending
-    /// our proximity to each one.
+
+    /**
+     Update the volumes of all speakers depending on our proximity to each one.
+     If the distance to the nearest speaker > outOfRangeDistance, then play demo stream.
+    */
     private func updateSpeakerVolumes() {
+        print("params = \(self.currentParams)")
         if let params = self.currentParams {
-            self.speakers.forEach { it in
-                it.updateVolume(at: params.location)
+            let withinRange = self.speakers.reduce(into: false) { acc, it in
+                return acc || it.updateVolume(at: params.location)
             }
+            if !withinRange {
+                self.playDemoStream()
+            }
+        }
+    }
+
+    private func playDemoStream() {
+        let distToProject = project.location.distance(from: self.currentParams!.location)
+        if distToProject > project.out_of_range_distance {
+            demoStream.delegate = LoopAudio(project.out_of_range_url)
+            demoStream.play(project.out_of_range_url)
+        } else {
+            // play project-level demo stream, reusing one speaker
+            let demoUrl = project.demo_stream_url
+            print("playing demo stream \(demoUrl)")
+            demoStream.delegate = LoopAudio(demoUrl)
+            demoStream.play(demoUrl)
         }
     }
     
@@ -94,13 +117,14 @@ class Playlist {
     func next(forTrack track: AudioTrack) -> Asset? {
         let filteredAssets = self.filteredAssets.filter { asset in
             !self.trackFilters.contains { filter in
-                filter.keep(asset, playlist: self, track: track) < 0
+                filter.keep(asset, playlist: self, track: track) == .discard
             }
         }
         var next = filteredAssets.first { it in
             return userAssetData[it.id] == nil
         }
         // If we've heard them all, play the least recently played.
+        // TODO: Or play none here. Depends on project settings, right?
         if next == nil {
             next = filteredAssets.min { a, b in
                 if let dataA = userAssetData[a.id], let dataB = userAssetData[b.id] {
@@ -191,14 +215,20 @@ class Playlist {
         
         print("assets: updating speakers")
         updateSpeakerVolumes()
-        
-        filteredAssets = allAssets.lazy.map { item in
+
+        var filtered = allAssets.map { item in
             (item, self.playlistFilter.keep(item, playlist: self))
         }.filter { (item, rank) in
-            rank >= 0
-        }.sorted { a, b in
-            return a.1 < b.1
-        }.map { x in x.0 }
+            rank != .discard
+        }
+        for sortMethod in sortMethods {
+            filtered.sort(by: { a, b in
+                sortMethod.sortRanking(for: a.0, in: self) < sortMethod.sortRanking(for: b.0, in: self)
+            })
+        }
+        filtered.sort { a, b in a.1.rawValue < b.1.rawValue }
+
+        filteredAssets = filtered.map { x in x.0 }
         print("assets filtered: " + filteredAssets.description)
         
         // Clear data for assets we've moved away from.
@@ -224,11 +254,12 @@ class Playlist {
         }
     }
     
-    func start() {
+    func start(cb: @escaping () -> ()) {
         // Starts a session and retrieves project-wide config.
         RWFramework.sharedInstance.apiStartForClientMixing().then { project in
-            print("project: " + project.name)
+            print("project: " + project.demo_stream_url)
             self.project = project
+            cb()
             self.afterSessionInit()
         }
     }

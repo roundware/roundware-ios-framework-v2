@@ -9,34 +9,45 @@
 import Foundation
 import Promises
 
+/**
+ The priority to place on an asset, or to discard it from use.
+ Multiple assets with the same priority will be sorted by a
+ project-level ordering preference.
+ */
+enum AssetPriority: Int {
+    case discard = -1
+    case highest = 0
+    case normal = 100
+    case lowest = 999
+}
+
+
 /// Filter applied to all assets at the playlist building stage
 protocol AssetFilter {
     /// Determines whether to keep an asset in the `Playlist` for any track.
-    /// @return -1 to discard the asset, otherwise rank it where 0 is most important
-    func keep(_ asset: Asset, playlist: Playlist) -> Int
+    /// - returns: -1 to discard the asset, otherwise rank it where 0 is most important
+    func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority
 }
 
 /// Filter applied to assets as candidates for a specific track
 protocol TrackFilter {
     /// Determines whether the given asset should be played on a particular track.
-    /// @return -1 to discard the asset, otherwise rank it where 0 is most important
-    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> Int
+    /// - returns: -1 to discard the asset, otherwise rank it where 0 is most important
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority
 }
 
 
 /// Keep an asset if it's nearby or if it is timed to play now.
-/// Really, we need to prioritize timed assets above nearby ones, so returning some kind of priority here might be best. <0 means don't keep, 0 = top priority, >0 = rank
-/// Maybe an enum is our best bet here.
-
 class AnyAssetFilters: AssetFilter {
     var filters: [AssetFilter]
     init(_ filters: [AssetFilter]) {
         self.filters = filters
     }
-    func keep(_ asset: Asset, playlist: Playlist) -> Int {
+
+    func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
         return filters.lazy
-            .map { it in it.keep(asset, playlist: playlist) }
-            .first { it in it >= 0 } ?? 1
+            .map { $0.keep(asset, playlist: playlist) }
+            .first { $0 != .discard } ?? .discard
     }
 }
 
@@ -45,140 +56,150 @@ class AllAssetFilters: AssetFilter {
     init(_ filters: [AssetFilter]) {
         self.filters = filters
     }
-    func keep(_ asset: Asset, playlist: Playlist) -> Int {
+
+    func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
         return filters.lazy
-            .map { it in it.keep(asset, playlist: playlist) }
-            .min { a, b in a < b } ?? 1
+            .map { $0.keep(asset, playlist: playlist) }
+            // short-circuit, only processing filters until one discards this asset.
+            .prefix { $0 != .discard }
+            // Use the highest priority given to this asset by one of the applied filters.
+            .min { a, b in a.rawValue < b.rawValue } ?? .discard
     }
 }
 
 class TagsFilter: AssetFilter {
     /// List of tags to listen for.
-    lazy var listenTags: [Int] =
-        RWFramework.sharedInstance.getListenIDsSet()!.map { x in x }
+    lazy var listenTags = RWFramework.sharedInstance.getListenIDsSet()
     
-    func keep(_ asset: Asset, playlist: Playlist) -> Int {
-        print("listening for tags: " + listenTags.description)
+    func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
+        guard let listenTags = self.listenTags else { return .lowest }
+
+        print("listening for tags: \(listenTags)")
         let matches = asset.tags.contains { assetTag in
-            self.listenTags.contains { $0 == assetTag }
+            listenTags.contains(assetTag) == true
         }
-        if (matches) {
-            // matching only by tag should be the least important filter.
-            return 999
+        // matching only by tag should be the least important filter.
+        return matches ? .lowest : .discard
+    }
+}
+
+/**
+ Plays an asset if the user is within range of it
+ based on the current dynamic distance range.
+ */
+class DistanceRangesFilter: AssetFilter {
+    func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
+        guard let params = playlist.currentParams,
+              let loc = asset.location,
+              let minDist = params.minDist,
+              let maxDist = params.maxDist
+            else { return .discard }
+
+        let dist = params.location.distance(from: loc)
+        if dist >= Double(minDist) && dist <= Double(maxDist) {
+            return .normal
         } else {
-            return -1
-        }
-    }
-}
-
-class TimedAssetFilter: AssetFilter {
-    private var timedAssets: [TimedAsset]? = nil
-
-    func keep(_ asset: Asset, playlist: Playlist) -> Int {
-        if timedAssets == nil {
-            // load the timed assets
-            do {
-                timedAssets = try await(RWFramework.sharedInstance.apiGetTimedAssets([:]))
-            } catch {
-                return -1
-            }
-        }
-        // keep assets that are slated to start now or in the past few minutes
-        //      AND haven't been played before
-        // Units: seconds
-        let now = Int(Date().timeIntervalSince(playlist.startTime))
-        let earliest = now - 60*2 // few minutes ago
-        if (timedAssets!.contains { it in
-            return it.assetId == asset.id &&
-                it.start <= now &&
-                it.start > earliest &&
-                // it hasn't been played before.
-                playlist.userAssetData[it.assetId] == nil
-        }) {
-            return 0
-        }
-        
-        return -1
-    }
-}
-
-class LocationFilter: AssetFilter {
-    func keep(_ asset: Asset, playlist: Playlist) -> Int {
-        let opts = playlist.currentParams!
-        if let loc = asset.location {
-            let dist = opts.location.distance(from: loc)
-            if (dist >= Double(opts.minDist) && dist <= Double(opts.maxDist)) {
-                return 1
-            }
-        }
-        return -1
-    }
-}
-
-
-class AngleFilter: AssetFilter {
-    func keep(_ asset: Asset, playlist: Playlist) -> Int {
-        let opts = playlist.currentParams!
-        if let loc = asset.location {
-            if (opts.angularWidth <= 359) {
-                let angle = Float(opts.location.bearingToLocationDegrees(loc))
-                let lower = opts.heading - opts.angularWidth
-                let upper = opts.heading + opts.angularWidth
-                
-                if (lower < 0) {
-                    // wedge spans from just above zero to below it.
-                    // Check between lower...360 and 0...upper
-                    if(((360 + lower)...360).contains(angle)
-                        || (0...upper).contains(angle)) {
-                        return 1
-                    }
-                } else if (upper >= 360) {
-                    // wedge spans from just below 360 to above it.
-                    // Check between lower...360 and 0...upper
-                    if((lower...360).contains(angle)
-                        || (0...(upper - 360)).contains(angle)) {
-                        return 1
-                    }
-                } else {
-                    if (angle >= lower
-                        && angle <= upper) {
-                        return 1
-                    }
-                }
-            }
-        }
-        return -1
-    }
-}
-
-
-class DurationFilter: TrackFilter {
-    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> Int {
-        if track.duration.contains(Float(asset.length)) {
-            return 1
-        } else {
-            return -1
+            return .discard
         }
     }
 }
 
 /**
- *  Prevents assets from playing repeatedly if the track
- *  doesn't have `repeatRecordings` enabled.
+ Only plays an asset if the user is within the
+ project-configured recording radius.
+ */
+class DistanceFixedFilter: AssetFilter {
+    func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
+        guard let params = playlist.currentParams,
+              let assetLoc = asset.location
+            else { return .discard }
+
+        let listenerLoc = params.location
+        let maxListenDist = playlist.project.recording_radius
+        if listenerLoc.distance(from: assetLoc) <= maxListenDist {
+            return .normal
+        } else {
+            return .discard
+        }
+    }
+}
+
+/**
+ Play an asset if the user is currently within its defined shape.
+ */
+class AssetShapeFilter: AssetFilter {
+    func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
+        guard let params = playlist.currentParams,
+              let shape = asset.shape
+            else { return .discard }
+
+        let path = UIBezierPath.from(points: shape)
+        if path.contains(params.location.toCGPoint()) {
+            return .normal
+        } else {
+            return .discard
+        }
+    }
+}
+
+/**
+ Play an asset if it's within the current angle range.
+ */
+class AngleFilter: AssetFilter {
+    func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
+        guard let opts = playlist.currentParams,
+              let loc = asset.location,
+              let heading = opts.heading,
+              let angularWidth = opts.angularWidth
+            else { return .discard }
+
+        // We can keep any asset if our angular width covers all space.
+        if angularWidth > 359.0 {
+            return .normal
+        }
+
+        let angle = opts.location.bearingToLocationDegrees(loc)
+        let lower = heading - angularWidth
+        let upper = heading + angularWidth
+
+        if lower < 0 {
+            // wedge spans from just above zero to below it.
+            // Check between lower...360 and 0...upper
+            if ((360 + lower)...360).contains(angle)
+                || (0...upper).contains(angle) {
+                return .normal
+            }
+        } else if upper >= 360 {
+            // wedge spans from just below 360 to above it.
+            // Check between lower...360 and 0...upper
+            if (lower...360).contains(angle)
+                || (0...(upper - 360)).contains(angle) {
+                return .normal
+            }
+        } else if angle >= lower && angle <= upper {
+            return .normal
+        }
+
+        return .discard
+    }
+}
+
+
+/**
+ Prevents assets from playing repeatedly if the track
+ doesn't have `repeatRecordings` enabled.
  */
 class RepeatFilter: TrackFilter {
-    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> Int {
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         print("track repeats stuff? " + track.repeatRecordings.description)
         if track.repeatRecordings {
-            return 999
+            return .lowest
+        } else if let lastListen = playlist.lastListenDate(for: asset) {
+            // if this asset has been listened to at all, skip it.
+            // TODO: Only reject an asset until a certain time has passed?
+            return .discard
         } else {
-            if let lastListen = playlist.lastListenDate(for: asset) {
-                // if this asset has been listened to at all, skip it.
-                // TODO: Only reject an asset until a certain time has passed?
-                return -1
-            } else {
-                return 1
-            }
+            return .normal
         }
     }
 }

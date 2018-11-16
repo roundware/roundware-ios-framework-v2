@@ -9,37 +9,24 @@
 import Foundation
 import CoreLocation
 
-public class Asset {
+struct Asset {
     let id: Int
     let location: CLLocation?
     let file: String
-    let length: Int // in seconds
+    let length: Float // in seconds
     let timestamp: Date
     let tags: [Int]
+    let shape: [CGPoint]?
+}
 
-    init(
-        id: Int,
-        location: CLLocation?,
-        file: String,
-        length: Int,
-        timestamp: Date,
-        tags: [Int]
-    ) {
-        self.id = id
-        self.location = location
-        self.file = file
-        self.length = length
-        self.timestamp = timestamp
-        self.tags = tags
-    }
-    
+extension Asset {
     static func from(data: Data) throws -> [Asset] {
         let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
-        
+
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         dateFormatter.locale = Locale.init(identifier: "en_US_POSIX")
-        
+
         let items = json as! [AnyObject]
         return items.map { obj in
             let it = obj as! [String: AnyObject]
@@ -52,49 +39,23 @@ public class Asset {
             } else {
                 location = nil
             }
+
+            let shape = it["shape"] as? [String: AnyObject]
+            let coords = shape?["coordinates"] as? [[[[Double]]]]
+            // TODO: Handle actual multipolygons :)
+            let coordsShape = coords?[0][0].map { p in
+                CGPoint(x: p[0], y: p[1])
+            }
             return Asset(
                 id: it["id"] as! Int,
                 location: location,
                 file: it["file"] as! String,
-                length: it["audio_length_in_seconds"] as! Int,
+                length: it["audio_length_in_seconds"] as! Float,
                 timestamp: dateFormatter.date(from: it["created"] as! String)!,
-                tags: it["tag_ids"] as! [Int]
+                tags: it["tag_ids"] as! [Int],
+                shape: coordsShape
             )
         }
     }
 }
 
-
-public class TimedAsset {
-    let id: Int
-    let assetId: Int
-    let start: Int
-    let end: Int
-
-    init(
-        id: Int,
-        assetId: Int,
-        start: Int,
-        end: Int
-    ) {
-        self.id = id
-        self.assetId = assetId
-        self.start = start
-        self.end = end
-    }
-
-    static func from(json data: Data) throws -> [TimedAsset] {
-        let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
-
-        let items = json as! [AnyObject]
-        return items.map { obj in 
-            let it = obj as! [String: AnyObject]
-            return TimedAsset(
-                id: it["id"] as! Int,
-                assetId: it["asset_id"] as! Int,
-                start: it["start"] as! Int,
-                end: it["end"] as! Int
-            )
-        }
-    }
-}
