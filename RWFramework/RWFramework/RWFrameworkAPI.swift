@@ -9,6 +9,7 @@
 import Foundation
 import CoreLocation
 import Promises
+import SwiftyJSON
 
 extension RWFramework {
 
@@ -56,14 +57,11 @@ extension RWFramework {
     }
 
     private func saveUserInfo(_ data: Data) throws {
-        // http://stackoverflow.com/questions/24671249/parse-json-in-swift-anyobject-type/27206145#27206145
-        let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
-
-        if let dict = json as? [String:AnyObject] {
-            if let username = dict["username"] as? String {
+        if let dict = try JSON(data: data).dictionary {
+            if let username = dict["username"]?.string {
                 RWFrameworkConfig.setConfigValue("username", value: username, group: RWFrameworkConfig.ConfigGroup.client)
             } // TODO: Handle missing value
-            if let token = dict["token"] as? String {
+            if let token = dict["token"]?.string {
                 RWFrameworkConfig.setConfigValue("token", value: token, group: RWFrameworkConfig.ConfigGroup.client)
             } // TODO: Handle missing value
         }
@@ -97,11 +95,9 @@ extension RWFramework {
     }
 
     private func setupClientSession(_ data: Data) throws -> Promise<Project> {
-        let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
-
         var session_id : NSNumber = 0
-        if let dict = json as? [String: AnyObject] {
-            if let _session_id = dict["id"] as? NSNumber {
+        if let dict = try JSON(data: data).dictionary {
+            if let _session_id = dict["id"]?.number {
                 session_id = _session_id
                 RWFrameworkConfig.setConfigValue("session_id", value: session_id, group: RWFrameworkConfig.ConfigGroup.client)
             } // TODO: Handle missing value
@@ -115,11 +111,9 @@ extension RWFramework {
     }
 
     private func setupSession(_ data: Data) throws {
-        let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
-
         var session_id : NSNumber = 0
-        if let dict = json as? [String: AnyObject] {
-            if let _session_id = dict["id"] as? NSNumber {
+        if let dict = try JSON(data: data).dictionary {
+            if let _session_id = dict["id"]?.number {
                 session_id = _session_id
                 RWFrameworkConfig.setConfigValue("session_id", value: session_id, group: RWFrameworkConfig.ConfigGroup.client)
             } // TODO: Handle missing value
@@ -150,9 +144,7 @@ extension RWFramework {
     }
 
     private func setupStream(_ data: Data, project_id: NSNumber, session_id: NSNumber) throws {
-        let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
-
-        if let dict = json as? [String: AnyObject] {
+        if let dict = try JSON(data: data).dictionary {
             RWFrameworkConfig.setConfigDataAsDictionary(data, key: "project")
 
             // TODO: where is this going to come from?
@@ -286,13 +278,11 @@ extension RWFramework {
     }
 
     private func postStreamsSuccess(_ data: Data, session_id: NSNumber) throws {
-        let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
-
-        if let dict = json as? [String: AnyObject] {
-            if let stream_url = dict["stream_url"] as? String {
-                self.streamURL = URL(string: stream_url)! as NSURL as URL
-                if let stream_id = dict["stream_id"] as? NSNumber {
-                    self.streamID = stream_id.intValue
+        if let dict = try JSON(data: data).dictionary {
+            if let stream_url = dict["stream_url"]?.string {
+                self.streamURL = URL(string: stream_url)!
+                if let stream_id = dict["stream_id"]?.int {
+                    self.streamID = stream_id
                     self.createPlayer()
                     self.requestStreamSucceeded = true
                     // pause stream on server so that assets aren't added until user is actually listening
@@ -306,7 +296,7 @@ extension RWFramework {
                     self.rwUpdateStatus(userMessage!, title: "Out of Range!")
                 }
             }
-            requestStreamDisplayUserMessage(dict["user_message"] as? String)
+            requestStreamDisplayUserMessage(dict["user_message"]?.string)
         }
     }
 
@@ -436,10 +426,8 @@ extension RWFramework {
             self.rwPostEnvelopesSuccess(data)
             
             // return the id of the created envelope
-            let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
-            let dict = json as! [String: AnyObject]
-            let envelope_id = dict["id"] as! NSNumber
-            return envelope_id.intValue
+            let dict = try JSON(data: data)
+            return dict["id"].int!
         }.catch { error in
             self.rwPostEnvelopesFailure(error)
             self.apiProcessError(nil, error: error, caller: "apiPostEnvelopes")

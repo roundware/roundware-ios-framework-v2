@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'Roundware'
-  s.version          = '0.1.0'
+  s.version          = '0.1.1'
   s.summary          = 'Audio framework'
 
 # This description is used to generate tags and improve search results.
@@ -45,5 +45,6 @@ Pod::Spec.new do |s|
   s.frameworks = 'AVFoundation'
 
   s.dependency "PromisesSwift", "~> 1.2.3"
+  s.dependency "SwiftyJSON", "~> 4.0"
   s.dependency "StreamingKit", "~> 0.1.30"
 end

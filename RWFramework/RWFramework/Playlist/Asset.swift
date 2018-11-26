@@ -8,52 +8,51 @@
 
 import Foundation
 import CoreLocation
+import SwiftyJSON
 
 struct Asset {
     let id: Int
     let location: CLLocation?
     let file: String
-    let length: Float // in seconds
-    let timestamp: Date
+    let length: Double // in seconds
+    let createdDate: Date
     let tags: [Int]
     let shape: [CGPoint]?
+    let weight: Double
+    let description: String
 }
 
 extension Asset {
     static func from(data: Data) throws -> [Asset] {
-        let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
+        let items = try JSON(data: data)
 
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         dateFormatter.locale = Locale.init(identifier: "en_US_POSIX")
 
-        let items = json as! [AnyObject]
-        return items.map { obj in
-            let it = obj as! [String: AnyObject]
+        return items.arrayValue.map { item in
             let location: CLLocation?
-            if let lat = it["latitude"], let lng = it["longitude"] {
-                location = CLLocation(
-                    latitude: lat as! Double,
-                    longitude: lng as! Double
-                )
+            if let lat = item["latitude"].double, let lng = item["longitude"].double {
+                location = CLLocation(latitude: lat, longitude: lng)
             } else {
                 location = nil
             }
 
-            let shape = it["shape"] as? [String: AnyObject]
-            let coords = shape?["coordinates"] as? [[[[Double]]]]
+            let coords = item["shape"]["coordinates"]
             // TODO: Handle actual multipolygons :)
-            let coordsShape = coords?[0][0].map { p in
-                CGPoint(x: p[0], y: p[1])
+            let coordsShape = coords[0][0].array?.map { p in
+                CGPoint(x: p[0].doubleValue, y: p[1].doubleValue)
             }
             return Asset(
-                id: it["id"] as! Int,
+                id: item["id"].int!,
                 location: location,
-                file: it["file"] as! String,
-                length: it["audio_length_in_seconds"] as! Float,
-                timestamp: dateFormatter.date(from: it["created"] as! String)!,
-                tags: it["tag_ids"] as! [Int],
-                shape: coordsShape
+                file: item["file"].string!,
+                length: item["audio_length_in_seconds"].double!,
+                createdDate: dateFormatter.date(from: item["created"].string!)!,
+                tags: item["tag_ids"].array!.map { $0.int! },
+                shape: coordsShape,
+                weight: item["weight"].double!,
+                description: item["description"].string ?? ""
             )
         }
     }
