@@ -145,7 +145,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
                 exportSession!.outputURL = outputURL
                 exportSession!.outputFileType = AVFileType.mov
                 exportSession!.exportAsynchronously { () -> Void in
-                    if (exportSession!.status == AVAssetExportSessionStatus.completed) {
+                    if (exportSession!.status == AVAssetExportSession.Status.completed) {
                         self.println("file conversion success to \(outputURL)")
                     } else {
                         self.println("file conversion failure from \(String(describing: soundFileURL))")

@@ -27,36 +27,30 @@ extension RWFramework {
     }
 
     /// These are the media type names that the server expects
-    enum ServerMediaType: String {
+    enum ServerMediaType: String, CaseIterable {
         case None = "none"
         case Audio = "audio"
         case Text = "text"
         case Photo = "photo"
         case Video = "video"
-
-        static let allValues = [None, Audio, Text, Photo, Video]
     }
 
     /// These are the media type names that make the most sense for the iOS platform
-    enum MediaType: String {
+    enum MediaType: String, CaseIterable {
         case None = "None"
         case Audio = "Audio"
         case Text = "Text"
         case Image = "Image"
         case Movie = "Movie"
-
-        static let allValues = [None, Audio, Text, Image, Movie]
     }
 
-    enum MediaStatus: String {
+    enum MediaStatus: String, CaseIterable {
         case None = "None"
         case Hold = "Hold"
         case Ready = "Ready"
         case Uploading = "Uploading"
         case UploadFailed = "UploadFailed"
         case UploadCompleted = "UploadCompleted"
-
-        static let allValues = [None, Hold, Ready, Uploading, UploadFailed, UploadCompleted]
     }
 
     @objc(RWMedia)class Media: NSObject, NSCoding {
@@ -88,8 +82,8 @@ extension RWFramework {
         }
 
         required init(coder aDecoder: NSCoder) {
-            mediaType = MediaType.allValues[aDecoder.decodeInteger(forKey: "mediaType")]
-            mediaStatus = MediaStatus.allValues[aDecoder.decodeInteger(forKey: "mediaStatus")]
+            mediaType = MediaType.allCases[aDecoder.decodeInteger(forKey: "mediaType")]
+            mediaStatus = MediaStatus.allCases[aDecoder.decodeInteger(forKey: "mediaStatus")]
             string = aDecoder.decodeObject(forKey: "string") as! String
             desc = aDecoder.decodeObject(forKey: "desc") as! String
             latitude = aDecoder.decodeObject(forKey: "latitude") as! NSNumber
@@ -100,8 +94,8 @@ extension RWFramework {
         }
 
         func encode(with aCoder: NSCoder) {
-            aCoder.encode(MediaType.allValues.index(of: mediaType)!, forKey: "mediaType")
-            aCoder.encode(MediaStatus.allValues.index(of: mediaStatus)!, forKey: "mediaStatus")
+            aCoder.encode(MediaType.allCases.index(of: mediaType)!, forKey: "mediaType")
+            aCoder.encode(MediaStatus.allCases.index(of: mediaStatus)!, forKey: "mediaStatus")
             aCoder.encode(string, forKey: "string")
             aCoder.encode(desc, forKey: "desc")
             aCoder.encode(latitude, forKey: "latitude")

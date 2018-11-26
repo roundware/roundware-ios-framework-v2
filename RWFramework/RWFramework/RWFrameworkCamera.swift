@@ -48,13 +48,13 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 // MARK: - Convenience methods
 
     /// Allow the user to choose a photo from the photo library
-    public func doPhotoLibrary(_ mediaTypes: [String] = UIImagePickerController.availableMediaTypes(for: UIImagePickerControllerSourceType.photoLibrary)!) {
-        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.photoLibrary) == false { return }
+    public func doPhotoLibrary(_ mediaTypes: [String] = UIImagePickerController.availableMediaTypes(for: UIImagePickerController.SourceType.photoLibrary)!) {
+        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerController.SourceType.photoLibrary) == false { return }
 
         preflightGeoImage()
 
         let picker = UIImagePickerController()
-        picker.sourceType = UIImagePickerControllerSourceType.photoLibrary
+        picker.sourceType = UIImagePickerController.SourceType.photoLibrary
         picker.mediaTypes = mediaTypes
         picker.allowsEditing = false
         picker.delegate = self
@@ -64,14 +64,14 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 
     /// Allow the user to take a still image with the camera
     public func doImage() {
-        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.camera) == false { return }
+        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerController.SourceType.camera) == false { return }
 
         preflightGeoImage()
 
         let picker = UIImagePickerController()
-        picker.sourceType = UIImagePickerControllerSourceType.camera
+        picker.sourceType = UIImagePickerController.SourceType.camera
         picker.mediaTypes = [kUTTypeImage as String]
-        picker.cameraCaptureMode = UIImagePickerControllerCameraCaptureMode.photo
+        picker.cameraCaptureMode = UIImagePickerController.CameraCaptureMode.photo
         picker.allowsEditing = false
         picker.delegate = self
 
@@ -80,17 +80,17 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 
     /// Allow the user to take a movie with the camera
     public func doMovie() {
-        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.camera) == false { return }
+        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerController.SourceType.camera) == false { return }
 
         preflightGeoImage()
 
         let picker = UIImagePickerController()
-        picker.sourceType = UIImagePickerControllerSourceType.camera
+        picker.sourceType = UIImagePickerController.SourceType.camera
         picker.mediaTypes = [kUTTypeMovie as String]
-        picker.cameraCaptureMode = UIImagePickerControllerCameraCaptureMode.video
+        picker.cameraCaptureMode = UIImagePickerController.CameraCaptureMode.video
         let movie_max_duration_in_seconds = RWFrameworkConfig.getConfigValueAsNumber("movie_max_duration_in_seconds").doubleValue
         picker.videoMaximumDuration = movie_max_duration_in_seconds != 0 ? movie_max_duration_in_seconds : 30
-        picker.videoQuality = UIImagePickerControllerQualityType.typeMedium
+        picker.videoQuality = UIImagePickerController.QualityType.typeMedium
         picker.allowsEditing = false
         picker.delegate = self
 
@@ -100,7 +100,7 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 // MARK: - UIImagePickerControllerDelegate
 
     public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        let mediaType = info[UIImagePickerControllerMediaType] as! String
+        let mediaType = info[UIImagePickerController.InfoKey.mediaType.rawValue] as! String
         if mediaType == kUTTypeImage as String {
             handleImageMediaType(info)
         } else if mediaType == kUTTypeMovie as String {
@@ -153,7 +153,7 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
             return newImage!
         }
 
-        if let image: UIImage = info[UIImagePickerControllerOriginalImage] as? UIImage {
+        if let image: UIImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
             let q = DispatchQueue(label: "com.roundware.image_resize_queue", attributes: [])
             q.async(execute: { () -> Void in
 //                var imageToDisplay: UIImage?
@@ -180,7 +180,7 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 
                 // Compression
                 let image_jpeg_compression = CGFloat(RWFrameworkConfig.getConfigValueAsNumber("image_jpeg_compression").floatValue)
-                if let imageData = UIImageJPEGRepresentation(image, image_jpeg_compression) {
+                if let imageData = image.jpegData(compressionQuality: image_jpeg_compression) {
 
                     // Write
                     let r = arc4random()
@@ -206,7 +206,7 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
     }
 
     func handleMovieMediaType(_ info: [AnyHashable: Any]) {
-        if let originalMovieURL: URL = info[UIImagePickerControllerMediaURL] as? URL {
+        if let originalMovieURL: URL = info[UIImagePickerController.InfoKey.mediaURL] as? URL {
             let originalMoviePath = originalMovieURL.path
 
             let r = arc4random()

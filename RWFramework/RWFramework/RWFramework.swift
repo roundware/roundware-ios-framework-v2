@@ -69,7 +69,7 @@ private lazy var __once: () = { () -> Void in
     var soundPlayer: AVAudioPlayer? = nil
 
     // Media - Audio/Text/Image/Movie (see RWFrameworkMedia.swift)
-    var mediaArray: Array<Media> = Array<Media>() {
+    var mediaArray: Array<Media> = [Media]() {
         willSet {
             let data = NSKeyedArchiver.archivedData(withRootObject: newValue)
             RWFrameworkConfig.setConfigValue("mediaArray", value: data as AnyObject, group: RWFrameworkConfig.ConfigGroup.client)
@@ -179,19 +179,19 @@ private lazy var __once: () = { () -> Void in
     func addAudioInterruptionNotification() {
         NotificationCenter.default.addObserver(self,
             selector: #selector(RWFramework.handleAudioInterruption(_:)),
-            name: NSNotification.Name.AVAudioSessionInterruption,
+            name: AVAudioSession.interruptionNotification,
             object: nil)
     }
 
     @objc func handleAudioInterruption(_ notification: Notification) {
-        if notification.name != NSNotification.Name.AVAudioSessionInterruption
+        if notification.name != AVAudioSession.interruptionNotification
             || notification.userInfo == nil {
             return
         }
         var info = notification.userInfo!
         var intValue: UInt = 0
         (info[AVAudioSessionInterruptionTypeKey] as! NSValue).getValue(&intValue)
-        if let type = AVAudioSessionInterruptionType(rawValue: intValue) {
+        if let type = AVAudioSession.InterruptionType(rawValue: intValue) {
             switch type {
             case .began:
                 // interruption began

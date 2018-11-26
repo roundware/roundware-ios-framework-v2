@@ -676,7 +676,7 @@ extension RWFramework {
             } else if (showedAlert == false) {
                 showedAlert = true // Only show the alert once per call
                 self.dam {
-                    let alert = UIAlertController(title: self.LS(title!), message: message, preferredStyle: UIAlertControllerStyle.alert)
+                    let alert = UIAlertController(title: self.LS(title!), message: message, preferredStyle: UIAlertController.Style.alert)
                     let OKAction = UIAlertAction(title: self.LS("OK"), style: .default) { (action) in }
                     alert.addAction(OKAction)
                     if let currentViewController = rwfp.rwGetCurrentViewController?() {
