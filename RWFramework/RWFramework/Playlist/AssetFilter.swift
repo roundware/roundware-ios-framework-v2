@@ -11,8 +11,8 @@ import Promises
 
 /**
  The priority to place on an asset, or to discard it from use.
- Multiple assets with the same priority will be sorted by a
- project-level ordering preference.
+ Multiple assets with the same priority will be sorted by
+ project-level ordering preferences.
  */
 enum AssetPriority: Int {
     case discard = -1
@@ -25,14 +25,14 @@ enum AssetPriority: Int {
 /// Filter applied to all assets at the playlist building stage
 protocol AssetFilter {
     /// Determines whether to keep an asset in the `Playlist` for any track.
-    /// - returns: -1 to discard the asset, otherwise rank it where 0 is most important
+    /// - returns: .discard to skip the asset, otherwise rank it
     func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority
 }
 
 /// Filter applied to assets as candidates for a specific track
 protocol TrackFilter {
     /// Determines whether the given asset should be played on a particular track.
-    /// - returns: -1 to discard the asset, otherwise rank it where 0 is most important
+    /// - returns: .discard to skip the asset, otherwise rank it
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority
 }
 
@@ -67,18 +67,35 @@ class AllAssetFilters: AssetFilter {
     }
 }
 
-class TagsFilter: AssetFilter {
+class AnyTagsFilter: AssetFilter {
     /// List of tags to listen for.
     lazy var listenTags = RWFramework.sharedInstance.getListenIDsSet()
     
     func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
-        guard let listenTags = self.listenTags else { return .lowest }
+        guard let listenTags = self.listenTags
+            else { return .lowest }
 
         print("listening for tags: \(listenTags)")
         let matches = asset.tags.contains { assetTag in
-            listenTags.contains(assetTag) == true
+            listenTags.contains(assetTag)
         }
         // matching only by tag should be the least important filter.
+        return matches ? .lowest : .discard
+    }
+}
+
+class AllTagsFilter: AssetFilter {
+    /// List of tags to listen for.
+    lazy var listenTags = RWFramework.sharedInstance.getListenIDsSet()
+
+    func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
+        guard let listenTags = self.listenTags
+            else { return .lowest }
+
+        let matches = asset.tags.allSatisfy { assetTag in
+            listenTags.contains(assetTag)
+        }
+
         return matches ? .lowest : .discard
     }
 }
@@ -96,7 +113,7 @@ class DistanceRangesFilter: AssetFilter {
             else { return .discard }
 
         let dist = params.location.distance(from: loc)
-        if dist >= Double(minDist) && dist <= Double(maxDist) {
+        if dist >= minDist && dist <= maxDist {
             return .normal
         } else {
             return .discard
@@ -131,7 +148,9 @@ class AssetShapeFilter: AssetFilter {
     func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
         guard let params = playlist.currentParams,
               let shape = asset.shape
-            else { return .discard }
+            // still accept an asset with no shape,
+            // as shape is optional
+            else { return .lowest }
 
         let path = UIBezierPath.from(points: shape)
         if path.contains(params.location.toCGPoint()) {
@@ -152,6 +171,7 @@ class AngleFilter: AssetFilter {
               let heading = opts.heading,
               let angularWidth = opts.angularWidth
             else { return .discard }
+
 
         // We can keep any asset if our angular width covers all space.
         if angularWidth > 359.0 {
