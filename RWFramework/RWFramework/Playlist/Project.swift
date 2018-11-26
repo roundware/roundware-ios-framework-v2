@@ -19,7 +19,6 @@ struct Project: Codable {
     let recording_radius: Double
     let out_of_range_url: String
     let out_of_range_distance: Double
-    let demo_stream_url: String
     let geo_listen_enabled: Bool
     let repeat_mode: String
     let ordering: String
@@ -32,5 +31,11 @@ extension Project {
             latitude: self.latitude,
             longitude: self.longitude
         )
+    }
+
+    /// Time to wait between checking for newly published assets
+    /// - units: seconds
+    var asset_refresh_interval: Double {
+        return RWFrameworkConfig.getConfigValueAsNumber("asset_refresh_interval").doubleValue
     }
 }

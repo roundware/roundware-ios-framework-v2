@@ -19,6 +19,7 @@ public class Speaker {
     let attenuationShape: [CGPoint]
     let attenuationDistance: Int
     let player = STKAudioPlayer()
+    let looper: LoopAudio
 
     init(
         id: Int,
@@ -36,6 +37,7 @@ public class Speaker {
         self.shape = shape
         self.attenuationShape = attenuationShape
         self.attenuationDistance = attenuationDistance
+        self.looper = LoopAudio(url)
         player.stop()
     }
     
@@ -61,6 +63,10 @@ public class Speaker {
             ))
         }.min()!
     }
+
+    public func distance(to loc: CLLocation) -> Double {
+        return Speaker.distance(shape: self.shape, loc)
+    }
     
     private func attenuationRatio(at loc: CLLocation) -> Double {
         let dist = Speaker.distance(shape: shape, loc)
@@ -83,23 +89,21 @@ public class Speaker {
     /**
      @return true if we're within range of the speaker
     */
-    func updateVolume(at point: CLLocation) -> Bool {
+    func updateVolume(at point: CLLocation) {
         let vol = self.volume(at: point)
         print("speaker volume = \(vol)")
         // TODO: Fading
-        if vol <= 0.01 {
+        if vol < 0.01 {
             if player.state != .stopped {
                 player.delegate = nil
                 player.stop()
             }
-            return false
         } else {
             player.volume = vol
             if player.state == .stopped {
-                player.delegate = LoopAudio(url)
+                player.delegate = looper
                 player.play(url)
             }
-            return true
         }
     }
     

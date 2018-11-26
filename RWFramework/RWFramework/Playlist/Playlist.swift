@@ -48,6 +48,7 @@ class Playlist {
     private(set) var tracks = [AudioTrack]()
 
     private lazy var demoStream = STKAudioPlayer()
+    private var demoLooper: LoopAudio? = nil
     
     private(set) var project: Project!
 
@@ -89,26 +90,37 @@ class Playlist {
     private func updateSpeakerVolumes() {
         print("params = \(self.currentParams)")
         if let params = self.currentParams {
-            let withinRange = self.speakers.reduce(into: false) { acc, it in
-                return acc || it.updateVolume(at: params.location)
+            for speaker in self.speakers {
+                speaker.updateVolume(at: params.location)
             }
-            if !withinRange {
-                self.playDemoStream()
-            }
+
+            self.playDemoStream()
         }
     }
 
     private func playDemoStream() {
-        let distToProject = project.location.distance(from: self.currentParams!.location)
-        if distToProject > project.out_of_range_distance {
-            demoStream.delegate = LoopAudio(project.out_of_range_url)
-            demoStream.play(project.out_of_range_url)
+        let distToSpeaker = self.speakers.lazy.map {
+            $0.distance(to: self.currentParams!.location)
+        }.min() ?? 0
+
+        print("dist to nearest speaker: \(distToSpeaker)")
+        if distToSpeaker > project.out_of_range_distance {
+            // Only play the out-of-range stream if
+            // we're a sufficient distance from all speakers
+            if demoStream.state != .playing {
+                demoLooper = LoopAudio(project.out_of_range_url)
+                demoStream.delegate = demoLooper
+                demoStream.play(project.out_of_range_url)
+                // TODO: Show a message here telling the user they're out of project range.
+                print("out of range")
+                RWFramework.sharedInstance.rwUpdateStatus("Out of range!")
+            }
         } else {
-            // play project-level demo stream, reusing one speaker
-            let demoUrl = project.demo_stream_url
-            print("playing demo stream \(demoUrl)")
-            demoStream.delegate = LoopAudio(demoUrl)
-            demoStream.play(demoUrl)
+            print("demo stream is \(demoStream.state)")
+            if demoStream.state == .playing {
+                demoLooper = nil
+                demoStream.stop()
+            }
         }
     }
     
@@ -216,11 +228,11 @@ class Playlist {
         print("assets: updating speakers")
         updateSpeakerVolumes()
 
-        var filtered = allAssets.map { item in
+        var filtered = Array(allAssets.lazy.map { item in
             (item, self.playlistFilter.keep(item, playlist: self))
         }.filter { (item, rank) in
             rank != .discard
-        }
+        })
         for sortMethod in sortMethods {
             filtered.sort(by: { a, b in
                 sortMethod.sortRanking(for: a.0, in: self) < sortMethod.sortRanking(for: b.0, in: self)
@@ -257,10 +269,20 @@ class Playlist {
     func start(cb: @escaping () -> ()) {
         // Starts a session and retrieves project-wide config.
         RWFramework.sharedInstance.apiStartForClientMixing().then { project in
-            print("project: " + project.demo_stream_url)
             self.project = project
+            self.useProjectDefaults()
             cb()
             self.afterSessionInit()
+        }
+    }
+
+    private func useProjectDefaults() {
+        switch project.ordering {
+        case "random":
+            self.sortMethods = [SortRandomly()]
+        case "by_weight":
+            self.sortMethods = [SortByWeight()]
+        default: break
         }
     }
     
@@ -277,7 +299,7 @@ class Playlist {
         updateSpeakers()
         
         updateTimer = Timer(
-            timeInterval: 5*60,
+            timeInterval: project.asset_refresh_interval,
             target: self,
             selector: #selector(self.heartbeat),
             userInfo: nil,
@@ -288,18 +310,20 @@ class Playlist {
     }
     
     func pause() {
-        speakers.forEach { $0.pause() }
-        tracks.forEach { $0.pause() }
+        for s in speakers { s.pause() }
+        for t in tracks { t.pause() }
     }
     
     func resume() {
-        speakers.forEach { $0.resume() }
-        tracks.forEach { $0.resume() }
+        for s in speakers { s.resume() }
+        for t in tracks { t.resume() }
     }
     
     func skip() {
         // Fade out the currently playing assets on all tracks.
-        tracks.forEach { $0.playNext(premature: true) }
+        for t in tracks {
+            t.playNext(premature: true)
+        }
     }
 }
 
