@@ -43,15 +43,18 @@ extension Asset {
             let coordsShape = coords[0][0].array?.map { p in
                 CGPoint(x: p[0].doubleValue, y: p[1].doubleValue)
             }
+            let createdString = item["created"].string!.replacingOccurrences(
+                of: "\\.\\d+", with: "", options: .regularExpression
+            )
             return Asset(
                 id: item["id"].int!,
                 location: location,
                 file: item["file"].string!,
-                length: item["audio_length_in_seconds"].double!,
-                createdDate: dateFormatter.date(from: item["created"].string!)!,
+                length: item["audio_length_in_seconds"].double ?? 0,
+                createdDate: dateFormatter.date(from: createdString)!,
                 tags: item["tag_ids"].array!.map { $0.int! },
                 shape: coordsShape,
-                weight: item["weight"].double!,
+                weight: item["weight"].double ?? 0,
                 description: item["description"].string ?? ""
             )
         }

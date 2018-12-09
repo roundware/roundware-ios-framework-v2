@@ -9,6 +9,7 @@
 import Foundation
 import CoreLocation
 import StreamingKit
+import SwiftyJSON
 
 public class Speaker {
     let id: Int
@@ -120,25 +121,31 @@ public class Speaker {
     }
     
     static func from(data: Data) throws -> [Speaker] {
-        let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
+        let json = try JSON(data: data)
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         dateFormatter.locale = Locale.init(identifier: "en_US_POSIX")
         
-        let items = json as! [AnyObject]
+        let items = json.array!
+        print(items.description)
+//        return []
         return items.map { obj in
-            let it = obj as! [String: AnyObject]
-            let boundary = ((it["boundary"] as! [String: AnyObject])["coordinates"] as! [AnyObject])[0] as! [[Double]]
-            let attenBound = (it["attenuation_border"] as! [String: AnyObject])["coordinates"] as! [[Double]]
+            let it = obj.dictionaryValue
+            let boundary = it["boundary"]!["coordinates"][0].array!
+            let attenBound = it["attenuation_border"]!["coordinates"].array!
             return Speaker(
-                id: it["id"] as! Int,
-                volume: (it["minvolume"] as! Float)...(it["maxvolume"] as! Float),
-                url: it["uri"] as! String,
-                backupUrl: it["backupuri"] as! String,
-                shape: boundary.map { it in CGPoint(x: it[0], y: it[1]) },
-                attenuationShape: attenBound.map { it in CGPoint(x: it[0], y: it[1]) },
-                attenuationDistance: it["attenuation_distance"] as! Int
+                id: it["id"]!.int!,
+                volume: it["minvolume"]!.number!.floatValue...it["maxvolume"]!.number!.floatValue,
+                url: it["uri"]!.string!,
+                backupUrl: it["backupuri"]!.string!,
+                shape: boundary.map { it in
+                    CGPoint(x: it[0].double!, y: it[1].double!)
+                },
+                attenuationShape: attenBound.map { it in
+                    CGPoint(x: it[0].double!, y: it[1].double!)
+                },
+                attenuationDistance: it["attenuation_distance"]!.int!
             )
         }
     }

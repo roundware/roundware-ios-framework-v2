@@ -92,6 +92,7 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
     private func holdSilence() {
         player.pause()
         let time = TimeInterval(self.deadAir.random())
+        print("silence for \(time)")
         if #available(iOS 10.0, *) {
             fadeTimer?.invalidate()
             fadeTimer = Timer.scheduledTimer(withTimeInterval: time, repeats: false) { _ in
@@ -174,22 +175,24 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
     private func fadeIn(cb: @escaping () -> Void = {}) {
         // pick a random duration
         // start at a random position between start and end - duration
-        let duration = Double(self.duration.random())
+        let duration = (Double(self.duration.lowerBound)...currentAsset!.length).random()
         let latestStart = currentAsset!.length - duration
         let start = (0.0...latestStart).random()
 
-        //
-        player.seek(toTime: start)
-        
         player.volume = 0.0
         let interval = 0.075 // seconds
         if #available(iOS 10.0, *) {
             let totalTime = fadeInTime.random()
             let target = volume.random()
-            print("asset: fading in for " + totalTime.description)
+            print("asset: fading in for \(totalTime) to volume \(target), play for \(duration)")
             fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
                 if self.player.volume < self.volume.upperBound {
-                    self.player.volume += Float(interval) / totalTime
+                    let toAdd = Float(interval) / totalTime
+                    if self.player.volume < toAdd {
+                        print("asset: starting at \(start)")
+                        self.player.seek(toTime: start)
+                    }
+                    self.player.volume += toAdd
                 } else {
                     self.player.volume = target
                     self.fadeTimer?.invalidate()
@@ -211,7 +214,7 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
             if (totalTime == 0) {
                 totalTime = fadeOutTime.random()
             }
-            print("asset: fade out for " + totalTime.description)
+            print("asset: fade out for \(totalTime)")
             fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
                 if self.player.volume > 0.0 {
                     self.player.volume -= Float(interval) / totalTime

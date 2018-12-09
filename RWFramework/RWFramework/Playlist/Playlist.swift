@@ -211,7 +211,6 @@ class Playlist {
         return rw.apiGetAssets(opts).then { data -> () in
             self.lastUpdate = Date()
             self.allAssets.append(contentsOf: data)
-            print("all assets: " + self.allAssets.description)
         }.catch { err in }
     }
     
@@ -241,7 +240,7 @@ class Playlist {
         filtered.sort { a, b in a.1.rawValue < b.1.rawValue }
 
         filteredAssets = filtered.map { x in x.0 }
-        print("assets filtered: " + filteredAssets.description)
+        print("assets filtered: \(filteredAssets.count)")
         
         // Clear data for assets we've moved away from.
         prevFiltered.forEach { a in
@@ -270,6 +269,7 @@ class Playlist {
         // Starts a session and retrieves project-wide config.
         RWFramework.sharedInstance.apiStartForClientMixing().then { project in
             self.project = project
+            print("project settings: \(project)")
             self.useProjectDefaults()
             cb()
             self.afterSessionInit()
@@ -307,16 +307,26 @@ class Playlist {
         )
         // Initial grab of assets and speakers.
         updateTimer?.fire()
+
+        RWFramework.sharedInstance.isPlaying = true
     }
     
     func pause() {
+        RWFramework.sharedInstance.isPlaying = false
         for s in speakers { s.pause() }
         for t in tracks { t.pause() }
+        if demoLooper != nil {
+            demoStream.pause()
+        }
     }
     
     func resume() {
+        RWFramework.sharedInstance.isPlaying = true
         for s in speakers { s.resume() }
         for t in tracks { t.resume() }
+        if demoLooper != nil {
+            demoStream.resume()
+        }
     }
     
     func skip() {

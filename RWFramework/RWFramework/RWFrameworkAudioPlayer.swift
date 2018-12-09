@@ -19,7 +19,7 @@ extension RWFramework {
     /// Return true if the framework can play audio
     public func canPlay() -> Bool {
         let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
-        return listen_enabled && streamURL != nil
+        return listen_enabled //&& streamURL != nil
     }
 
     /// Create an AVPlayer to play the stream
