@@ -67,15 +67,13 @@ extension RWFramework: CLLocationManagerDelegate {
 //             } else {
                 // if using range/directional listening, current param values should be inserted here
                 // such that automatic location updates do not turn off range/directional listening by omitting required params
-                if !streamOptions.isEmpty {
-                    playlist.updateParams(StreamParams(
-                        location: locations[0],
-                        minDist: streamOptions["listener_range_min"] as? Double,
-                        maxDist: streamOptions["listener_range_max"] as? Double,
-                        heading: streamOptions["listener_heading"] as? Double,
-                        angularWidth: streamOptions["listener_width"] as? Double
-                    ))
-                }
+                playlist.updateParams(StreamParams(
+                    location: locations[0],
+                    minDist: streamOptions["listener_range_min"] as? Double,
+                    maxDist: streamOptions["listener_range_max"] as? Double,
+                    heading: streamOptions["listener_heading"] as? Double,
+                    angularWidth: streamOptions["listener_width"] as? Double
+                ))
             // }
         }
 

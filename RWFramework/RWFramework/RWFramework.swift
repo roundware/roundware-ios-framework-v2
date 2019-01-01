@@ -34,12 +34,12 @@ private lazy var __once: () = { () -> Void in
     var letFrameworkRequestWhenInUseAuthorizationForLocation = true
     let playlist = Playlist(filters: [
         // all the tags on an asset must be in our list of tags to listen for
-        AllTagsFilter(),
+        AnyTagsFilter(),
         // and are either geographically or temporally nearby.
         // Accept an asset if one of the following conditions is true
         AnyAssetFilters([
             // If an asset has a shape and we AREN'T in it, reject entirely.
-            AssetShapeFilter(),
+//            AssetShapeFilter(),
             // if it has no shape, consider a fixed distance from it
             DistanceFixedFilter(),
             AllAssetFilters([DistanceRangesFilter(), AngleFilter()]),
@@ -47,7 +47,7 @@ private lazy var __once: () = { () -> Void in
         ])
     ], trackFilters: [
 //        DurationFilter(),
-//        RepeatFilter()
+        RepeatFilter()
     ], sortBy: [
         SortRandomly()
     ])
@@ -166,7 +166,7 @@ private lazy var __once: () = { () -> Void in
 
         
         println("start")
-        self.playlist.start() {}
+        self.playlist.start()
 
         preflightRecording()
     }

@@ -39,7 +39,7 @@ extension Asset {
             }
 
             let coords = item["shape"]["coordinates"]
-            // TODO: Handle actual multipolygons :)
+            // TODO: Handle actual multi-polygons :)
             let coordsShape = coords[0][0].array?.map { p in
                 CGPoint(x: p[0].doubleValue, y: p[1].doubleValue)
             }

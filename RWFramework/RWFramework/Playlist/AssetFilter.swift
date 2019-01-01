@@ -38,7 +38,7 @@ protocol TrackFilter {
 
 
 /// Keep an asset if it's nearby or if it is timed to play now.
-class AnyAssetFilters: AssetFilter {
+struct AnyAssetFilters: AssetFilter {
     var filters: [AssetFilter]
     init(_ filters: [AssetFilter]) {
         self.filters = filters
@@ -51,7 +51,7 @@ class AnyAssetFilters: AssetFilter {
     }
 }
 
-class AllAssetFilters: AssetFilter {
+struct AllAssetFilters: AssetFilter {
     var filters: [AssetFilter]
     init(_ filters: [AssetFilter]) {
         self.filters = filters
@@ -67,15 +67,14 @@ class AllAssetFilters: AssetFilter {
     }
 }
 
-class AnyTagsFilter: AssetFilter {
+struct AnyTagsFilter: AssetFilter {
     /// List of tags to listen for.
-    lazy var listenTags = RWFramework.sharedInstance.getListenIDsSet()
+    static var listenTags = RWFramework.sharedInstance.getListenIDsSet()
     
     func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
-        guard let listenTags = self.listenTags
+        guard let listenTags = AnyTagsFilter.listenTags
             else { return .lowest }
 
-        print("listening for tags: \(listenTags)")
         let matches = asset.tags.contains { assetTag in
             listenTags.contains(assetTag)
         }
@@ -84,12 +83,12 @@ class AnyTagsFilter: AssetFilter {
     }
 }
 
-class AllTagsFilter: AssetFilter {
+struct AllTagsFilter: AssetFilter {
     /// List of tags to listen for.
-    lazy var listenTags = RWFramework.sharedInstance.getListenIDsSet()
+    static var listenTags = RWFramework.sharedInstance.getListenIDsSet()
 
     func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
-        guard let listenTags = self.listenTags
+        guard let listenTags = AllTagsFilter.listenTags
             else { return .lowest }
 
         let matches = asset.tags.allSatisfy { assetTag in
@@ -104,7 +103,7 @@ class AllTagsFilter: AssetFilter {
  Plays an asset if the user is within range of it
  based on the current dynamic distance range.
  */
-class DistanceRangesFilter: AssetFilter {
+struct DistanceRangesFilter: AssetFilter {
     func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
         guard let params = playlist.currentParams,
               let loc = asset.location,
@@ -125,7 +124,7 @@ class DistanceRangesFilter: AssetFilter {
  Only plays an asset if the user is within the
  project-configured recording radius.
  */
-class DistanceFixedFilter: AssetFilter {
+struct DistanceFixedFilter: AssetFilter {
     func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
         guard let params = playlist.currentParams,
               let assetLoc = asset.location
@@ -144,13 +143,13 @@ class DistanceFixedFilter: AssetFilter {
 /**
  Play an asset if the user is currently within its defined shape.
  */
-class AssetShapeFilter: AssetFilter {
+struct AssetShapeFilter: AssetFilter {
     func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
         guard let params = playlist.currentParams,
               let shape = asset.shape
             // still accept an asset with no shape,
             // as shape is optional
-            else { return .lowest }
+            else { return .discard }
 
         let path = UIBezierPath.from(points: shape)
         if path.contains(params.location.toCGPoint()) {
@@ -164,7 +163,7 @@ class AssetShapeFilter: AssetFilter {
 /**
  Play an asset if it's within the current angle range.
  */
-class AngleFilter: AssetFilter {
+struct AngleFilter: AssetFilter {
     func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
         guard let opts = playlist.currentParams,
               let loc = asset.location,
@@ -209,15 +208,18 @@ class AngleFilter: AssetFilter {
  Prevents assets from playing repeatedly if the track
  doesn't have `repeatRecordings` enabled.
  */
-class RepeatFilter: TrackFilter {
+struct RepeatFilter: TrackFilter {
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
-        print("track repeats stuff? " + track.repeatRecordings.description)
-        if track.repeatRecordings {
-            return .lowest
-        } else if let lastListen = playlist.lastListenDate(for: asset) {
-            // if this asset has been listened to at all, skip it.
-            // TODO: Only reject an asset until a certain time has passed?
-            return .discard
+        if let lastListen = playlist.lastListenDate(for: asset) {
+            if track.repeatRecordings {
+                // this track allows repeating an asset,
+                // so go ahead and keep it, but after other stuff.
+                return .lowest
+            } else {
+                // if this asset has been listened to at all, skip it.
+                // TODO: Only reject an asset until a certain time has passed?
+                return .discard
+            }
         } else {
             return .normal
         }

@@ -10,12 +10,14 @@ import Foundation
 import StreamingKit
 import SwiftyJSON
 import CoreLocation
+import SceneKit
+import AVKit
 
 /// An AudioTrack has a set of parameters determining how its audio is played.
 /// Assets are provided by the Playlist, so they must match any geometric parameters.
 /// There can be an arbitrary number of audio tracks playing at once
 /// When one needs an asset, it simply grabs the next available matching one from the Playlist.
-public class AudioTrack: NSObject, STKAudioPlayerDelegate {
+public class AudioTrack {
     let id: Int
     let volume: ClosedRange<Float>
     let duration: ClosedRange<Float>
@@ -23,18 +25,37 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
     let fadeInTime: ClosedRange<Float>
     let fadeOutTime: ClosedRange<Float>
     let repeatRecordings: Bool
-    private let player = STKAudioPlayer(options: {
-        var opts = STKAudioPlayerOptions()
-        opts.enableVolumeMixer = true
-        return opts
-    }())
     var playlist: Playlist? = nil
     var currentAsset: Asset? = nil
-    private var nextAsset: Asset? = nil
+//    private var nextAsset: Asset? = nil
     private var fadeTimer: Timer? = nil
-    private var currentAssetDuration: Double? = nil
+//    private var currentAssetEnd: Double? = nil
     private var fadeOutTimer: Timer? = nil
-    
+    private var currentAssetDuration: Double? = nil
+    private var lastResumeTime: Date? = nil
+    private var currentProgress: Double? = nil
+
+    let player = AVAudioPlayerNode()
+    // SceneKit version
+//    private var player: SCNAudioPlayer? = nil
+//    let node: SCNNode = SCNNode()
+
+    private var playerVolume: Float {
+        get {
+            return player.volume
+//            if let mixer = player.audioNode as? AVAudioMixerNode {
+//                return mixer.volume
+//            }
+//            return 0.0
+        }
+        set(value) {
+            player.volume = value
+//            if let mixer = player!.audioNode as? AVAudioMixerNode {
+//                mixer.volume = value
+//            }
+        }
+    }
+
     init(
         id: Int,
         volume: ClosedRange<Float>,
@@ -52,8 +73,9 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
         self.fadeOutTime = fadeOutTime
         self.repeatRecordings = repeatRecordings
     }
-    
-    
+}
+
+extension AudioTrack {
     static func from(data: Data) throws -> [AudioTrack] {
         let items = try JSON(data: data).arrayValue
         return items.map { it in
@@ -69,82 +91,30 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
         }
     }
     
-    
-    public func audioPlayer(_ audioPlayer: STKAudioPlayer, didStartPlayingQueueItemId queueItemId: NSObject) {
-        fadeIn()
-    }
-    
-    public func audioPlayer(_ audioPlayer: STKAudioPlayer, didFinishBufferingSourceWithQueueItemId queueItemId: NSObject) {
-        
-    }
-    
-    public func audioPlayer(_ audioPlayer: STKAudioPlayer, stateChanged state: STKAudioPlayerState, previousState: STKAudioPlayerState) {
-    }
-    
-    public func audioPlayer(_ audioPlayer: STKAudioPlayer, didFinishPlayingQueueItemId queueItemId: NSObject, with stopReason: STKAudioPlayerStopReason, andProgress progress: Double, andDuration duration: Double) {
-        holdSilence()
-    }
-    
-    public func audioPlayer(_ audioPlayer: STKAudioPlayer, unexpectedError errorCode: STKAudioPlayerErrorCode) {
-        
-    }
-    
     private func holdSilence() {
-        player.pause()
         let time = TimeInterval(self.deadAir.random())
         print("silence for \(time)")
         if #available(iOS 10.0, *) {
             fadeTimer?.invalidate()
             fadeTimer = Timer.scheduledTimer(withTimeInterval: time, repeats: false) { _ in
-                self.currentAsset = nil
                 self.playNext(premature: false)
-                self.player.resume()
             }
         } else {
             // Fallback on earlier versions
         }
     }
 
-    private func setDynamicVolume(at assetLoc: CLLocation, _ params: StreamParams) {
-        // scale volume based on the asset's distance from us
-        let dist = assetLoc.distance(from: params.location)
-        let distRange: ClosedRange<Double>
-        if let maxDist = params.maxDist, let minDist = params.minDist {
-            // if we have a custom distance range,
-            // interpolate asset volume within that.
-            distRange = minDist...maxDist
-        } else {
-            // otherwise, just use the default project distance to scale the asset volume
-            distRange = 0...playlist!.project.recording_radius
-        }
-        let distRatio = (dist - distRange.lowerBound) / distRange.difference
-        let clampedRatio = Float(distRatio.clamp(to: 0...1))
-
-        player.volume = volume.lowerBound + (clampedRatio * volume.difference)
-    }
-
     private func setDynamicPan(at assetLoc: CLLocation, _ params: StreamParams) {
         // TODO: Confirm this is degrees
-        guard let heading = params.heading else { return }
-        print("heading = \(heading)")
-        var angle = params.location.angle(to: assetLoc).radiansToDegrees - heading
-        // first, we need to map the angle into [-90, 90]
-        // 90<a<270: 95 => 85, 100 => 80, 190 => -10, 200 => -20
-        // 270<a<360: 270 => -90, 290 => -70, 300 => 0 - 60
-        if angle > 90 && angle <= 270 {
-            angle = 180 - angle
-        } else if angle > 270 && angle < 360 {
-            angle = angle - 360
-        }
-
-        // pan can be in the range [-1, 1]
-        // [-90, 90] => [-1, 1]
-        player.pan = Float(angle / 90.0)
+//        guard let heading = params.heading else { return }
+//        print("heading = \(heading)")
+//        var angle = params.location.angle(to: assetLoc).radiansToDegrees - heading
+        player.position = assetLoc.toAudioPoint()
+        print("asset is at position \(player.position)")
     }
     
     func updateParams(_ params: StreamParams) {
         if let assetLoc = currentAsset?.location {
-            setDynamicVolume(at: assetLoc, params)
             setDynamicPan(at: assetLoc, params)
         }
     }
@@ -153,8 +123,6 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
     /// Plays the next optimal asset nearby.
     /// @arg premature True if skipping the current asset, rather than fading at the end of it.
     func playNext(premature: Bool = true) {
-        self.player.delegate = self
-        
         // Stop any timer set to fade at the natural end of an asset
         fadeTimer?.invalidate()
         
@@ -166,45 +134,61 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
                 self.currentAssetDuration = nil
             }
         } else {
-            // TODO: Start fade out a bit before an asset finishes playing?
             // Just fade in for the first asset or at the end of an asset
-            queueNext()
+            fadeIn()
         }
     }
     
     private func fadeIn(cb: @escaping () -> Void = {}) {
-        // pick a random duration
-        // start at a random position between start and end - duration
-        let duration = (Double(self.duration.lowerBound)...currentAsset!.length).random()
-        let latestStart = currentAsset!.length - duration
-        let start = (0.0...latestStart).random()
+        if let next = playlist?.next(forTrack: self) {
+            currentAsset = next
 
-        player.volume = 0.0
-        let interval = 0.075 // seconds
-        if #available(iOS 10.0, *) {
-            let totalTime = fadeInTime.random()
-            let target = volume.random()
-            print("asset: fading in for \(totalTime) to volume \(target), play for \(duration)")
-            fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
-                if self.player.volume < self.volume.upperBound {
-                    let toAdd = Float(interval) / totalTime
-                    if self.player.volume < toAdd {
-                        print("asset: starting at \(start)")
-                        self.player.seek(toTime: start)
+            // pick a random duration
+            // start at a random position between start and end - duration
+            let minDuration = min(Double(self.duration.lowerBound), currentAsset!.length)
+            let maxDuration = min(Double(self.duration.upperBound), currentAsset!.length)
+            let duration = (minDuration...maxDuration).random()
+            let latestStart = currentAsset!.length - duration
+            let start = (0.0...latestStart).random()
+
+            print("picking start within \(0.0...latestStart): \(start)")
+            print("picking duration within \(minDuration...maxDuration): \(duration)")
+            print("start at \(start) in asset of \(currentAsset!.length) sec")
+
+            do {
+                try loadNextAsset(start: start, for: duration)
+            } catch {
+                print(error)
+                currentAsset = nil
+                return
+            }
+
+            updateParams(playlist!.currentParams!)
+
+            playerVolume = 0.0
+            let interval = 0.075 // seconds
+            if #available(iOS 10.0, *) {
+                let totalTime = fadeInTime.random()
+                let target = volume.random()
+                print("asset: fading in for \(totalTime) to volume \(target), play for \(duration)")
+                fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
+                    if self.playerVolume < self.volume.upperBound {
+                        let toAdd = Float(interval) / totalTime
+                        self.playerVolume += toAdd
+                    } else {
+                        self.playerVolume = target
+                        self.fadeTimer?.invalidate()
+                        self.fadeTimer = nil
+                        self.setupFadeEndTimer(endTime: duration)
+                        cb()
                     }
-                    self.player.volume += toAdd
-                } else {
-                    self.player.volume = target
-                    self.fadeTimer?.invalidate()
-                    self.fadeTimer = nil
-                    cb()
                 }
+            } else {
+                // Fallback on earlier versions
             }
         } else {
-            // Fallback on earlier versions
+            currentAsset = nil
         }
-        
-        setupFadeEndTimer(endTime: start + duration)
     }
     
     private func fadeOut(forSeconds fadeTime: Float = 0, cb: @escaping () -> Void = {}) {
@@ -216,10 +200,10 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
             }
             print("asset: fade out for \(totalTime)")
             fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
-                if self.player.volume > 0.0 {
-                    self.player.volume -= Float(interval) / totalTime
+                if self.playerVolume >= 0.1 {
+                    self.playerVolume -= Float(interval) / totalTime
                 } else {
-                    self.player.volume = 0.0
+                    self.playerVolume = 0.0
                     self.fadeTimer?.invalidate()
                     self.fadeTimer = nil
                     cb()
@@ -232,39 +216,103 @@ public class AudioTrack: NSObject, STKAudioPlayerDelegate {
     
     /// Queues the next asset to play
     /// If there's nothing playing, immediately plays one and queues another.
-    private func queueNext() {
-        if let next = playlist!.next(forTrack: self) {
-            player.queue(next.file)
-            currentAsset = next
-        }
+    private func loadNextAsset(start: Double? = nil, for duration: Double? = nil) throws {
+//        if let next = playlist?.next(forTrack: self) {
+//            player.queue(next.file)
+//            if currentAsset == nil {
+//                currentAsset = next
+//            } else {
+//                nextAsset = next
+//            }
+            
+//            if let player = self.player {
+//                node.removeAudioPlayer(player)
+//            }
+
+//            self.currentAsset = next
+
+            // Download asset into memory
+            print("downloading asset")
+
+//            do {
+                let remoteUrl = URL(string: currentAsset!.file)!
+                let data = try Data(contentsOf: remoteUrl)
+                print("asset downloaded as \(remoteUrl.lastPathComponent)")
+                // have to write to file...
+                // Write it to the cache folder so we can easily clean up later.
+                let documentsDir = try FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+                let url = documentsDir.appendingPathComponent(remoteUrl.lastPathComponent)
+                try data.write(to: url, options: .atomic)
+
+                let file = try AVAudioFile(forReading: url)
+
+                if let start = start, let duration = duration {
+                    let startFrame = Int64(start * file.processingFormat.sampleRate)
+                    let frameCount = UInt32(duration * file.processingFormat.sampleRate)
+                    player.scheduleSegment(file, startingFrame: startFrame, frameCount: frameCount, at: nil)
+                } else {
+                    player.scheduleFile(file, at: nil)
+                }
+
+                if !player.isPlaying {
+                    player.play()
+                }
+//            } catch {
+//                print(error)
+//            }
+
+            // SceneKit version
+//            let source = SCNAudioSource(url: url)!
+//            source.shouldStream = false
+//            source.isPositional = false
+//            source.load()
+//            node.runAction(SCNAction.playAudio(source, waitForCompletion: true))
+//            self.player = SCNAudioPlayer(source: source)
+//            node.addAudioPlayer(player!)
+//        }
     }
     
     func pause() {
         player.pause()
         fadeOutTimer?.invalidate()
+        if let prog = currentProgress, let lastResumeTime = lastResumeTime {
+            currentProgress = prog + Date().timeIntervalSince(lastResumeTime)
+        } else {
+            currentProgress = Date().timeIntervalSince(lastResumeTime!)
+        }
     }
     
     func resume() {
-        player.resume()
+        player.play()
         setupFadeEndTimer()
     }
 
+    /// @param endTime end time within the asset
     private func setupFadeEndTimer(endTime: Double = 0) {
         // pick a fade-out length
-        if currentAssetDuration == nil {
-            var assetEndTime = endTime
-            if assetEndTime == 0 {
-                assetEndTime = currentAsset!.length
-            }
-            currentAssetDuration = assetEndTime - Double(fadeOutTime.random())
+        var fadeDur = 0.0
+        if endTime == 0 {
+            // we have resumed
+            let progressInSecs = self.currentProgress! / 1000.0
+            print("current progress in asset: \(progressInSecs)")
+            fadeDur = self.currentAssetDuration! - progressInSecs
+        } else {
+            // we're just starting the asset
+            fadeDur = max(0.1, endTime - Double(self.fadeOutTime.random()))
+            self.currentAssetDuration = fadeDur
         }
-        let fadeDur = currentAssetDuration! - player.progress
+        lastResumeTime = Date()
+
+        print("playing for another \(fadeDur) sec")
         
         fadeOutTimer?.invalidate()
         if #available(iOS 10.0, *) {
             fadeOutTimer = Timer.scheduledTimer(withTimeInterval: fadeDur, repeats: false) { timer in
                 self.fadeOut {
                     self.currentAssetDuration = nil
+                    self.currentAsset = nil
+                    self.currentProgress = nil
+                    self.holdSilence()
                 }
             }
         } else {
@@ -280,7 +328,7 @@ extension ClosedRange where Bound == Float {
 }
 extension ClosedRange where Bound == Double {
     func random() -> Bound {
-        return lowerBound + drand48() * (upperBound - lowerBound)
+        return lowerBound + drand48() * difference
     }
 }
 

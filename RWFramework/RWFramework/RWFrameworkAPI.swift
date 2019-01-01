@@ -86,6 +86,7 @@ extension RWFramework {
             client_system: client_system,
             language: language
         ).then { data -> Data in
+            self.postSessionsSucceeded = true
             self.rwPostSessionsSuccess(data)
             return data
         }.catch { error in
@@ -105,6 +106,9 @@ extension RWFramework {
 
         let project_id = RWFrameworkConfig.getConfigValueAsNumber("project_id")
         self.apiGetProjectsIdTags(project_id, session_id: session_id)
+        self.apiGetUIConfig(project_id, session_id: session_id)
+        self.apiGetProjectsIdUIGroups(project_id, session_id: session_id)
+        self.apiGetTagCategories()
         return self.apiGetProjectsId(project_id, session_id: session_id).then { data in
             try JSONDecoder().decode(Project.self, from: data)
         }
@@ -118,8 +122,6 @@ extension RWFramework {
                 RWFrameworkConfig.setConfigValue("session_id", value: session_id, group: RWFrameworkConfig.ConfigGroup.client)
             } // TODO: Handle missing value
         }
-
-        postSessionsSucceeded = true
 
         let project_id = RWFrameworkConfig.getConfigValueAsNumber("project_id")
         

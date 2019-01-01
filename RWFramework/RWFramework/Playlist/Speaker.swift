@@ -16,7 +16,7 @@ public class Speaker {
     let volume: ClosedRange<Float>
     let url: String
     let backupUrl: String
-    let shape: [CGPoint]
+    let shape: [[CGPoint]]
     let attenuationShape: [CGPoint]
     let attenuationDistance: Int
     let player = STKAudioPlayer()
@@ -27,7 +27,7 @@ public class Speaker {
         volume: ClosedRange<Float>,
         url: String,
         backupUrl: String,
-        shape: [CGPoint],
+        shape: [[CGPoint]],
         attenuationShape: [CGPoint],
         attenuationDistance: Int
     ) {
@@ -41,36 +41,37 @@ public class Speaker {
         self.looper = LoopAudio(url)
         player.stop()
     }
-    
+}
+
+extension Speaker {
     private func contains(_ point: CLLocation) -> Bool {
-        let path = UIBezierPath.from(points: shape)
-        let coord = point.coordinate
-        return path.contains(CGPoint(x: coord.latitude, y: coord.longitude))
+        return shape.contains { line in
+            let path = UIBezierPath.from(points: line)
+            return path.contains(point.toCGPoint())
+        }
     }
     
     private func attenuationShapeContains(_ point: CLLocation) -> Bool {
         let path = UIBezierPath.from(points: attenuationShape)
-        let coord = point.coordinate
-        return path.contains(CGPoint(x: coord.latitude, y: coord.longitude))
+        return path.contains(point.toCGPoint())
     }
     
     private static func distance(shape: [CGPoint], _ loc: CLLocation) -> Double {
         // find distance to nearest point in the shape
         // TODO: Find distance to side, not vertex
-        return shape.lazy.map { it in
-            loc.distance(from: CLLocation(
-                    latitude: CLLocationDegrees(it.x),
-                    longitude: CLLocationDegrees(it.y)
-            ))
+        return shape.lazy.map { pt in
+            loc.distance(from: CLLocation.from(pt))
         }.min()!
     }
 
     public func distance(to loc: CLLocation) -> Double {
-        return Speaker.distance(shape: self.shape, loc)
+        return self.shape.lazy.map { line in
+            Speaker.distance(shape: line, loc)
+        }.min()!
     }
     
     private func attenuationRatio(at loc: CLLocation) -> Double {
-        let dist = Speaker.distance(shape: shape, loc)
+        let dist = self.distance(to: loc)
         let attenDist = Speaker.distance(shape: attenuationShape, loc)
         return dist / (dist + attenDist)
     }
@@ -90,7 +91,7 @@ public class Speaker {
     /**
      @return true if we're within range of the speaker
     */
-    func updateVolume(at point: CLLocation) {
+    func updateVolume(at point: CLLocation) -> Float {
         let vol = self.volume(at: point)
         print("speaker volume = \(vol)")
         // TODO: Fading
@@ -106,6 +107,7 @@ public class Speaker {
                 player.play(url)
             }
         }
+        return vol
     }
     
     func resume() {
@@ -129,18 +131,19 @@ public class Speaker {
         
         let items = json.array!
         print(items.description)
-//        return []
         return items.map { obj in
             let it = obj.dictionaryValue
-            let boundary = it["boundary"]!["coordinates"][0].array!
+            let boundary = it["boundary"]!["coordinates"].array!
             let attenBound = it["attenuation_border"]!["coordinates"].array!
             return Speaker(
                 id: it["id"]!.int!,
                 volume: it["minvolume"]!.number!.floatValue...it["maxvolume"]!.number!.floatValue,
                 url: it["uri"]!.string!,
                 backupUrl: it["backupuri"]!.string!,
-                shape: boundary.map { it in
-                    CGPoint(x: it[0].double!, y: it[1].double!)
+                shape: boundary.map { line in
+                    line.array!.map { it in
+                        CGPoint(x: it[0].double!, y: it[1].double!)
+                    }
                 },
                 attenuationShape: attenBound.map { it in
                     CGPoint(x: it[0].double!, y: it[1].double!)
@@ -165,6 +168,12 @@ extension UIBezierPath {
 
 extension CLLocation {
     func toCGPoint() -> CGPoint {
-        return CGPoint(x: coordinate.latitude, y: coordinate.longitude)
+        return CGPoint(x: coordinate.longitude, y: coordinate.latitude)
+    }
+    static func from(_ pt: CGPoint) -> CLLocation {
+        return CLLocation(
+            latitude: CLLocationDegrees(pt.y),
+            longitude: CLLocationDegrees(pt.x)
+        )
     }
 }

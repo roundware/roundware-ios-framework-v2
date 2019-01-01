@@ -9,14 +9,14 @@ public struct TimedAsset: Codable {
 }
 
 public class TimedAssetFilter: AssetFilter {
-    private lazy var timedAssets: [TimedAsset]? = nil
+    private var timedAssets: [TimedAsset]? = nil
 
     func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
         if timedAssets == nil {
             // load the timed assets
             do {
                 timedAssets = try await(RWFramework.sharedInstance.apiGetTimedAssets([
-                    "project_id": playlist.project!.id.description
+                    "project_id": String(playlist.project.id)
                 ]).timeout(5))
             } catch {
                 return .discard

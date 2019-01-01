@@ -11,6 +11,7 @@ import CoreLocation
 import AVKit
 import StreamingKit
 import Promises
+import SceneKit
 
 struct UserAssetData {
     let lastListen: Date
@@ -42,22 +43,33 @@ class Playlist {
     private var currentAsset: Asset? = nil
     /// Map asset ID to data like last listen time.
     private(set) var userAssetData = [Int: UserAssetData]()
-    
+
     // audio tracks, background and foreground
     private(set) var speakers = [Speaker]()
     private(set) var tracks = [AudioTrack]()
 
-    private lazy var demoStream = STKAudioPlayer()
+    private var demoStream: STKAudioPlayer? = nil
     private var demoLooper: LoopAudio? = nil
-    
+
     private(set) var project: Project!
+
+//    let scene = SCNScene()
+    let audioEngine = AVAudioEngine()
+    let audioMixer = AVAudioEnvironmentNode()
 
     init(filters: [AssetFilter], trackFilters: [TrackFilter], sortBy: [SortMethod]) {
         self.playlistFilter = AllAssetFilters(filters)
         self.trackFilters = trackFilters
         self.sortMethods = sortBy
+
+        // Setup audio engine & mixer
+        audioEngine.attach(audioMixer)
+        audioEngine.connect(audioMixer, to: audioEngine.outputNode, format: nil)
+        try! audioEngine.start()
     }
-    
+}
+
+extension Playlist {
     func apply(filter: AssetFilter) {
         playlistFilter.filters.append(filter)
     }
@@ -70,17 +82,15 @@ class Playlist {
     }
     
     /// Prepares all the speakers for this project.
-    private func updateSpeakers() {
-        let rw = RWFramework.sharedInstance
-        let projectId = RWFrameworkConfig.getConfigValueAsNumber("project_id")
-        
-        rw.apiGetSpeakers([
-            "project_id": projectId.stringValue,
+    private func updateSpeakers() -> Promise<[Speaker]> {
+        return RWFramework.sharedInstance.apiGetSpeakers([
+            "project_id": String(project.id),
             "activeyn": "true"
         ]).then { speakers in
+            print("playing \(speakers.count) speakers")
             self.speakers = speakers
             self.updateSpeakerVolumes()
-        }.catch { err in }
+        }
     }
 
     /**
@@ -90,32 +100,46 @@ class Playlist {
     private func updateSpeakerVolumes() {
         print("params = \(self.currentParams)")
         if let params = self.currentParams {
+            var playDemo = true
             for speaker in self.speakers {
-                speaker.updateVolume(at: params.location)
+                let vol = speaker.updateVolume(at: params.location)
+                if vol > 0.001 {
+                    playDemo = false
+                }
             }
 
-            self.playDemoStream()
+            if playDemo {
+                self.playDemoStream()
+            }
         }
     }
 
     private func playDemoStream() {
+        if currentParams == nil {
+            return
+        }
+
         let distToSpeaker = self.speakers.lazy.map {
             $0.distance(to: self.currentParams!.location)
         }.min() ?? 0
 
         print("dist to nearest speaker: \(distToSpeaker)")
         if distToSpeaker > project.out_of_range_distance {
+            if demoStream == nil {
+                demoStream = STKAudioPlayer()
+            }
+
             // Only play the out-of-range stream if
             // we're a sufficient distance from all speakers
-            if demoStream.state != .playing {
+            if demoStream!.state != .playing {
                 demoLooper = LoopAudio(project.out_of_range_url)
-                demoStream.delegate = demoLooper
-                demoStream.play(project.out_of_range_url)
+                demoStream!.delegate = demoLooper
+                demoStream!.play(project.out_of_range_url)
                 // TODO: Show a message here telling the user they're out of project range.
                 print("out of range")
                 RWFramework.sharedInstance.rwUpdateStatus("Out of range!")
             }
-        } else {
+        } else if let demoStream = self.demoStream {
             print("demo stream is \(demoStream.state)")
             if demoStream.state == .playing {
                 demoLooper = nil
@@ -128,29 +152,29 @@ class Playlist {
     /// Applies all the playlist-level and track-level filters to make the decision.
     func next(forTrack track: AudioTrack) -> Asset? {
         let filteredAssets = self.filteredAssets.filter { asset in
-            !self.trackFilters.contains { filter in
-                filter.keep(asset, playlist: self, track: track) == .discard
+            self.trackFilters.allSatisfy { filter in
+                filter.keep(asset, playlist: self, track: track) != .discard
             }
         }
-        var next = filteredAssets.first { it in
-            return userAssetData[it.id] == nil
-        }
+
+        let next = filteredAssets.first
+
         // If we've heard them all, play the least recently played.
         // TODO: Or play none here. Depends on project settings, right?
-        if next == nil {
-            next = filteredAssets.min { a, b in
-                if let dataA = userAssetData[a.id], let dataB = userAssetData[b.id] {
-                    // Previously listened to.
-                    return dataA.lastListen < dataB.lastListen
-                    //                    let timeAgo = userData.lastListen.timeIntervalSinceNow
-                    //                    let bannedAge = 60.0 * 20.0 // assets listened within 20 minutes banned
-                    //                    if timeAgo < bannedAge {
-                    //                        return false
-                    //                    }
-                }
-                return true
-            }
-        }
+//        if next == nil {
+//            next = filteredAssets.min { a, b in
+//                if let dataA = userAssetData[a.id], let dataB = userAssetData[b.id] {
+//                    // Previously listened to.
+//                    return dataA.lastListen < dataB.lastListen
+//                    //                    let timeAgo = userData.lastListen.timeIntervalSinceNow
+//                    //                    let bannedAge = 60.0 * 20.0 // assets listened within 20 minutes banned
+//                    //                    if timeAgo < bannedAge {
+//                    //                        return false
+//                    //                    }
+//                }
+//                return true
+//            }
+//        }
         
         if let next = next {
             userAssetData.updateValue(UserAssetData(lastListen: Date()), forKey: next.id)
@@ -163,16 +187,18 @@ class Playlist {
     private func updateTracks() {
         if (self.tracks.isEmpty) {
             let rw = RWFramework.sharedInstance
-            let projectId = RWFrameworkConfig.getConfigValueAsNumber("project_id")
             
             rw.apiGetAudioTracks([
-                "project_id": projectId.stringValue
+                "project_id": String(project.id)
             ]).then { data in
                 print("assets: using " + data.count.description + " tracks")
                 self.tracks = data
                 self.tracks.forEach { it in
                     // TODO: Try to remove playlist dependency. Maybe pass into method?
                     it.playlist = self
+//                    self.scene.rootNode.addChildNode(it.node)
+                    self.audioEngine.attach(it.player)
+                    self.audioEngine.connect(it.player, to: self.audioMixer, format: nil)
                     it.playNext(premature: false)
                 }
             }.catch { err in }
@@ -192,10 +218,9 @@ class Playlist {
     /// After that, only adds the assets uploaded since the last call of this function.
     private func updateAssets() -> Promise<Void> {
         let rw = RWFramework.sharedInstance
-        let projectId = RWFrameworkConfig.getConfigValueAsNumber("project_id")
         
         var opts = [
-            "project_id": projectId.stringValue,
+            "project_id": String(project.id),
             "media_type": "audio",
             "language": "en",
             "submitted": "true"
@@ -216,9 +241,26 @@ class Playlist {
     
     /// Framework should call this when stream parameters are updated.
     func updateParams(_ opts: StreamParams) {
+        if project == nil {
+            return
+        }
+
         print("assets: updating params")
         self.currentParams = opts
         self.updateParams()
+
+        if let heading = opts.heading {
+            print("current heading angle: \(heading)")
+            self.audioMixer.listenerAngularOrientation = AVAudio3DAngularOrientation(
+                yaw: Float(heading),
+                pitch: 0,
+                roll: 0
+            )
+        }
+        let pos = opts.location.toAudioPoint()
+        self.audioMixer.listenerPosition = pos
+        self.audioMixer.position = pos
+        print("current listener position: \(pos)")
     }
     
     private func updateParams() {
@@ -240,7 +282,7 @@ class Playlist {
         filtered.sort { a, b in a.1.rawValue < b.1.rawValue }
 
         filteredAssets = filtered.map { x in x.0 }
-        print("assets filtered: \(filteredAssets.count)")
+        print("[assets] filtered: \(filteredAssets.count), total: \(allAssets.count)")
         
         // Clear data for assets we've moved away from.
         prevFiltered.forEach { a in
@@ -262,16 +304,18 @@ class Playlist {
         self.updateAssets().then {
             // Update filtered assets given any newly uploaded assets
             self.updateParams()
+
+            let locRequested = RWFramework.sharedInstance.requestWhenInUseAuthorizationForLocation()
+            print("location requested? \(locRequested)")
         }
     }
     
-    func start(cb: @escaping () -> ()) {
+    func start() {
         // Starts a session and retrieves project-wide config.
         RWFramework.sharedInstance.apiStartForClientMixing().then { project in
             self.project = project
             print("project settings: \(project)")
             self.useProjectDefaults()
-            cb()
             self.afterSessionInit()
         }
     }
@@ -316,7 +360,7 @@ class Playlist {
         for s in speakers { s.pause() }
         for t in tracks { t.pause() }
         if demoLooper != nil {
-            demoStream.pause()
+            demoStream?.pause()
         }
     }
     
@@ -325,7 +369,7 @@ class Playlist {
         for s in speakers { s.resume() }
         for t in tracks { t.resume() }
         if demoLooper != nil {
-            demoStream.resume()
+            demoStream?.resume()
         }
     }
     
@@ -358,6 +402,16 @@ extension CLLocation {
     
     func bearingToLocationDegrees(_ destinationLocation: CLLocation) -> Double {
         return bearingToLocationRadian(destinationLocation).radiansToDegrees
+    }
+
+    func toAudioPoint() -> AVAudio3DPoint {
+        let coord = self.coordinate
+        let mult = 10.0
+        return AVAudio3DPoint(
+            x: Float(coord.longitude * mult),
+            y: 0.0,
+            z: -Float(coord.latitude * mult)
+        )
     }
 }
 
