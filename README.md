@@ -34,7 +34,7 @@ When you are completely done with the framework you should call `rwf.end()` to g
 ### Listening
 
 
-##### Client-side Mixing
+#### Client-side Mixing
 This branch develops a client-side mixing solution rather than deferring that work to the server.
 Assets are gathered on the client and each `Track` associated with the current session decides if each `Asset` should be played based on the currently applied filters, of which there are two kinds:
 - `AssetFilter`: determines whether to keep an asset in the `Playlist`
@@ -62,7 +62,11 @@ rw.playlist.apply(filter: AnyAssetFilters([
 rw.start()
 ```
 
-##### Playing or stopping a stream (BECOMING OBSOLETE)
+##### Transition Notes:
+- The framework will now call `RWFramework.requestWhenInUseAuthorizationForLocation()` for you, so remove that call from your application code to allow the framework to initialize in the correct order.
+
+
+#### Playing or stopping a stream (BECOMING OBSOLETE)
 
 Anytime after receiving the `rwPostStreamsSuccess()` delegate method callback you can instruct the framework to play or pause the audio stream.
 
@@ -82,7 +86,7 @@ See `RWFrameworkAudioPlayer.swift`
 
 The framework has a number of ways to automatically handle adding assets of various types to its internal queue to be uploaded. However, if your app needs more control you can always add them manually as well.
 
-##### Attaching an audio asset
+#### Attaching an audio asset
 
 The key methods for recording, playing back and submitting an audio recording are as follows
 
@@ -114,7 +118,7 @@ Note that the standard `AVAudioRecorderDelegate` and `AVAudioPlayerDelegate` cal
 
 See `RWFrameworkAudioRecorder.swift`
 
-##### Attaching a photo asset from the camera
+#### Attaching a photo asset from the camera
 
 Simply call `doImage()`
 
@@ -124,7 +128,7 @@ Also see the `rwImagePickerControllerDidFinishPickingMedia` delegate protocol me
 
 See `RWFrameworkCamera.swift`
 
-##### Attaching a movie asset from the camera
+#### Attaching a movie asset from the camera
 
 Simply call `doMovie()`
 
@@ -134,7 +138,7 @@ Also see the `rwImagePickerControllerDidFinishPickingMedia` delegate protocol me
 
 See `RWFrameworkCamera.swift`
 
-##### Attaching an image or movie asset from the photo library
+#### Attaching an image or movie asset from the photo library
 
 Simply call `doPhotoLibrary()`
 
@@ -142,7 +146,7 @@ You can add an image or movie manually by calling `addImage(string: String)` or 
 
 See `RWFrameworkCamera.swift`
 
-##### Attaching a text asset
+#### Attaching a text asset
 
 Simply call `addText(string: String, description: String = "") -> String?`
 
@@ -150,7 +154,7 @@ The return value is a key to be used when referencing this asset.
 
 See `RWFrameworkText.swift`
 
-##### Removing an asset from the queue
+#### Removing an asset from the queue
 
 To remove an asset, you must use the key returned from the `add*` method or the `rwImagePickerControllerDidFinishPickingMedia` delegate protocol method.
 
@@ -160,13 +164,13 @@ To remove a text asset simply call `removeText(string: String)` passing the stri
 
 If you added an image or movie asset you can call the associated `remove` method to remove the item. For example, if you called `addImage(string: String, description: String = "") -> String?` or `addMovie(string: String, description: String = "") -> String?` with the path of the assets, simply call `removeImage(string: String)` or `removeMovie(string: String)` to remove them, passing the key that was returned from the `add*` call.
 
-##### Submitting all attached assets and managing the queue
+#### Submitting all attached assets and managing the queue
 
 You can see how many assets are ready for upload by calling `countMedia() -> Int`.
 
 When you are ready to submit all the queued assets simply call `uploadAllMedia()`
 
-##### Failed media
+#### Failed media
 
 There are times when uploads may fail. Errors are reported back to your application via the delegate protocol method. There are a number of methods designed to help your application manage these failures and allow the framework to try uploading again.
 
@@ -182,7 +186,7 @@ Your application can get all of the tags for both Listen and Speak modes and the
 
 See `RWFrameworkTags.swift`
 
-##### Listen Tags
+#### Listen Tags
 
 - `getListenTags() -> AnyObject?`
 - `setListenTags(value: AnyObject)`
@@ -191,7 +195,7 @@ See `RWFrameworkTags.swift`
 - `getAllListenTagsCurrent() -> AnyObject?`
 - `getAllListenTagsCurrentAsString() -> String`
 
-##### Speak Tags
+#### Speak Tags
 
 - `getSpeakTags() -> AnyObject?`
 - `setSpeakTags(value: AnyObject)`
