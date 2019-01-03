@@ -255,7 +255,7 @@ extension RWFramework {
 
 // MARK: POST streams
 
-    func apiPostStreams(at location: CLLocation? = nil) {
+    public func apiPostStreams(at location: CLLocation? = nil) {
         if (requestStreamInProgress == true) { return }
         if (requestStreamSucceeded == true) { return }
         if (postSessionsSucceeded == false) { return }
@@ -341,11 +341,11 @@ extension RWFramework {
         }
     }
 
-    func apiPatchStreamsIdWithTags(_ tag_ids: String) {
+    func apiPatchStreamsIdWithTags(_ tag_ids: String, streamPatchOptions: [String: Any] = [:]) {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
 
-        httpPatchStreamsId(self.streamID.description, tagIds: tag_ids, completion: { (data, error) -> Void in
+        httpPatchStreamsId(self.streamID.description, tagIds: tag_ids, streamPatchOptions: streamPatchOptions, completion: { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 self.patchStreamsIdSuccess(data!)
                 self.rwPatchStreamsIdSuccess(data)
@@ -526,12 +526,32 @@ extension RWFramework {
         httpPatchEnvelopesId(media, session_id: session_id) { (data, error) -> Void in
             if (data != nil) && (error == nil) {
                 success()
+                self.patchEnvelopesSuccess(data!)
                 self.rwPatchEnvelopesIdSuccess(data)
             } else if (error != nil) {
                 failure(error!)
                 self.rwPatchEnvelopesIdFailure(error)
                 self.apiProcessError(data, error: error!, caller: "apiPatchEnvelopesId")
             }
+        }
+    }
+    
+    func patchEnvelopesSuccess(_ data: Data) {
+        do {
+            let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
+            
+            if let dict = json as? [String:AnyObject] {
+                if let assetId = dict["id"] as? NSNumber {
+                    // only set config value for audio assets
+                    let assetMediaType = dict["media_type"] as? String
+                    if (assetMediaType == "audio") {
+                        RWFrameworkConfig.setConfigValue("most_recent_audio_asset_id", value: assetId, group: RWFrameworkConfig.ConfigGroup.client)
+                    }
+                }
+            }
+        }
+        catch {
+            print(error)
         }
     }
 
@@ -568,6 +588,26 @@ extension RWFramework {
             }
         }
     }
+    
+// MARK: PATCH assets id PUBLIC
+    
+    public func apiPatchAssetsId(_ asset_id: String, postData: [String: Any] = [:], success:@escaping (_ data: Data?) -> Void, failure:@escaping (_ error: NSError) -> Void) {
+        
+        httpPatchAssetsId(asset_id, postData: postData) { (data, error) -> Void in
+            if (data != nil) && (error == nil) {
+                success(data)
+                self.rwPatchAssetsIdSuccess(data)
+            } else if (error != nil) {
+                failure(error!)
+                self.rwPatchAssetsIdFailure(error)
+                self.apiProcessError(data, error: error!, caller: "apiPatchAssetsId")
+            }
+        }
+    }
+    
+    
+    
+
 
 // MARK: POST assets id votes
 

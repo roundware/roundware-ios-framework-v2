@@ -221,6 +221,15 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
             completion(nil, error)
         }
     }
+    
+    func httpPatchAssetsId(_ asset_id: String, postData: [String: Any] = [:], completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
+        if let url = URL(string: RWFrameworkURLFactory.patchAssetsIdURL(asset_id)) {
+            patchDataToURL(url, postData: postData, completion: completion)
+        } else {
+            let error = NSError(domain:self.reverse_domain, code:NSURLErrorBadURL, userInfo:[NSLocalizedDescriptionKey : "httpPatchAssetsId unable to be created."])
+            completion(nil, error)
+        }
+    }
 
     func httpPostAssetsIdVotes(_ asset_id: String, session_id: NSNumber, vote_type: String, value: NSNumber = 0, completion:@escaping (_ data: Data?, _ error: NSError?) -> Void) {
         if let url = URL(string: RWFrameworkURLFactory.postAssetsIdVotesURL(asset_id)) {
