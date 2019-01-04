@@ -29,7 +29,7 @@ extension RWFramework {
     }
 
     /// Destroy the AVPlayer
-    func destroyPlayer() {
+    public func destroyPlayer() {
         if (player == nil) { return }
         player = nil
     }
