@@ -47,4 +47,5 @@ Pod::Spec.new do |s|
   s.dependency "PromisesSwift", "~> 1.2.3"
   s.dependency "SwiftyJSON", "~> 4.0"
   s.dependency "StreamingKit", "~> 0.1.30"
+  s.dependency "GEOSwift", "~> 3.0.2"
 end

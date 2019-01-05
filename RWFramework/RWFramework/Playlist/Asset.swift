@@ -9,6 +9,7 @@
 import Foundation
 import CoreLocation
 import SwiftyJSON
+import GEOSwift
 
 struct Asset {
     let id: Int
@@ -17,7 +18,7 @@ struct Asset {
     let length: Double // in seconds
     let createdDate: Date
     let tags: [Int]
-    let shape: [CGPoint]?
+    let shape: Geometry?
     let weight: Double
     let description: String
 }
@@ -30,7 +31,7 @@ extension Asset {
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         dateFormatter.locale = Locale.init(identifier: "en_US_POSIX")
 
-        return items.arrayValue.map { item in
+        return items.array!.map { item in
             let location: CLLocation?
             if let lat = item["latitude"].double, let lng = item["longitude"].double {
                 location = CLLocation(latitude: lat, longitude: lng)
@@ -38,14 +39,19 @@ extension Asset {
                 location = nil
             }
 
-            let coords = item["shape"]["coordinates"]
-            // TODO: Handle actual multi-polygons :)
-            let coordsShape = coords[0][0].array?.map { p in
-                CGPoint(x: p[0].doubleValue, y: p[1].doubleValue)
+            var coordsShape: Geometry? = nil
+            if let shape = item["shape"].dictionary, let coords = shape["coordinates"]![0][0].array {
+                // TODO: Handle actual multi-polygons
+                coordsShape = LinearRing(points: coords.map { p in
+                    Coordinate(x: p[0].double!, y: p[1].double!)
+                })
             }
+
+            // Remove milliseconds from the creation date.
             let createdString = item["created"].string!.replacingOccurrences(
                 of: "\\.\\d+", with: "", options: .regularExpression
             )
+
             return Asset(
                 id: item["id"].int!,
                 location: location,

@@ -8,6 +8,7 @@
 
 import Foundation
 import Promises
+import GEOSwift
 
 /**
  The priority to place on an asset, or to discard it from use.
@@ -47,7 +48,7 @@ struct AnyAssetFilters: AssetFilter {
     func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
         return filters.lazy
             .map { $0.keep(asset, playlist: playlist) }
-            .first { $0 != .discard } ?? .discard
+            .first { $0 != .discard } ?? .normal
     }
 }
 
@@ -63,7 +64,7 @@ struct AllAssetFilters: AssetFilter {
             // short-circuit, only processing filters until one discards this asset.
             .prefix { $0 != .discard }
             // Use the highest priority given to this asset by one of the applied filters.
-            .min { a, b in a.rawValue < b.rawValue } ?? .discard
+            .min { a, b in a.rawValue < b.rawValue } ?? .normal
     }
 }
 
@@ -147,12 +148,9 @@ struct AssetShapeFilter: AssetFilter {
     func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
         guard let params = playlist.currentParams,
               let shape = asset.shape
-            // still accept an asset with no shape,
-            // as shape is optional
             else { return .discard }
 
-        let path = UIBezierPath.from(points: shape)
-        if path.contains(params.location.toCGPoint()) {
+        if shape.contains(params.location.toWaypoint()) {
             return .normal
         } else {
             return .discard

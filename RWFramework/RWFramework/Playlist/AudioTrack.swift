@@ -145,25 +145,29 @@ extension AudioTrack {
 
             // pick a random duration
             // start at a random position between start and end - duration
-            let minDuration = min(Double(self.duration.lowerBound), currentAsset!.length)
-            let maxDuration = min(Double(self.duration.upperBound), currentAsset!.length)
+            let minDuration = min(Double(self.duration.lowerBound), next.length)
+            let maxDuration = min(Double(self.duration.upperBound), next.length)
             let duration = (minDuration...maxDuration).random()
-            let latestStart = currentAsset!.length - duration
+            let latestStart = next.length - duration
             let start = (0.0...latestStart).random()
 
             print("picking start within \(0.0...latestStart): \(start)")
             print("picking duration within \(minDuration...maxDuration): \(duration)")
-            print("start at \(start) in asset of \(currentAsset!.length) sec")
+            print("start at \(start) in asset of \(next.length) sec")
 
             do {
                 try loadNextAsset(start: start, for: duration)
             } catch {
-                print(error)
+                let err = error
+                print(err)
                 currentAsset = nil
                 return
             }
 
-            updateParams(playlist!.currentParams!)
+
+            if let params = playlist?.currentParams {
+                updateParams(params)
+            }
 
             playerVolume = 0.0
             let interval = 0.075 // seconds
@@ -235,7 +239,13 @@ extension AudioTrack {
             print("downloading asset")
 
 //            do {
-                let remoteUrl = URL(string: currentAsset!.file)!
+
+
+                var remoteUrl = URL(string: currentAsset!.file)!
+                if remoteUrl.pathExtension == "m4a" {
+                    remoteUrl.deletePathExtension()
+                    remoteUrl.appendPathExtension("mp3")
+                }
                 let data = try Data(contentsOf: remoteUrl)
                 print("asset downloaded as \(remoteUrl.lastPathComponent)")
                 // have to write to file...
@@ -273,18 +283,22 @@ extension AudioTrack {
     }
     
     func pause() {
-        player.pause()
-        fadeOutTimer?.invalidate()
-        if let prog = currentProgress, let lastResumeTime = lastResumeTime {
-            currentProgress = prog + Date().timeIntervalSince(lastResumeTime)
-        } else {
-            currentProgress = Date().timeIntervalSince(lastResumeTime!)
+        if player.isPlaying {
+            player.pause()
+            fadeOutTimer?.invalidate()
+            if let prog = currentProgress, let lastResumeTime = lastResumeTime {
+                currentProgress = prog + Date().timeIntervalSince(lastResumeTime)
+            } else {
+                currentProgress = Date().timeIntervalSince(lastResumeTime!)
+            }
         }
     }
     
     func resume() {
-        player.play()
-        setupFadeEndTimer()
+        if !player.isPlaying {
+            player.play()
+            setupFadeEndTimer()
+        }
     }
 
     /// @param endTime end time within the asset

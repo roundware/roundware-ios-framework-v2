@@ -198,7 +198,7 @@ extension Playlist {
                     it.playlist = self
 //                    self.scene.rootNode.addChildNode(it.node)
                     self.audioEngine.attach(it.player)
-                    self.audioEngine.connect(it.player, to: self.audioMixer, format: nil)
+                    self.audioEngine.connect(it.player, to: self.audioMixer, format: AVAudioFormat(standardFormatWithSampleRate: 96000, channels: 1))
                     it.playNext(premature: false)
                 }
             }.catch { err in }
@@ -406,7 +406,7 @@ extension CLLocation {
 
     func toAudioPoint() -> AVAudio3DPoint {
         let coord = self.coordinate
-        let mult = 10.0
+        let mult = 1.0
         return AVAudio3DPoint(
             x: Float(coord.longitude * mult),
             y: 0.0,

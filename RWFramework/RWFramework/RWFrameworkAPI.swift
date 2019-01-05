@@ -33,22 +33,23 @@ extension RWFramework {
     }
 
     /// MARK: POST users
-    func apiPostUsers(_ device_id: String, client_type: String, client_system: String) -> Promise<Data> {
+    func apiPostUsers(_ device_id: String, client_type: String, client_system: String) -> Promise<Void> {
         let token = RWFrameworkConfig.getConfigValueAsString("token", group: RWFrameworkConfig.ConfigGroup.client)
         
         if (token.lengthOfBytes(using: String.Encoding.utf8) > 0) {
             // postUsersSucceeded = true
-            return apiPostSessions()
+            print("using token \(token)")
+            return Promise(())
         } else {
             return httpPostUsers(
                 device_id,
                 client_type: client_type,
                 client_system: client_system
-            ).then { data -> Data in
+            ).then { data -> Void in
                 // save our user info for future operations
                 try self.saveUserInfo(data)
                 self.rwPostUsersSuccess(data)
-                return data
+                return ()
             }.catch { error in
                 self.rwPostUsersFailure(error)
                 self.apiProcessError(nil, error: error, caller: "apiPostUsers")
@@ -57,6 +58,8 @@ extension RWFramework {
     }
 
     private func saveUserInfo(_ data: Data) throws {
+        print("got new user")
+        print(data)
         if let dict = try JSON(data: data).dictionary {
             if let username = dict["username"]?.string {
                 RWFrameworkConfig.setConfigValue("username", value: username, group: RWFrameworkConfig.ConfigGroup.client)
