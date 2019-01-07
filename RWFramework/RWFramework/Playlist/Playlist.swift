@@ -8,7 +8,7 @@
 
 import Foundation
 import CoreLocation
-import AVKit
+import AVFoundation
 import StreamingKit
 import Promises
 import SceneKit
@@ -98,11 +98,11 @@ extension Playlist {
      If the distance to the nearest speaker > outOfRangeDistance, then play demo stream.
     */
     private func updateSpeakerVolumes() {
-        print("params = \(self.currentParams)")
         if let params = self.currentParams {
             var playDemo = true
             for speaker in self.speakers {
                 let vol = speaker.updateVolume(at: params.location)
+                // Only consider playing the demo stream if all speakers are silent.
                 if vol > 0.001 {
                     playDemo = false
                 }
@@ -115,15 +115,13 @@ extension Playlist {
     }
 
     private func playDemoStream() {
-        if currentParams == nil {
-            return
-        }
-
+        // distance to nearest point on a speaker shape
         let distToSpeaker = self.speakers.lazy.map {
             $0.distance(to: self.currentParams!.location)
         }.min() ?? 0
 
         print("dist to nearest speaker: \(distToSpeaker)")
+        // if we're out of range, start playing from out_of_range_url
         if distToSpeaker > project.out_of_range_distance {
             if demoStream == nil {
                 demoStream = STKAudioPlayer()
@@ -135,12 +133,11 @@ extension Playlist {
                 demoLooper = LoopAudio(project.out_of_range_url)
                 demoStream!.delegate = demoLooper
                 demoStream!.play(project.out_of_range_url)
-                // TODO: Show a message here telling the user they're out of project range.
+
                 print("out of range")
                 RWFramework.sharedInstance.rwUpdateStatus("Out of range!")
             }
         } else if let demoStream = self.demoStream {
-            print("demo stream is \(demoStream.state)")
             if demoStream.state == .playing {
                 demoLooper = nil
                 demoStream.stop()

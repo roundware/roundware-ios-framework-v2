@@ -36,6 +36,8 @@ extension Project {
     /// Time to wait between checking for newly published assets
     /// - units: seconds
     var asset_refresh_interval: Double {
-        return RWFrameworkConfig.getConfigValueAsNumber("asset_refresh_interval").doubleValue
+        let defaultInterval = 3.0 * 60.0
+        let num = RWFrameworkConfig.getConfigValue("asset_refresh_interval", group: .project) as? NSNumber
+        return num?.doubleValue ?? defaultInterval
     }
 }

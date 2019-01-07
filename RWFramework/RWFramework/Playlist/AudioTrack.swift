@@ -160,7 +160,7 @@ extension AudioTrack {
             } catch {
                 let err = error
                 print(err)
-                currentAsset = nil
+                playNext()
                 return
             }
 

@@ -20,8 +20,8 @@ public class Speaker {
     let shape: Geometry
     let attenuationShape: Geometry
     let attenuationDistance: Int
-    let player = STKAudioPlayer()
-    let looper: LoopAudio
+    private let player = STKAudioPlayer()
+    private let looper: LoopAudio
 
     init(
         id: Int,
