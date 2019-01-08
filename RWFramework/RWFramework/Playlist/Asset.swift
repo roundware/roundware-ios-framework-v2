@@ -44,7 +44,7 @@ extension Asset {
                 // TODO: Handle actual multi-polygons
                 coordsShape = Polygon(shell: LinearRing(points: coords.map { p in
                     Coordinate(x: p[0].double!, y: p[1].double!)
-                }), holes: nil)
+                })!, holes: nil)
             }
 
             // Remove milliseconds from the creation date.
