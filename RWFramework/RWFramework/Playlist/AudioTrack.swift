@@ -337,12 +337,12 @@ extension AudioTrack {
 
 extension ClosedRange where Bound == Float {
     func random() -> Bound {
-        return lowerBound + Bound(drand48()) * (upperBound - lowerBound)
+        return Bound.random(in: self)
     }
 }
 extension ClosedRange where Bound == Double {
     func random() -> Bound {
-        return lowerBound + drand48() * difference
+        return Bound.random(in: self)
     }
 }
 

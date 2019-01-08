@@ -8,7 +8,7 @@ protocol SortMethod {
 
 struct SortRandomly: SortMethod {
     func sortRanking(for asset: Asset, in playlist: Playlist) -> Double {
-        return drand48()
+        return Double.random(in: 0...1)
     }
 }
 
