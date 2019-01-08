@@ -46,11 +46,11 @@ public class Speaker {
 
 extension Speaker {
     private func contains(_ point: CLLocation) -> Bool {
-        return shape.contains(point.toWaypoint())
+        return point.toWaypoint().within(shape)
     }
     
     private func attenuationShapeContains(_ point: CLLocation) -> Bool {
-        return attenuationShape.contains(point.toWaypoint())
+        return point.toWaypoint().within(attenuationShape)
     }
     
     private static func distance(shape: [CGPoint], _ loc: CLLocation) -> Double {
@@ -68,9 +68,9 @@ extension Speaker {
     }
     
     private func attenuationRatio(at loc: CLLocation) -> Double {
-        let dist = self.distance(to: loc)
-        let attenDist = attenuationShape.distance(geometry: loc.toWaypoint())
-        return dist / (dist + attenDist)
+//        let dist = self.distance(to: loc)
+        let attenDist = loc.toWaypoint().distance(geometry: attenuationShape)
+        return 1 - (attenDist / Double(attenuationDistance))
     }
     
     func volume(at point: CLLocation) -> Float {
@@ -78,7 +78,7 @@ extension Speaker {
             return volume.upperBound
         } else if contains(point) {
             // TODO: Linearly attenuate instead of just averaging.
-            let range = volume.upperBound - volume.lowerBound
+            let range = volume.difference
             return volume.lowerBound + range * Float(attenuationRatio(at: point))
         } else {
             return volume.lowerBound
@@ -136,13 +136,13 @@ extension Speaker {
                 url: it["uri"]!.string!,
                 backupUrl: it["backupuri"]!.string!,
                 shape: GeometryCollection(geometries: boundary.map { line in
-                    LinearRing(points: line.array!.map { p in
+                    Polygon(shell: LinearRing(points: line.array!.map { p in
                         Coordinate(x: p[0].double!, y: p[1].double!)
-                    })!
+                    })!, holes: nil)!
                 })!,
-                attenuationShape: LinearRing(points: attenBound.map { it in
+                attenuationShape: Polygon(shell: LinearRing(points: attenBound.map { it in
                     Coordinate(x: it[0].double!, y: it[1].double!)
-                })!,
+                })!, holes: nil)!,
                 attenuationDistance: it["attenuation_distance"]!.int!
             )
         }

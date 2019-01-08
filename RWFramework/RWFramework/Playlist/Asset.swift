@@ -42,9 +42,9 @@ extension Asset {
             var coordsShape: Geometry? = nil
             if let shape = item["shape"].dictionary, let coords = shape["coordinates"]![0][0].array {
                 // TODO: Handle actual multi-polygons
-                coordsShape = LinearRing(points: coords.map { p in
+                coordsShape = Polygon(shell: LinearRing(points: coords.map { p in
                     Coordinate(x: p[0].double!, y: p[1].double!)
-                })
+                }), holes: nil)
             }
 
             // Remove milliseconds from the creation date.
