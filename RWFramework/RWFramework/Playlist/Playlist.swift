@@ -48,8 +48,9 @@ class Playlist {
     private(set) var speakers = [Speaker]()
     private(set) var tracks = [AudioTrack]()
 
-    private var demoStream: STKAudioPlayer? = nil
-    private var demoLooper: LoopAudio? = nil
+    private var demoStream: AVPlayer? = nil
+    private var demoLooper: Any? = nil
+//    private var demoLooper: LoopAudio? = nil
 
     private(set) var project: Project!
 
@@ -110,6 +111,9 @@ extension Playlist {
 
             if playDemo {
                 self.playDemoStream()
+            } else if let ds = self.demoStream {
+                ds.pause()
+                NotificationCenter.default.removeObserver(demoLooper)
             }
         }
     }
@@ -123,25 +127,24 @@ extension Playlist {
         print("dist to nearest speaker: \(distToSpeaker)")
         // if we're out of range, start playing from out_of_range_url
         if distToSpeaker > project.out_of_range_distance {
-            if demoStream == nil {
-                demoStream = STKAudioPlayer()
+            print("out of range")
+            RWFramework.sharedInstance.rwUpdateStatus("Out of range!")
+
+            if demoStream == nil, let demoUrl = URL(string: project.out_of_range_url) {
+                demoStream = AVPlayer(url: demoUrl)
             }
 
             // Only play the out-of-range stream if
             // we're a sufficient distance from all speakers
-            if demoStream!.state != .playing {
-                demoLooper = LoopAudio(project.out_of_range_url)
-                demoStream!.delegate = demoLooper
-                demoStream!.play(project.out_of_range_url)
-
-                print("out of range")
-                RWFramework.sharedInstance.rwUpdateStatus("Out of range!")
+            demoStream?.play()
+            if demoLooper == nil {
+                demoLooper = NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: demoStream!.currentItem, queue: .main) { [weak self] _ in
+                    self?.demoStream?.seek(to: CMTime.zero)
+                    self?.demoStream?.play()
+                }
             }
         } else if let demoStream = self.demoStream {
-            if demoStream.state == .playing {
-                demoLooper = nil
-                demoStream.stop()
-            }
+            demoStream.pause()
         }
     }
     
@@ -366,7 +369,7 @@ extension Playlist {
         for s in speakers { s.resume() }
         for t in tracks { t.resume() }
         if demoLooper != nil {
-            demoStream?.resume()
+            demoStream?.play()
         }
     }
     
