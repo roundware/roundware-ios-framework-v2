@@ -66,6 +66,7 @@ class Playlist {
         // Setup audio engine & mixer
         audioEngine.attach(audioMixer)
         audioEngine.connect(audioMixer, to: audioEngine.outputNode, format: nil)
+        audioEngine.prepare()
         try! audioEngine.start()
     }
 }
@@ -193,12 +194,14 @@ extension Playlist {
             ]).then { data in
                 print("assets: using " + data.count.description + " tracks")
                 self.tracks = data
-                self.tracks.forEach { it in
+                try self.tracks.forEach { it in
                     // TODO: Try to remove playlist dependency. Maybe pass into method?
                     it.playlist = self
-//                    self.scene.rootNode.addChildNode(it.node)
                     self.audioEngine.attach(it.player)
                     self.audioEngine.connect(it.player, to: self.audioMixer, format: AVAudioFormat(standardFormatWithSampleRate: 96000, channels: 1))
+                    if !self.audioEngine.isRunning {
+                        try self.audioEngine.start()
+                    }
                     it.playNext(premature: false)
                 }
             }.catch { err in }
