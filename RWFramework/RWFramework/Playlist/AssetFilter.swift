@@ -46,6 +46,9 @@ struct AnyAssetFilters: AssetFilter {
     }
 
     func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
+        if filters.isEmpty {
+            return .lowest
+        }
         return filters.lazy
             .map { $0.keep(asset, playlist: playlist) }
             .first { $0 != .discard } ?? .discard
@@ -59,6 +62,9 @@ struct AllAssetFilters: AssetFilter {
     }
 
     func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
+        if filters.isEmpty {
+            return .lowest
+        }
         return filters.lazy
             .map { $0.keep(asset, playlist: playlist) }
             // short-circuit, only processing filters until one discards this asset.
