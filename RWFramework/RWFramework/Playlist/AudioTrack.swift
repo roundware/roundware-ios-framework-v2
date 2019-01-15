@@ -28,6 +28,7 @@ public class AudioTrack {
     let tags: [Int]
     
     var playlist: Playlist? = nil
+    var previousAsset: Asset? = nil
     var currentAsset: Asset? = nil
 //    private var nextAsset: Asset? = nil
     private var fadeTimer: Timer? = nil
@@ -146,6 +147,7 @@ extension AudioTrack {
     
     private func fadeIn(cb: @escaping () -> Void = {}) {
         if let next = playlist?.next(forTrack: self) {
+            previousAsset = currentAsset
             currentAsset = next
 
             // pick a random duration
@@ -226,65 +228,45 @@ extension AudioTrack {
     /// Queues the next asset to play
     /// If there's nothing playing, immediately plays one and queues another.
     private func loadNextAsset(start: Double? = nil, for duration: Double? = nil) throws {
-//        if let next = playlist?.next(forTrack: self) {
-//            player.queue(next.file)
-//            if currentAsset == nil {
-//                currentAsset = next
-//            } else {
-//                nextAsset = next
-//            }
+        // Download asset into memory
+        print("downloading asset")
+        var remoteUrl = URL(string: currentAsset!.file)!
+            .deletingPathExtension()
+            .appendingPathExtension("mp3")
+        
+        let data = try Data(contentsOf: remoteUrl)
+        print("asset downloaded as \(remoteUrl.lastPathComponent)")
+        // have to write to file...
+        // Write it to the cache folder so we can easily clean up later.
+        let documentsDir = try FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+        
+        // Remove file of last played asset
+        if let prev = previousAsset {
+            let fileName = URL(string: prev.file)!
+                .deletingPathExtension()
+                .appendingPathExtension("mp3")
+                .lastPathComponent
             
-//            if let player = self.player {
-//                node.removeAudioPlayer(player)
-//            }
+            let prevAssetUrl = documentsDir.appendingPathComponent(fileName)
+            try FileManager.default.removeItem(at: prevAssetUrl)
+        }
+        
+        let url = documentsDir.appendingPathComponent(remoteUrl.lastPathComponent)
+        try data.write(to: url, options: .atomic)
 
-//            self.currentAsset = next
+        let file = try AVAudioFile(forReading: url)
 
-            // Download asset into memory
-            print("downloading asset")
+        if let start = start, let duration = duration {
+            let startFrame = Int64(start * file.processingFormat.sampleRate)
+            let frameCount = UInt32(duration * file.processingFormat.sampleRate)
+            player.scheduleSegment(file, startingFrame: startFrame, frameCount: frameCount, at: nil)
+        } else {
+            player.scheduleFile(file, at: nil)
+        }
 
-//            do {
-
-
-                var remoteUrl = URL(string: currentAsset!.file)!
-                if remoteUrl.pathExtension == "m4a" {
-                    remoteUrl.deletePathExtension()
-                    remoteUrl.appendPathExtension("mp3")
-                }
-                let data = try Data(contentsOf: remoteUrl)
-                print("asset downloaded as \(remoteUrl.lastPathComponent)")
-                // have to write to file...
-                // Write it to the cache folder so we can easily clean up later.
-                let documentsDir = try FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-                let url = documentsDir.appendingPathComponent(remoteUrl.lastPathComponent)
-                try data.write(to: url, options: .atomic)
-
-                let file = try AVAudioFile(forReading: url)
-
-                if let start = start, let duration = duration {
-                    let startFrame = Int64(start * file.processingFormat.sampleRate)
-                    let frameCount = UInt32(duration * file.processingFormat.sampleRate)
-                    player.scheduleSegment(file, startingFrame: startFrame, frameCount: frameCount, at: nil)
-                } else {
-                    player.scheduleFile(file, at: nil)
-                }
-
-                if !player.isPlaying {
-                    player.play()
-                }
-//            } catch {
-//                print(error)
-//            }
-
-            // SceneKit version
-//            let source = SCNAudioSource(url: url)!
-//            source.shouldStream = false
-//            source.isPositional = false
-//            source.load()
-//            node.runAction(SCNAction.playAudio(source, waitForCompletion: true))
-//            self.player = SCNAudioPlayer(source: source)
-//            node.addAudioPlayer(player!)
-//        }
+        if !player.isPlaying {
+            player.play()
+        }
     }
     
     func pause() {
