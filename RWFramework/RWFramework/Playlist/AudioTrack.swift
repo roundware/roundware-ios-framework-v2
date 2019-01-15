@@ -177,7 +177,7 @@ extension AudioTrack {
             playerVolume = 0.0
             let interval = 0.075 // seconds
             if #available(iOS 10.0, *) {
-                let totalTime = max(fadeInTime.random(), next.length / 2)
+                let totalTime = max(fadeInTime.random(), Float(next.length / 2))
                 let target = volume.random()
                 print("asset: fading in for \(totalTime) to volume \(target), play for \(duration)")
                 fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
@@ -288,9 +288,9 @@ extension AudioTrack {
     }
     
     func pause() {
+        fadeOutTimer?.invalidate()
         if player.isPlaying {
             player.pause()
-            fadeOutTimer?.invalidate()
             if let prog = currentProgress, let lastResumeTime = lastResumeTime {
                 currentProgress = prog + Date().timeIntervalSince(lastResumeTime)
             } else {
@@ -309,24 +309,25 @@ extension AudioTrack {
     /// @param endTime end time within the asset
     private func setupFadeEndTimer(endTime: Double = 0) {
         // pick a fade-out length
-        var fadeDur = 0.0
+        var timeUntilFade = 0.0
         if endTime == 0 {
             // we have resumed
             let progressInSecs = self.currentProgress! / 1000.0
             print("current progress in asset: \(progressInSecs)")
-            fadeDur = self.currentAssetDuration! - progressInSecs
+            timeUntilFade = self.currentAssetDuration! - progressInSecs
         } else {
             // we're just starting the asset
-            fadeDur = max(0.1, endTime - Double(self.fadeOutTime.random()))
-            self.currentAssetDuration = fadeDur
+            let fadeDur = min(Double(self.fadeOutTime.random()), self.currentAsset!.length)
+            timeUntilFade = max(0.1, endTime - fadeDur)
+            self.currentAssetDuration = timeUntilFade
         }
         lastResumeTime = Date()
 
-        print("playing for another \(fadeDur) sec")
+        print("playing for another \(timeUntilFade) sec")
         
         fadeOutTimer?.invalidate()
         if #available(iOS 10.0, *) {
-            fadeOutTimer = Timer.scheduledTimer(withTimeInterval: fadeDur, repeats: false) { timer in
+            fadeOutTimer = Timer.scheduledTimer(withTimeInterval: timeUntilFade, repeats: false) { timer in
                 self.fadeOut {
                     self.currentAssetDuration = nil
                     self.currentAsset = nil
