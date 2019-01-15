@@ -67,11 +67,9 @@ struct AllAssetFilters: AssetFilter {
 }
 
 struct AnyTagsFilter: AssetFilter {
-    /// List of tags to listen for.
-    static var listenTags = RWFramework.sharedInstance.getListenIDsSet()
-
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
-        guard let listenTags = AnyTagsFilter.listenTags
+        // List of tags to listen for.
+        guard let listenTags = RWFramework.sharedInstance.getListenIDsSet()
             else { return .lowest }
 
         let matches = asset.tags.contains { assetTag in
@@ -83,11 +81,9 @@ struct AnyTagsFilter: AssetFilter {
 }
 
 struct AllTagsFilter: AssetFilter {
-    /// List of tags to listen for.
-    static var listenTags = RWFramework.sharedInstance.getListenIDsSet()
-
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
-        guard let listenTags = AllTagsFilter.listenTags
+        // List of tags to listen for.
+        guard let listenTags = RWFramework.sharedInstance.getListenIDsSet()
             else { return .lowest }
 
         let matches = asset.tags.allSatisfy { assetTag in
