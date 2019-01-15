@@ -112,8 +112,9 @@ extension RWFramework {
         self.apiGetUIConfig(project_id, session_id: session_id)
         self.apiGetProjectsIdUIGroups(project_id, session_id: session_id)
         self.apiGetTagCategories()
-        return self.apiGetProjectsId(project_id, session_id: session_id).then { data in
-            try JSONDecoder().decode(Project.self, from: data)
+        return self.apiGetProjectsId(project_id, session_id: session_id).then { data -> Project in
+            self.setupRecording()
+            return try JSONDecoder().decode(Project.self, from: data)
         }
     }
 
@@ -174,12 +175,7 @@ extension RWFramework {
                 startHeartbeatTimer()
             }
 
-            let speak_enabled = RWFrameworkConfig.getConfigValueAsBool("speak_enabled")
-            if (speak_enabled) {
-                startAudioTimer()
-                startUploadTimer()
-                rwReadyToRecord()
-            }
+            setupRecording()
 
             // getProjectsIdSucceeded = true
             
@@ -188,6 +184,15 @@ extension RWFramework {
             // a simpler alternative to apiGetProjectsIdTags and it's subsequent calls but needs
             // to be properly vetted before turning off the more complex calls
 //                apiGetUIConfig(project_id, session_id: session_id)
+        }
+    }
+    
+    func setupRecording() {
+        let speak_enabled = RWFrameworkConfig.getConfigValueAsBool("speak_enabled")
+        if (speak_enabled) {
+            startAudioTimer()
+            startUploadTimer()
+            rwReadyToRecord()
         }
     }
 
