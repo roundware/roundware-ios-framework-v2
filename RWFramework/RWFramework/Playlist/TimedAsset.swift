@@ -11,7 +11,7 @@ public struct TimedAsset: Codable {
 public class TimedAssetFilter: AssetFilter {
     private var timedAssets: [TimedAsset]? = nil
 
-    func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         if timedAssets == nil {
             // load the timed assets
             do {

@@ -35,8 +35,7 @@ class Playlist {
 
     // assets and filters
 
-    private var playlistFilter: AllAssetFilters
-    private var trackFilters: [TrackFilter]
+    private var filters: AllAssetFilters
     private var sortMethods: [SortMethod]
     private var allAssets = [Asset]()
     private var filteredAssets = [Asset]()
@@ -50,7 +49,6 @@ class Playlist {
 
     private var demoStream: AVPlayer? = nil
     private var demoLooper: Any? = nil
-//    private var demoLooper: LoopAudio? = nil
 
     private(set) var project: Project!
 
@@ -58,25 +56,23 @@ class Playlist {
     let audioEngine = AVAudioEngine()
     let audioMixer = AVAudioEnvironmentNode()
 
-    init(filters: [AssetFilter], trackFilters: [TrackFilter], sortBy: [SortMethod]) {
-        self.playlistFilter = AllAssetFilters(filters)
-        self.trackFilters = trackFilters
+    init(filters: [AssetFilter], sortBy: [SortMethod]) {
+        self.filters = AllAssetFilters(filters)
         self.sortMethods = sortBy
 
         // Setup audio engine & mixer
         audioEngine.attach(audioMixer)
         audioEngine.connect(audioMixer, to: audioEngine.outputNode, format: nil)
-        audioEngine.prepare()
         try! audioEngine.start()
     }
 }
 
 extension Playlist {
+    // func apply(filter: AssetFilter) {
+    //     playlistFilter.filters.append(filter)
+    // }
     func apply(filter: AssetFilter) {
-        playlistFilter.filters.append(filter)
-    }
-    func apply(filter: TrackFilter) {
-        self.trackFilters.append(filter)
+        self.filters.filters.append(filter)
     }
     
     func lastListenDate(for asset: Asset) -> Date? {
@@ -152,31 +148,15 @@ extension Playlist {
     /// Picks the next-up asset to play on the given track.
     /// Applies all the playlist-level and track-level filters to make the decision.
     func next(forTrack track: AudioTrack) -> Asset? {
-        let filteredAssets = self.filteredAssets.filter { asset in
-            self.trackFilters.allSatisfy { filter in
-                filter.keep(asset, playlist: self, track: track) != .discard
-            }
-        }
-
-        let next = filteredAssets.first
-
-        // If we've heard them all, play the least recently played.
-        // TODO: Or play none here. Depends on project settings, right?
-//        if next == nil {
-//            next = filteredAssets.min { a, b in
-//                if let dataA = userAssetData[a.id], let dataB = userAssetData[b.id] {
-//                    // Previously listened to.
-//                    return dataA.lastListen < dataB.lastListen
-//                    //                    let timeAgo = userData.lastListen.timeIntervalSinceNow
-//                    //                    let bannedAge = 60.0 * 20.0 // assets listened within 20 minutes banned
-//                    //                    if timeAgo < bannedAge {
-//                    //                        return false
-//                    //                    }
-//                }
-//                return true
-//            }
-//        }
+        let filteredAssets = self.filteredAssets.lazy.map { asset in 
+            (asset, self.filters.keep(asset, playlist: self, track: track))
+        }.filter { (asset, rank) in
+            rank != .discard
+        }.sorted { a, b in
+            a.1.rawValue < b.1.rawValue
+        }.map { (asset, rank) in asset }
         
+        let next = filteredAssets.first
         if let next = next {
             userAssetData.updateValue(UserAssetData(lastListen: Date()), forKey: next.id)
         }
@@ -198,7 +178,11 @@ extension Playlist {
                     // TODO: Try to remove playlist dependency. Maybe pass into method?
                     it.playlist = self
                     self.audioEngine.attach(it.player)
-                    self.audioEngine.connect(it.player, to: self.audioMixer, format: AVAudioFormat(standardFormatWithSampleRate: 96000, channels: 1))
+                    self.audioEngine.connect(
+                        it.player,
+                        to: self.audioMixer,
+                        format: AVAudioFormat(standardFormatWithSampleRate: 96000, channels: 1)
+                    )
                     if !self.audioEngine.isRunning {
                         try self.audioEngine.start()
                     }
@@ -239,6 +223,12 @@ extension Playlist {
         return rw.apiGetAssets(opts).then { data -> () in
             self.lastUpdate = Date()
             self.allAssets.append(contentsOf: data)
+
+            for sortMethod in self.sortMethods {
+                self.allAssets.sort(by: { a, b in
+                    sortMethod.sortRanking(for: a, in: self) < sortMethod.sortRanking(for: b, in: self)
+                })
+            }
         }.catch { err in }
     }
     
@@ -266,37 +256,10 @@ extension Playlist {
         print("current listener position: \(pos)")
     }
     
-    private func updateParams() {
-        let prevFiltered = filteredAssets
-        
+    private func updateParams() {        
         print("assets: updating speakers")
         updateSpeakerVolumes()
-
-        var filtered = Array(allAssets.lazy.map { item in
-            (item, self.playlistFilter.keep(item, playlist: self))
-        }.filter { (item, rank) in
-            rank != .discard
-        })
-        for sortMethod in sortMethods {
-            filtered.sort(by: { a, b in
-                sortMethod.sortRanking(for: a.0, in: self) < sortMethod.sortRanking(for: b.0, in: self)
-            })
-        }
-        filtered.sort { a, b in a.1.rawValue < b.1.rawValue }
-
-        filteredAssets = filtered.map { x in x.0 }
-        print("[assets] filtered: \(filteredAssets.count), total: \(allAssets.count)")
-        
-        // Clear data for assets we've moved away from.
-        prevFiltered.forEach { a in
-            if (!filteredAssets.contains { b in a.id == b.id }) {
-                userAssetData.removeValue(forKey: a.id)
-                // stop a playing asset if we move away from it.
-               self.tracks.first { it in
-                   it.currentAsset?.id == a.id
-               }?.playNext(premature: true)
-            }
-        }
+        // TODO: Use a filter to clear data for assets we've moved away from.
         
         // Tell our tracks to play any new assets.
         self.updateTracks()

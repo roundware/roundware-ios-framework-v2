@@ -22,16 +22,8 @@ enum AssetPriority: Int {
     case lowest = 999
 }
 
-
-/// Filter applied to all assets at the playlist building stage
-protocol AssetFilter {
-    /// Determines whether to keep an asset in the `Playlist` for any track.
-    /// - returns: .discard to skip the asset, otherwise rank it
-    func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority
-}
-
 /// Filter applied to assets as candidates for a specific track
-protocol TrackFilter {
+protocol AssetFilter {
     /// Determines whether the given asset should be played on a particular track.
     /// - returns: .discard to skip the asset, otherwise rank it
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority
@@ -45,12 +37,12 @@ struct AnyAssetFilters: AssetFilter {
         self.filters = filters
     }
 
-    func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         if filters.isEmpty {
             return .lowest
         }
         return filters.lazy
-            .map { $0.keep(asset, playlist: playlist) }
+            .map { $0.keep(asset, playlist: playlist, track: track) }
             .first { $0 != .discard } ?? .discard
     }
 }
@@ -61,12 +53,12 @@ struct AllAssetFilters: AssetFilter {
         self.filters = filters
     }
 
-    func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         if filters.isEmpty {
             return .lowest
         }
         return filters.lazy
-            .map { $0.keep(asset, playlist: playlist) }
+            .map { $0.keep(asset, playlist: playlist, track: track) }
             // short-circuit, only processing filters until one discards this asset.
             .prefix { $0 != .discard }
             // Use the highest priority given to this asset by one of the applied filters.
@@ -77,8 +69,8 @@ struct AllAssetFilters: AssetFilter {
 struct AnyTagsFilter: AssetFilter {
     /// List of tags to listen for.
     static var listenTags = RWFramework.sharedInstance.getListenIDsSet()
-    
-    func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
+
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         guard let listenTags = AnyTagsFilter.listenTags
             else { return .lowest }
 
@@ -94,7 +86,7 @@ struct AllTagsFilter: AssetFilter {
     /// List of tags to listen for.
     static var listenTags = RWFramework.sharedInstance.getListenIDsSet()
 
-    func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         guard let listenTags = AllTagsFilter.listenTags
             else { return .lowest }
 
@@ -111,7 +103,7 @@ struct AllTagsFilter: AssetFilter {
  based on the current dynamic distance range.
  */
 struct DistanceRangesFilter: AssetFilter {
-    func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         guard let params = playlist.currentParams,
               let loc = asset.location,
               let minDist = params.minDist,
@@ -132,7 +124,7 @@ struct DistanceRangesFilter: AssetFilter {
  project-configured recording radius.
  */
 struct DistanceFixedFilter: AssetFilter {
-    func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         guard let params = playlist.currentParams,
               let assetLoc = asset.location
             else { return .discard }
@@ -151,7 +143,7 @@ struct DistanceFixedFilter: AssetFilter {
  Play an asset if the user is currently within its defined shape.
  */
 struct AssetShapeFilter: AssetFilter {
-    func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         guard let params = playlist.currentParams,
               let shape = asset.shape
             else { return .discard }
@@ -168,7 +160,7 @@ struct AssetShapeFilter: AssetFilter {
  Play an asset if it's within the current angle range.
  */
 struct AngleFilter: AssetFilter {
-    func keep(_ asset: Asset, playlist: Playlist) -> AssetPriority {
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         guard let opts = playlist.currentParams,
               let loc = asset.location,
               let heading = opts.heading,
@@ -212,9 +204,9 @@ struct AngleFilter: AssetFilter {
  Prevents assets from playing repeatedly if the track
  doesn't have `repeatRecordings` enabled.
  */
-struct RepeatFilter: TrackFilter {
+struct RepeatFilter: AssetFilter {
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
-        if let lastListen = playlist.lastListenDate(for: asset) {
+        if playlist.lastListenDate(for: asset) != nil {
             if track.repeatRecordings {
                 // this track allows repeating an asset,
                 // so go ahead and keep it, but after other stuff.
