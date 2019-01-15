@@ -177,7 +177,7 @@ extension AudioTrack {
             playerVolume = 0.0
             let interval = 0.075 // seconds
             if #available(iOS 10.0, *) {
-                let totalTime = fadeInTime.random()
+                let totalTime = max(fadeInTime.random(), next.length / 2)
                 let target = volume.random()
                 print("asset: fading in for \(totalTime) to volume \(target), play for \(duration)")
                 fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
