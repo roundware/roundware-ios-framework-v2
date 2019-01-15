@@ -38,7 +38,6 @@ class Playlist {
     private var filters: AllAssetFilters
     private var sortMethods: [SortMethod]
     private var allAssets = [Asset]()
-    private var filteredAssets = [Asset]()
     private var currentAsset: Asset? = nil
     /// Map asset ID to data like last listen time.
     private(set) var userAssetData = [Int: UserAssetData]()
@@ -148,7 +147,7 @@ extension Playlist {
     /// Picks the next-up asset to play on the given track.
     /// Applies all the playlist-level and track-level filters to make the decision.
     func next(forTrack track: AudioTrack) -> Asset? {
-        let filteredAssets = self.filteredAssets.lazy.map { asset in 
+        let filteredAssets = self.allAssets.lazy.map { asset in 
             (asset, self.filters.keep(asset, playlist: self, track: track))
         }.filter { (asset, rank) in
             rank != .discard
