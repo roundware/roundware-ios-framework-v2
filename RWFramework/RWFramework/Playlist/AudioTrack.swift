@@ -25,6 +25,8 @@ public class AudioTrack {
     let fadeInTime: ClosedRange<Float>
     let fadeOutTime: ClosedRange<Float>
     let repeatRecordings: Bool
+    let tags: [Int]
+    
     var playlist: Playlist? = nil
     var currentAsset: Asset? = nil
 //    private var nextAsset: Asset? = nil
@@ -63,7 +65,8 @@ public class AudioTrack {
         deadAir: ClosedRange<Float>,
         fadeInTime: ClosedRange<Float>,
         fadeOutTime: ClosedRange<Float>,
-        repeatRecordings: Bool
+        repeatRecordings: Bool,
+        tags: [Int]
     ) {
         self.id = id
         self.volume = volume
@@ -72,6 +75,7 @@ public class AudioTrack {
         self.fadeInTime = fadeInTime
         self.fadeOutTime = fadeOutTime
         self.repeatRecordings = repeatRecordings
+        self.tags = tags
     }
 }
 
@@ -86,7 +90,8 @@ extension AudioTrack {
                 deadAir: (it["mindeadair"].floatValue)...(it["maxdeadair"].floatValue),
                 fadeInTime: (it["minfadeintime"].floatValue)...(it["maxfadeintime"].floatValue),
                 fadeOutTime: (it["minfadeouttime"].floatValue)...(it["maxfadeouttime"].floatValue),
-                repeatRecordings: it["repeatrecordings"].bool ?? false
+                repeatRecordings: it["repeatrecordings"].bool ?? false,
+                tags: it["tag_filters"].array!.map { $0.int! }
             )
         }
     }
