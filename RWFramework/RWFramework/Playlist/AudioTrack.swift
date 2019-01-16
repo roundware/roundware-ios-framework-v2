@@ -296,7 +296,7 @@ extension AudioTrack {
             // we have resumed
             let progressInSecs = self.currentProgress! / 1000.0
             print("current progress in asset: \(progressInSecs)")
-            timeUntilFade = self.currentAssetDuration! - progressInSecs
+            timeUntilFade = max(0.1, self.currentAssetDuration! - progressInSecs)
         } else {
             // we're just starting the asset
             let fadeDur = min(Double(self.fadeOutTime.random()), self.currentAsset!.length)
