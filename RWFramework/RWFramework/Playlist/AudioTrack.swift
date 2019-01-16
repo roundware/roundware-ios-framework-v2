@@ -18,6 +18,11 @@ import AVKit
 /// There can be an arbitrary number of audio tracks playing at once
 /// When one needs an asset, it simply grabs the next available matching one from the Playlist.
 public class AudioTrack {
+    enum State {
+        case playingAsset
+        case silent
+    }
+    
     let id: Int
     let volume: ClosedRange<Float>
     let duration: ClosedRange<Float>
@@ -30,6 +35,7 @@ public class AudioTrack {
     var playlist: Playlist? = nil
     var previousAsset: Asset? = nil
     var currentAsset: Asset? = nil
+    var state: State = .playingAsset
 //    private var nextAsset: Asset? = nil
     private var fadeTimer: Timer? = nil
 //    private var currentAssetEnd: Double? = nil
@@ -98,10 +104,15 @@ extension AudioTrack {
     }
     
     private func holdSilence() {
+        if !player.isPlaying {
+            return
+        }
+        
         let time = TimeInterval(self.deadAir.random())
         print("silence for \(time)")
         if #available(iOS 10.0, *) {
             fadeTimer?.invalidate()
+            state = .silent
             fadeTimer = Timer.scheduledTimer(withTimeInterval: time, repeats: false) { _ in
                 self.playNext(premature: false)
             }
@@ -129,6 +140,8 @@ extension AudioTrack {
     /// Plays the next optimal asset nearby.
     /// @arg premature True if skipping the current asset, rather than fading at the end of it.
     func playNext(premature: Bool = true) {
+        state = .playingAsset
+        
         // Stop any timer set to fade at the natural end of an asset
         fadeTimer?.invalidate()
         
@@ -230,7 +243,7 @@ extension AudioTrack {
     private func loadNextAsset(start: Double? = nil, for duration: Double? = nil) throws {
         // Download asset into memory
         print("downloading asset")
-        var remoteUrl = URL(string: currentAsset!.file)!
+        let remoteUrl = URL(string: currentAsset!.file)!
             .deletingPathExtension()
             .appendingPathExtension("mp3")
         
@@ -271,6 +284,8 @@ extension AudioTrack {
     
     func pause() {
         fadeOutTimer?.invalidate()
+        fadeTimer?.invalidate()
+        
         if player.isPlaying {
             player.pause()
             if let prog = currentProgress, let lastResumeTime = lastResumeTime {
@@ -284,7 +299,11 @@ extension AudioTrack {
     func resume() {
         if !player.isPlaying {
             player.play()
-            setupFadeEndTimer()
+            if state == .playingAsset {
+                setupFadeEndTimer()
+            } else if state == .silent {
+                holdSilence()
+            }
         }
     }
 
@@ -310,11 +329,13 @@ extension AudioTrack {
         fadeOutTimer?.invalidate()
         if #available(iOS 10.0, *) {
             fadeOutTimer = Timer.scheduledTimer(withTimeInterval: timeUntilFade, repeats: false) { timer in
-                self.fadeOut {
-                    self.currentAssetDuration = nil
-                    self.currentAsset = nil
-                    self.currentProgress = nil
-                    self.holdSilence()
+                if self.player.isPlaying {
+                    self.fadeOut {
+                        self.currentAssetDuration = nil
+                        self.currentAsset = nil
+                        self.currentProgress = nil
+                        self.holdSilence()
+                    }
                 }
             }
         } else {
