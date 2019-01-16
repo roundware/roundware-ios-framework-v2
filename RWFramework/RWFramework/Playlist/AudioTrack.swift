@@ -190,7 +190,7 @@ extension AudioTrack {
                         self.playerVolume = target
                         self.fadeTimer?.invalidate()
                         self.fadeTimer = nil
-                        self.setupFadeEndTimer(endTime: duration)
+                        self.setupFadeEndTimer(endTime: duration - Double(totalTime))
                         cb()
                     }
                 }
@@ -299,7 +299,7 @@ extension AudioTrack {
             timeUntilFade = max(0.1, self.currentAssetDuration! - progressInSecs)
         } else {
             // we're just starting the asset
-            let fadeDur = min(Double(self.fadeOutTime.random()), self.currentAsset!.length)
+            let fadeDur = min(Double(self.fadeOutTime.random()), self.currentAsset!.length / 2)
             timeUntilFade = max(0.1, endTime - fadeDur)
             self.currentAssetDuration = timeUntilFade
         }
