@@ -68,9 +68,11 @@ extension Speaker {
     }
     
     private func attenuationRatio(at loc: CLLocation) -> Double {
-//        let dist = self.distance(to: loc)
-        let attenDist = loc.toWaypoint().distance(geometry: attenuationShape)
-        return 1 - (attenDist / Double(attenuationDistance))
+        let nearestPoint = attenuationShape.nearestPoint(loc.toWaypoint())
+        let nearestLocation = CLLocation(latitude: nearestPoint.y, longitude: nearestPoint.x)
+        let distToInnerShape = nearestLocation.distance(from: loc)
+        print("distance to speaker \(id): \(distToInnerShape) m")
+        return 1 - (distToInnerShape / Double(attenuationDistance))
     }
     
     func volume(at point: CLLocation) -> Float {
@@ -92,7 +94,7 @@ extension Speaker {
         let vol = self.volume(at: point)
         print("speaker volume = \(vol)")
         // TODO: Fading
-        if vol < 0.01 {
+        if vol < 0.05 {
             if player.state != .stopped {
                 player.delegate = nil
                 player.stop()
@@ -130,19 +132,21 @@ extension Speaker {
             let it = obj.dictionaryValue
             let boundary = it["boundary"]!["coordinates"].array!
             let attenBound = it["attenuation_border"]!["coordinates"].array!
+            let innerShape = Polygon(shell: LinearRing(points: attenBound.map { it in
+                Coordinate(x: it[0].double!, y: it[1].double!)
+            })!, holes: nil)!
+            let outerShape = GeometryCollection(geometries: boundary.map { line in
+                Polygon(shell: LinearRing(points: line.array!.map { p in
+                    Coordinate(x: p[0].double!, y: p[1].double!)
+                })!, holes: nil)!
+            })!
             return Speaker(
                 id: it["id"]!.int!,
                 volume: it["minvolume"]!.float!...it["maxvolume"]!.float!,
                 url: it["uri"]!.string!,
                 backupUrl: it["backupuri"]!.string!,
-                shape: GeometryCollection(geometries: boundary.map { line in
-                    Polygon(shell: LinearRing(points: line.array!.map { p in
-                        Coordinate(x: p[0].double!, y: p[1].double!)
-                    })!, holes: nil)!
-                })!,
-                attenuationShape: Polygon(shell: LinearRing(points: attenBound.map { it in
-                    Coordinate(x: it[0].double!, y: it[1].double!)
-                })!, holes: nil)!,
+                shape: outerShape,
+                attenuationShape: innerShape,
                 attenuationDistance: it["attenuation_distance"]!.int!
             )
         }
