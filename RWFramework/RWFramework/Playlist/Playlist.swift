@@ -155,11 +155,13 @@ extension Playlist {
             a.1.rawValue < b.1.rawValue
         }.map { (asset, rank) in asset }
         
+        print("\(filteredAssets.count) filtered assets")
+        
         let next = filteredAssets.first
         if let next = next {
             userAssetData.updateValue(UserAssetData(lastListen: Date()), forKey: next.id)
         }
-        print("picking asset: " + next.debugDescription)
+        print("picking asset: \(next)")
         return next
     }
     
@@ -228,6 +230,7 @@ extension Playlist {
                     sortMethod.sortRanking(for: a, in: self) < sortMethod.sortRanking(for: b, in: self)
                 })
             }
+            print("\(self.allAssets.count) total assets")
         }.catch { err in }
     }
     
