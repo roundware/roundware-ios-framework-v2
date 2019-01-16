@@ -37,18 +37,17 @@ private lazy var __once: () = { () -> Void in
         AnyTagsFilter(),
         // and are either geographically or temporally nearby.
         // Accept an asset if one of the following conditions is true
-        //        AnyAssetFilters([
-        // If an asset has a shape and we AREN'T in it, reject entirely.
-        //            AssetShapeFilter(),
-        // if it has no shape, consider a fixed distance from it
-        //            DistanceFixedFilter(),
-        //            AllAssetFilters([DistanceRangesFilter(), AngleFilter()]),
-        //            TimedAssetFilter()
-        //        ])
-        //    ],
-        RepeatFilter()
+        AnyAssetFilters([
+            // If an asset has a shape and we AREN'T in it, reject entirely.
+            AssetShapeFilter(),
+            // if it has no shape, consider a fixed distance from it
+            DistanceFixedFilter(),
+            // or a user-specified distance range
+            AllAssetFilters([DistanceRangesFilter(), AngleFilter()]),
+        ]),
+        RepeatFilter(),
     ], sortBy: [
-        SortRandomly()
+        SortRandomly(),
     ])
 
     // Audio - Stream (see RWFrameworkAudioPlayer.swift)
