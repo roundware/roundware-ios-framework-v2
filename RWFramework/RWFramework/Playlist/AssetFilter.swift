@@ -43,7 +43,7 @@ struct AnyAssetFilters: AssetFilter {
         }
         return filters.lazy
             .map { $0.keep(asset, playlist: playlist, track: track) }
-            .first { $0 != .discard }!
+            .first { $0 != .discard } ?? .discard
     }
 }
 
