@@ -43,7 +43,7 @@ struct AnyAssetFilters: AssetFilter {
         }
         return filters.lazy
             .map { $0.keep(asset, playlist: playlist, track: track) }
-            .first { $0 != .discard } ?? .discard
+            .first { $0 != .discard }!
     }
 }
 
@@ -57,12 +57,17 @@ struct AllAssetFilters: AssetFilter {
         if filters.isEmpty {
             return .lowest
         }
-        return filters.lazy
+        let ranks = filters.lazy
             .map { $0.keep(asset, playlist: playlist, track: track) }
-            // short-circuit, only processing filters until one discards this asset.
-            .prefix { $0 != .discard }
-            // Use the highest priority given to this asset by one of the applied filters.
-            .min { a, b in a.rawValue < b.rawValue } ?? .discard
+        
+        if ranks.contains(where: { $0 == .discard }) {
+            return .discard
+        } else {
+            // Use the lowest priority given to this asset by one of the applied filters.
+            // This means that lower priorities override higher ones.
+            // i.e. .lowest overrides .highest
+            return ranks.max { a, b in a.rawValue < b.rawValue }!
+        }
     }
 }
 
