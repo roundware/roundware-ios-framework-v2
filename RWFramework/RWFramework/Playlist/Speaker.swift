@@ -20,7 +20,7 @@ public class Speaker {
     let shape: Geometry
     let attenuationShape: Geometry
     let attenuationDistance: Int
-    private let player: AVPlayer
+    private var player: AVPlayer? = nil
     private var looper: Any? = nil
 
     init(
@@ -39,9 +39,6 @@ public class Speaker {
         self.shape = shape
         self.attenuationShape = attenuationShape
         self.attenuationDistance = attenuationDistance
-        
-        self.player = AVPlayer(url: URL(string: url)!)
-        self.player.pause()
     }
 }
 
@@ -96,18 +93,21 @@ extension Speaker {
         print("speaker volume = \(vol)")
         // TODO: Fading
         if vol < 0.05 {
-            if player.rate > 0 {
+            if let player = self.player, player.rate > 0 {
                 player.pause()
             }
         } else {
-            player.volume = vol
-            if player.rate <= 0 {
-                player.play()
+            if player == nil {
+                player = AVPlayer(url: URL(string: url)!)
+            }
+            player!.volume = vol
+            if player!.rate <= 0 {
+                player!.play()
             }
             if looper == nil {
-                looper = NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player.currentItem, queue: .main) { [weak self] _ in
-                    self?.player.seek(to: CMTime.zero)
-                    self?.player.play()
+                looper = NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player!.currentItem, queue: .main) { [weak self] _ in
+                    self?.player?.seek(to: CMTime.zero)
+                    self?.player?.play()
                 }
             }
         }
@@ -115,11 +115,11 @@ extension Speaker {
     }
     
     func resume() {
-        player.play()
+        player?.play()
     }
     
     func pause() {
-        player.pause()
+        player?.pause()
     }
     
     static func from(data: Data) throws -> [Speaker] {
