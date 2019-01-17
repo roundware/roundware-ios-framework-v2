@@ -313,7 +313,7 @@ class FadingIn: TimedTrackState {
         
         let fadeInDur = min(Double(track.fadeInTime.random()), assetDuration / 2)
         
-        self.targetVolume = max(1, track.volume.random())
+        self.targetVolume = track.volume.random()
         
         // (total duration of asset) - (fade in duration)
         self.fullVolumeDuration = assetDuration - fadeInDur
