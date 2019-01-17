@@ -31,6 +31,7 @@ public class AudioTrack {
     let fadeOutTime: ClosedRange<Float>
     let repeatRecordings: Bool
     let tags: [Int]
+    let bannedDuration: Double?
     
     var playlist: Playlist? = nil
     var previousAsset: Asset? = nil
@@ -73,7 +74,8 @@ public class AudioTrack {
         fadeInTime: ClosedRange<Float>,
         fadeOutTime: ClosedRange<Float>,
         repeatRecordings: Bool,
-        tags: [Int]
+        tags: [Int],
+        bannedDuration: Double?
     ) {
         self.id = id
         self.volume = volume
@@ -83,6 +85,7 @@ public class AudioTrack {
         self.fadeOutTime = fadeOutTime
         self.repeatRecordings = repeatRecordings
         self.tags = tags
+        self.bannedDuration = bannedDuration
     }
 }
 
@@ -98,7 +101,8 @@ extension AudioTrack {
                 fadeInTime: (it["minfadeintime"].floatValue)...(it["maxfadeintime"].floatValue),
                 fadeOutTime: (it["minfadeouttime"].floatValue)...(it["maxfadeouttime"].floatValue),
                 repeatRecordings: it["repeatrecordings"].bool ?? false,
-                tags: it["tag_filters"].array!.map { $0.int! }
+                tags: it["tag_filters"].array!.map { $0.int! },
+                bannedDuration: it["banned_duration"].double
             )
         }
     }

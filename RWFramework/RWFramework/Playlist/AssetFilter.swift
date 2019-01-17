@@ -227,10 +227,12 @@ Prevents assets from repeating until
 a certain time threshold has passed.
 */
 struct TimedRepeatFilter: AssetFilter {
-    private static let bannedTimeout: Double = 60 // seconds
+    private static let defaultTimeout: Double = 600 // 10 minutes
+    
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         if let listenDate = playlist.lastListenDate(for: asset) {
-            if listenDate.timeIntervalSinceNow > TimedRepeatFilter.bannedTimeout {
+            let timeout = track.bannedDuration ?? TimedRepeatFilter.defaultTimeout
+            if listenDate.timeIntervalSinceNow > timeout {
                 return .lowest
             } else {
                 return .discard
