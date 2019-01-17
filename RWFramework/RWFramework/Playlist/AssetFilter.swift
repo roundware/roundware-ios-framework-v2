@@ -230,7 +230,7 @@ struct TimedRepeatFilter: AssetFilter {
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         if let listenDate = playlist.lastListenDate(for: asset) {
             let timeout = track.bannedDuration
-            if listenDate.timeIntervalSinceNow > timeout {
+            if Date().timeIntervalSince(listenDate) > timeout {
                 return .lowest
             } else {
                 return .discard
