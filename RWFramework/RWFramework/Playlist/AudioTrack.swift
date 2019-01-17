@@ -345,7 +345,13 @@ class FadingIn: TimedTrackState {
     
     override func resume() {
         super.resume()
+        track.player.play()
         print("fading in for \(timeLeft)s, to volume \(targetVolume)")
+    }
+    
+    override func pause() {
+        super.pause()
+        track.player.pause()
     }
     
     override func goToNextState() {
@@ -433,7 +439,13 @@ class FadingOut: TimedTrackState {
     
     override func resume() {
         super.resume()
+        track.player.play()
         print("fading out for \(timeLeft)s")
+    }
+    
+    override func pause() {
+        super.pause()
+        track.player.pause()
     }
     
     override func goToNextState() {
