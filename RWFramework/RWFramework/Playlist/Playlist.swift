@@ -187,7 +187,11 @@ extension Playlist {
                     if !self.audioEngine.isRunning {
                         try self.audioEngine.start()
                     }
-                    it.playNext(premature: false)
+                    if it.startWithSilence {
+                        it.holdSilence()
+                    } else {
+                        it.playNext(premature: false)
+                    }
                 }
             }.catch { err in }
         } else {

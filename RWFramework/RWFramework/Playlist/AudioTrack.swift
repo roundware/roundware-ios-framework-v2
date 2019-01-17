@@ -31,7 +31,8 @@ public class AudioTrack {
     let fadeOutTime: ClosedRange<Float>
     let repeatRecordings: Bool
     let tags: [Int]
-    let bannedDuration: Double?
+    let bannedDuration: Double
+    let startWithSilence: Bool
     
     var playlist: Playlist? = nil
     var previousAsset: Asset? = nil
@@ -75,7 +76,8 @@ public class AudioTrack {
         fadeOutTime: ClosedRange<Float>,
         repeatRecordings: Bool,
         tags: [Int],
-        bannedDuration: Double?
+        bannedDuration: Double,
+        startWithSilence: Bool
     ) {
         self.id = id
         self.volume = volume
@@ -86,6 +88,7 @@ public class AudioTrack {
         self.repeatRecordings = repeatRecordings
         self.tags = tags
         self.bannedDuration = bannedDuration
+        self.startWithSilence = startWithSilence
     }
 }
 
@@ -102,16 +105,13 @@ extension AudioTrack {
                 fadeOutTime: (it["minfadeouttime"].floatValue)...(it["maxfadeouttime"].floatValue),
                 repeatRecordings: it["repeatrecordings"].bool ?? false,
                 tags: it["tag_filters"].array!.map { $0.int! },
-                bannedDuration: it["banned_duration"].double
+                bannedDuration: it["banned_duration"].double ?? 600,
+                startWithSilence: it["start_with_silence"].bool ?? true
             )
         }
     }
     
-    private func holdSilence() {
-        if !player.isPlaying {
-            return
-        }
-        
+    private func holdSilence() {        
         let time = TimeInterval(self.deadAir.random())
         print("silence for \(time)")
         if #available(iOS 10.0, *) {
@@ -219,7 +219,10 @@ extension AudioTrack {
         }
     }
     
-    private func fadeOut(forSeconds fadeTime: Float = 0, cb: @escaping () -> Void = {}) {
+    private func fadeOut(
+        forSeconds fadeTime: Float = 0,
+        cb: @escaping () -> Void = {}
+    ) {
         let interval = 0.075 // seconds
         if #available(iOS 10.0, *) {
             var totalTime = fadeTime
@@ -338,7 +341,9 @@ extension AudioTrack {
                         self.currentAssetDuration = nil
                         self.currentAsset = nil
                         self.currentProgress = nil
-                        self.holdSilence()
+                        if self.player.isPlaying {
+                            self.holdSilence()
+                        }
                     }
                 }
             }

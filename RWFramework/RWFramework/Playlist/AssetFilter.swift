@@ -223,15 +223,13 @@ struct RepeatFilter: AssetFilter {
 }
 
 /**
-Prevents assets from repeating until
-a certain time threshold has passed.
-*/
+ Prevents assets from repeating until
+ a certain time threshold has passed.
+ */
 struct TimedRepeatFilter: AssetFilter {
-    private static let defaultTimeout: Double = 600 // 10 minutes
-    
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         if let listenDate = playlist.lastListenDate(for: asset) {
-            let timeout = track.bannedDuration ?? TimedRepeatFilter.defaultTimeout
+            let timeout = track.bannedDuration
             if listenDate.timeIntervalSinceNow > timeout {
                 return .lowest
             } else {
