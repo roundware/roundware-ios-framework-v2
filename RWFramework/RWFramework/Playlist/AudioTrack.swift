@@ -19,6 +19,8 @@ import AVKit
 /// When one needs an asset, it simply grabs the next available matching one from the Playlist.
 public class AudioTrack {
     enum State {
+        case fadingIn
+        case fadingOut
         case playingAsset
         case silent
     }
@@ -37,14 +39,7 @@ public class AudioTrack {
     var playlist: Playlist? = nil
     var previousAsset: Asset? = nil
     var currentAsset: Asset? = nil
-    var state: State = .playingAsset
-//    private var nextAsset: Asset? = nil
-    private var fadeTimer: Timer? = nil
-//    private var currentAssetEnd: Double? = nil
-    private var fadeOutTimer: Timer? = nil
-    private var currentAssetDuration: Double? = nil
-    private var lastResumeTime: Date? = nil
-    private var currentProgress: Double? = nil
+    var state: TrackState? = nil
 
     let player = AVAudioPlayerNode()
     // SceneKit version
@@ -110,26 +105,8 @@ extension AudioTrack {
             )
         }
     }
-    
-    private func holdSilence() {        
-        let time = TimeInterval(self.deadAir.random())
-        print("silence for \(time)")
-        if #available(iOS 10.0, *) {
-            fadeTimer?.invalidate()
-            state = .silent
-            fadeTimer = Timer.scheduledTimer(withTimeInterval: time, repeats: false) { _ in
-                self.playNext(premature: false)
-            }
-        } else {
-            // Fallback on earlier versions
-        }
-    }
 
     private func setDynamicPan(at assetLoc: CLLocation, _ params: StreamParams) {
-        // TODO: Confirm this is degrees
-//        guard let heading = params.heading else { return }
-//        print("heading = \(heading)")
-//        var angle = params.location.angle(to: assetLoc).radiansToDegrees - heading
         player.position = assetLoc.toAudioPoint()
         print("asset is at position \(player.position)")
     }
@@ -140,108 +117,19 @@ extension AudioTrack {
         }
     }
     
-    
     /// Plays the next optimal asset nearby.
     /// @arg premature True if skipping the current asset, rather than fading at the end of it.
     func playNext(premature: Bool = true) {
-        state = .playingAsset
-        
-        // Stop any timer set to fade at the natural end of an asset
-        fadeTimer?.invalidate()
-        
         // Can't fade out if playing the first asset
         if (premature) {
-            fadeOut(forSeconds: fadeOutTime.lowerBound) {
-                self.player.stop()
-                self.playNext(premature: false)
-                self.currentAssetDuration = nil
-            }
+            transition(to: FadingOut(
+                track: self,
+                asset: currentAsset!,
+                duration: Double(fadeOutTime.lowerBound)
+            ))
         } else {
             // Just fade in for the first asset or at the end of an asset
-            fadeIn()
-        }
-    }
-    
-    private func fadeIn(cb: @escaping () -> Void = {}) {
-        if let next = playlist?.next(forTrack: self) {
-            previousAsset = currentAsset
-            currentAsset = next
-
-            // pick a random duration
-            // start at a random position between start and end - duration
-            let minDuration = min(Double(self.duration.lowerBound), next.length)
-            let maxDuration = min(Double(self.duration.upperBound), next.length)
-            let duration = (minDuration...maxDuration).random()
-            let latestStart = next.length - duration
-            let start = (0.0...latestStart).random()
-
-            print("picking start within \(0.0...latestStart): \(start)")
-            print("picking duration within \(minDuration...maxDuration): \(duration)")
-            print("start at \(start) in asset of \(next.length) sec")
-
-            do {
-                try loadNextAsset(start: start, for: duration)
-            } catch {
-                let err = error
-                print(err)
-                playNext()
-                return
-            }
-
-
-            if let params = playlist?.currentParams {
-                updateParams(params)
-            }
-
-            playerVolume = 0.0
-            let interval = 0.075 // seconds
-            if #available(iOS 10.0, *) {
-                let totalTime = max(fadeInTime.random(), Float(next.length / 2))
-                let target = volume.random()
-                print("asset: fading in for \(totalTime) to volume \(target), play for \(duration)")
-                fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
-                    if self.playerVolume < self.volume.upperBound {
-                        let toAdd = Float(interval) / totalTime
-                        self.playerVolume += toAdd
-                    } else {
-                        self.playerVolume = target
-                        self.fadeTimer?.invalidate()
-                        self.fadeTimer = nil
-                        self.setupFadeEndTimer(endTime: duration - Double(totalTime))
-                        cb()
-                    }
-                }
-            } else {
-                // Fallback on earlier versions
-            }
-        } else {
-            currentAsset = nil
-        }
-    }
-    
-    private func fadeOut(
-        forSeconds fadeTime: Float = 0,
-        cb: @escaping () -> Void = {}
-    ) {
-        let interval = 0.075 // seconds
-        if #available(iOS 10.0, *) {
-            var totalTime = fadeTime
-            if (totalTime == 0) {
-                totalTime = fadeOutTime.random()
-            }
-            print("asset: fade out for \(totalTime)")
-            fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
-                if self.playerVolume >= 0.1 {
-                    self.playerVolume -= Float(interval) / totalTime
-                } else {
-                    self.playerVolume = 0.0
-                    self.fadeTimer?.invalidate()
-                    self.fadeTimer = nil
-                    cb()
-                }
-            }
-        } else {
-            // Fallback on earlier versions
+            fadeInNextAsset()
         }
     }
     
@@ -290,68 +178,269 @@ extension AudioTrack {
     }
     
     func pause() {
-        fadeOutTimer?.invalidate()
-        fadeTimer?.invalidate()
-        
-        if player.isPlaying {
-            player.pause()
-            if let prog = currentProgress, let lastResumeTime = lastResumeTime {
-                currentProgress = prog + Date().timeIntervalSince(lastResumeTime)
-            } else {
-                currentProgress = Date().timeIntervalSince(lastResumeTime!)
-            }
-        }
+        state?.pause()
     }
     
     func resume() {
-        if !player.isPlaying {
-            player.play()
-            if state == .playingAsset {
-                setupFadeEndTimer()
-            } else if state == .silent {
-                holdSilence()
-            }
+        state?.resume()
+    }
+    
+    func transition(to state: TrackState) {
+        self.state?.finish()
+        self.state = state
+        state.start()
+    }
+    
+    func holdSilence() {
+        transition(to: DeadAir(track: self))
+    }
+    
+    func fadeInNextAsset() {
+        guard let next = self.playlist?.next(forTrack: self)
+            else { return } // FIXME
+        
+        previousAsset = currentAsset
+        currentAsset = next
+        
+        let minDuration = min(Double(self.duration.lowerBound), next.length)
+        let maxDuration = min(Double(self.duration.upperBound), next.length)
+        let duration = (minDuration...maxDuration).random()
+        let latestStart = next.length - duration
+        let start = (0.0...latestStart).random()
+        
+        // load the asset file
+        do {
+            try loadNextAsset(start: start, for: duration)
+        } catch {
+            print(error)
+            playNext()
+            return
+        }
+        
+        transition(to: FadingIn(
+            track: self,
+            asset: next,
+            assetDuration: duration
+        ))
+    }
+}
+
+
+/**
+ Common sequence of states:
+ Silence => FadingIn => PlayingAsset => FadingOut => Silence
+ */
+protocol TrackState {
+    func start()
+    func finish()
+    func pause()
+    func resume()
+}
+
+class TimedTrackState: TrackState {
+    private(set) var timeLeft: Double
+    private(set) var timer: Timer? = nil
+    private var lastResume = Date()
+    
+    init(duration: Double) {
+        self.timeLeft = duration
+    }
+    
+    func start() {
+        resume()
+    }
+    func finish() {
+        timer?.invalidate()
+    }
+    func goToNextState() {
+    }
+    func pause() {
+        timer?.invalidate()
+        timeLeft -= Date().timeIntervalSince(lastResume)
+    }
+    @available(iOS 10.0, *)
+    func setupTimer() -> Timer {
+        return Timer.scheduledTimer(withTimeInterval: timeLeft, repeats: false) { _ in
+            self.goToNextState()
         }
     }
-
-    /// @param endTime end time within the asset
-    private func setupFadeEndTimer(endTime: Double = 0) {
-        // pick a fade-out length
-        var timeUntilFade = 0.0
-        if endTime == 0 {
-            // we have resumed
-            let progressInSecs = self.currentProgress! / 1000.0
-            print("current progress in asset: \(progressInSecs)")
-            timeUntilFade = max(0.1, self.currentAssetDuration! - progressInSecs)
-        } else {
-            // we're just starting the asset
-            let fadeDur = min(Double(self.fadeOutTime.random()), self.currentAsset!.length / 2)
-            timeUntilFade = max(0.1, endTime - fadeDur)
-            self.currentAssetDuration = timeUntilFade
-        }
-        lastResumeTime = Date()
-
-        print("playing for another \(timeUntilFade) sec")
-        
-        fadeOutTimer?.invalidate()
+    func resume() {
+        lastResume = Date()
         if #available(iOS 10.0, *) {
-            fadeOutTimer = Timer.scheduledTimer(withTimeInterval: timeUntilFade, repeats: false) { timer in
-                if self.player.isPlaying {
-                    self.fadeOut {
-                        self.currentAssetDuration = nil
-                        self.currentAsset = nil
-                        self.currentProgress = nil
-                        if self.player.isPlaying {
-                            self.holdSilence()
-                        }
-                    }
-                }
-            }
+            timer = setupTimer()
         } else {
             // Fallback on earlier versions
         }
     }
 }
+
+/// Silence between assets
+class DeadAir: TimedTrackState {
+    private let track: AudioTrack
+    
+    init(track: AudioTrack) {
+        self.track = track
+        super.init(duration: Double(track.deadAir.random()))
+    }
+    
+    override func resume() {
+        super.resume()
+        print("silence for \(timeLeft)s")
+    }
+    
+    override func goToNextState() {
+        self.track.fadeInNextAsset()
+    }
+}
+
+/// Fading into the playing asset
+class FadingIn: TimedTrackState {
+    private static let updateInterval = 0.075
+    
+    private let track: AudioTrack
+    private let asset: Asset
+    private let fullVolumeDuration: Double
+    private let targetVolume: Float
+    
+    init(
+        track: AudioTrack,
+        asset: Asset,
+        // total chosen duration of asset, including fade in and out
+        assetDuration: Double
+    ) {
+        self.track = track
+        self.asset = asset
+        
+        let fadeInDur = min(Double(track.fadeInTime.random()), assetDuration / 2)
+        
+        self.targetVolume = max(1, track.volume.random())
+        
+        // (total duration of asset) - (fade in duration)
+        self.fullVolumeDuration = assetDuration - fadeInDur
+        
+        super.init(duration: fadeInDur)
+    }
+    
+    @available(iOS 10.0, *)
+    override func setupTimer() -> Timer {
+        return Timer.scheduledTimer(
+            withTimeInterval: FadingIn.updateInterval,
+            repeats: true
+        ) { _ in
+            if self.track.player.volume < self.targetVolume {
+                let toAdd = FadingIn.updateInterval / self.timeLeft
+                self.track.player.volume += Float(toAdd)
+            } else {
+                print("asset at full volume \(self.targetVolume)")
+                self.track.player.volume = self.targetVolume
+                self.goToNextState()
+            }
+        }
+    }
+    
+    override func start() {
+        track.player.volume = 0
+        super.start()
+    }
+    
+    override func resume() {
+        super.resume()
+        print("fading in for \(timeLeft)s, to volume \(targetVolume)")
+    }
+    
+    override func goToNextState() {
+        track.transition(to: PlayingAsset(
+            track: track,
+            asset: asset,
+            duration: fullVolumeDuration
+        ))
+    }
+}
+
+
+/// Fully faded in, playing an asset
+class PlayingAsset: TimedTrackState {
+    private let track: AudioTrack
+    private let asset: Asset
+    private let fadeOutDuration: Double
+    
+    init(
+        track: AudioTrack,
+        asset: Asset,
+        /// total duration of asset including fade out time
+        duration: Double
+    ) {
+        self.track = track
+        self.asset = asset
+        fadeOutDuration = min(Double(track.fadeOutTime.random()), duration / 2)
+        // duration of the asset excluding any fades
+        let fullVolumeDuration = duration - fadeOutDuration
+        super.init(duration: fullVolumeDuration)
+    }
+    
+    override func pause() {
+        super.pause()
+        track.player.pause()
+    }
+    
+    override func resume() {
+        super.resume()
+        track.player.play()
+        print("playing for another \(timeLeft)s")
+    }
+    
+    override func goToNextState() {
+        track.transition(to: FadingOut(
+            track: track,
+            asset: asset,
+            duration: fadeOutDuration
+        ))
+    }
+}
+
+/// Fading out of the playing asset
+class FadingOut: TimedTrackState {
+    private static let updateInterval = 0.075
+    
+    private let track: AudioTrack
+    private let asset: Asset
+    
+    init(
+        track: AudioTrack,
+        asset: Asset,
+        duration: Double
+    ) {
+        self.track = track
+        self.asset = asset
+        super.init(duration: duration)
+    }
+    
+    @available(iOS 10.0, *)
+    override func setupTimer() -> Timer {
+        return Timer.scheduledTimer(
+            withTimeInterval: FadingOut.updateInterval,
+            repeats: true
+        ) { _ in
+            if self.track.player.volume > 0 {
+                let toAdd = FadingOut.updateInterval / self.timeLeft
+                self.track.player.volume -= Float(toAdd)
+            } else {
+                self.track.player.volume = 0
+                self.goToNextState()
+            }
+        }
+    }
+    
+    override func resume() {
+        super.resume()
+        print("fading out for \(timeLeft)s")
+    }
+    
+    override func goToNextState() {
+        track.transition(to: DeadAir(track: track))
+    }
+}
+
 
 extension ClosedRange where Bound == Float {
     func random() -> Bound {
@@ -367,29 +456,5 @@ extension ClosedRange where Bound == Double {
 extension ClosedRange where Bound: Numeric {
     var difference: Bound {
         return upperBound - lowerBound
-    }
-}
-
-extension Comparable {
-    func clamp(to: ClosedRange<Self>) -> Self {
-        return max(to.lowerBound, min(to.upperBound, self))
-    }
-}
-
-extension CLLocation {
-    func angle(to destinationLocation: CLLocation) -> Double {
-        let lat1 = self.coordinate.latitude.degreesToRadians
-        let lon1 = self.coordinate.longitude.degreesToRadians
-
-        let lat2 = destinationLocation.coordinate.latitude.degreesToRadians
-        let lon2 = destinationLocation.coordinate.longitude.degreesToRadians
-
-        let dLon = lon2 - lon1
-
-        let y = sin(dLon) * cos(lat2)
-        let x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(dLon)
-        let radiansBearing = atan2(y, x)
-
-        return radiansBearing
     }
 }
