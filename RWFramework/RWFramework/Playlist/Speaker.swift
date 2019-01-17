@@ -8,9 +8,9 @@
 
 import Foundation
 import CoreLocation
-import StreamingKit
 import SwiftyJSON
 import GEOSwift
+import AVFoundation
 
 public class Speaker {
     let id: Int
@@ -20,8 +20,8 @@ public class Speaker {
     let shape: Geometry
     let attenuationShape: Geometry
     let attenuationDistance: Int
-    private let player = STKAudioPlayer()
-    private let looper: LoopAudio
+    private let player: AVPlayer
+    private var looper: Any? = nil
 
     init(
         id: Int,
@@ -39,8 +39,9 @@ public class Speaker {
         self.shape = shape
         self.attenuationShape = attenuationShape
         self.attenuationDistance = attenuationDistance
-        self.looper = LoopAudio(url)
-        player.stop()
+        
+        self.player = AVPlayer(url: URL(string: url)!)
+        self.player.pause()
     }
 }
 
@@ -95,30 +96,30 @@ extension Speaker {
         print("speaker volume = \(vol)")
         // TODO: Fading
         if vol < 0.05 {
-            if player.state != .stopped {
-                player.delegate = nil
-                player.stop()
+            if player.rate > 0 {
+                player.pause()
             }
         } else {
             player.volume = vol
-            if player.state == .stopped {
-                player.delegate = looper
-                player.play(url)
+            if player.rate <= 0 {
+                player.play()
+            }
+            if looper == nil {
+                looper = NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player.currentItem, queue: .main) { [weak self] _ in
+                    self?.player.seek(to: CMTime.zero)
+                    self?.player.play()
+                }
             }
         }
         return vol
     }
     
     func resume() {
-        if player.state == .paused {
-            player.resume()
-        }
+        player.play()
     }
     
     func pause() {
-        if player.state == .playing {
-            player.pause()
-        }
+        player.pause()
     }
     
     static func from(data: Data) throws -> [Speaker] {
