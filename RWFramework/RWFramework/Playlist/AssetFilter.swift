@@ -60,13 +60,12 @@ struct AllAssetFilters: AssetFilter {
         let ranks = filters.lazy
             .map { $0.keep(asset, playlist: playlist, track: track) }
         
+        // If any filter discards the asset, then this discards
         if ranks.contains(where: { $0 == .discard }) {
             return .discard
         } else {
-            // Use the lowest priority given to this asset by one of the applied filters.
-            // This means that lower priorities override higher ones.
-            // i.e. .lowest overrides .highest
-            return ranks.max { a, b in a.rawValue < b.rawValue }!
+            // Otherwise, simply use the first returned priority
+            return ranks.first ?? .normal
         }
     }
 }
