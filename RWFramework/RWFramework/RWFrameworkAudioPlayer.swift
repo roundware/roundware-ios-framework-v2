@@ -63,8 +63,6 @@ extension RWFramework {
     /// Stop audio
     public func stop() {
         pause()
-        destroyPlayer()
-        logToServer("stop_listen")
     }
 
     /// Next audio
