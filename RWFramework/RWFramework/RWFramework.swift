@@ -33,6 +33,7 @@ private lazy var __once: () = { () -> Void in
     var streamOptions = [String: Any]()
     var letFrameworkRequestWhenInUseAuthorizationForLocation = true
     let playlist = Playlist(filters: [
+        TimedRepeatFilter(),
         // all the tags on an asset must be in our list of tags to listen for
         AnyTagsFilter(),
         // and are either geographically or temporally nearby.
@@ -45,7 +46,6 @@ private lazy var __once: () = { () -> Void in
             // or a user-specified distance range
             AllAssetFilters([DistanceRangesFilter(), AngleFilter()]),
         ]),
-        RepeatFilter(),
     ], sortBy: [
         SortRandomly(),
     ])
