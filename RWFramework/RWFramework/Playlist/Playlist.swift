@@ -9,7 +9,6 @@
 import Foundation
 import CoreLocation
 import AVFoundation
-import StreamingKit
 import Promises
 import SceneKit
 

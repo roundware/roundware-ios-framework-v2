@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import StreamingKit
 import SwiftyJSON
 import CoreLocation
 import SceneKit

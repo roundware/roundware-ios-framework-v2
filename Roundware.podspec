@@ -32,7 +32,7 @@ Pod::Spec.new do |s|
   # s.exclude_files = "Classes/Exclude"
 
 
-  s.ios.deployment_target = '9.0'
+  s.ios.deployment_target = '10.0'
   s.swift_version = "4.2"
   
   # s.resource_bundles = {
@@ -46,6 +46,5 @@ Pod::Spec.new do |s|
 
   s.dependency "PromisesSwift", "~> 1.2.3"
   s.dependency "SwiftyJSON", "~> 4.0"
-  s.dependency "StreamingKit", "~> 0.1.30"
   s.dependency "GEOSwift", "~> 3.0.2"
 end
