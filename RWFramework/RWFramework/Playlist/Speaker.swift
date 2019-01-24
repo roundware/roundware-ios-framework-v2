@@ -13,6 +13,8 @@ import GEOSwift
 import AVFoundation
 
 public class Speaker {
+    private static let fadeDuration: Float = 1.0
+    
     let id: Int
     let volume: ClosedRange<Float>
     let url: String
@@ -22,6 +24,7 @@ public class Speaker {
     let attenuationDistance: Int
     private var player: AVPlayer? = nil
     private var looper: Any? = nil
+    private var fadeTimer: Timer? = nil
 
     init(
         id: Int,
@@ -86,31 +89,56 @@ extension Speaker {
     }
 
     /**
-     @return true if we're within range of the speaker
+     - returns: whether we're within range of the speaker
     */
+    @discardableResult
     func updateVolume(at point: CLLocation) -> Float {
         let vol = self.volume(at: point)
         print("speaker volume = \(vol)")
-        // TODO: Fading
-        if vol < 0.05 {
-            if let player = self.player, player.rate > 0 {
-                player.pause()
-            }
-        } else {
-            if player == nil {
+        
+        if vol > 0.05 {
+            // definitely want to create the player if it needs volume
+            if let player = self.player {
+                // if we already have a player, ensure it's playing
+                if player.rate <= 0 {
+                    player.play()
+                }
+            } else {
                 player = AVPlayer(url: URL(string: url)!)
-            }
-            player!.volume = vol
-            if player!.rate <= 0 {
                 player!.play()
-            }
-            if looper == nil {
-                looper = NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player!.currentItem, queue: .main) { [weak self] _ in
+
+                looper = looper ?? NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player!.currentItem, queue: .main) { [weak self] _ in
                     self?.player?.seek(to: CMTime.zero)
                     self?.player?.play()
                 }
             }
         }
+        
+        fadeTimer?.invalidate()
+        if let player = self.player {
+            if #available(iOS 10.0, *) {
+                let totalDiff = vol - player.volume
+                let delta: Float = 0.075
+                fadeTimer = Timer.scheduledTimer(withTimeInterval: Double(delta), repeats: true) { timer in
+                    let currDiff = vol - player.volume
+                    if currDiff.sign != totalDiff.sign || abs(currDiff) < 0.05 {
+                        // we went just enough or too far
+                        player.volume = vol
+                        
+                        if vol < 0.05 {
+                            // we can't hear it anymore, so pause it.
+                            player.pause()
+                        }
+                        timer.invalidate()
+                    } else {
+                        player.volume += totalDiff * delta / Speaker.fadeDuration
+                    }
+                }
+            } else {
+                // Fallback on earlier versions
+            }
+        }
+        
         return vol
     }
     
@@ -154,29 +182,8 @@ extension Speaker {
     }
 }
 
-extension UIBezierPath {
-    static func from(points: [CGPoint]) -> UIBezierPath {
-        let path = UIBezierPath()
-        path.move(to: points[0])
-        for idx in 1..<points.count {
-            path.addLine(to: points[idx])
-        }
-        path.close()
-        return path
-    }
-}
-
 extension CLLocation {
-    func toCGPoint() -> CGPoint {
-        return CGPoint(x: coordinate.longitude, y: coordinate.latitude)
-    }
     func toWaypoint() -> Waypoint {
         return Waypoint(latitude: coordinate.latitude, longitude: coordinate.longitude)!
-    }
-    static func from(_ pt: CGPoint) -> CLLocation {
-        return CLLocation(
-            latitude: CLLocationDegrees(pt.y),
-            longitude: CLLocationDegrees(pt.x)
-        )
     }
 }
