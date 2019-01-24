@@ -18,13 +18,6 @@ import AVKit
 /// There can be an arbitrary number of audio tracks playing at once
 /// When one needs an asset, it simply grabs the next available matching one from the Playlist.
 public class AudioTrack {
-    enum State {
-        case fadingIn
-        case fadingOut
-        case playingAsset
-        case silent
-    }
-    
     let id: Int
     let volume: ClosedRange<Float>
     let duration: ClosedRange<Float>
@@ -133,8 +126,7 @@ extension AudioTrack {
         }
     }
     
-    /// Queues the next asset to play
-    /// If there's nothing playing, immediately plays one and queues another.
+    /// Downloads and starts playing the currently selected asset
     private func loadNextAsset(start: Double? = nil, for duration: Double? = nil) throws {
         // Download asset into memory
         print("downloading asset")
@@ -195,33 +187,35 @@ extension AudioTrack {
         transition(to: DeadAir(track: self))
     }
     
+    /// - returns: if an asset has been chosen and started
     func fadeInNextAsset() {
-        guard let next = self.playlist?.next(forTrack: self)
-            else { return } // FIXME
-        
-        previousAsset = currentAsset
-        currentAsset = next
-        
-        let minDuration = min(Double(self.duration.lowerBound), next.length)
-        let maxDuration = min(Double(self.duration.upperBound), next.length)
-        let duration = (minDuration...maxDuration).random()
-        let latestStart = next.length - duration
-        let start = (0.0...latestStart).random()
-        
-        // load the asset file
-        do {
-            try loadNextAsset(start: start, for: duration)
-        } catch {
-            print(error)
-            playNext()
-            return
+        if let next = self.playlist?.next(forTrack: self) {
+            previousAsset = currentAsset
+            currentAsset = next
+            
+            let minDuration = min(Double(self.duration.lowerBound), next.length)
+            let maxDuration = min(Double(self.duration.upperBound), next.length)
+            let duration = (minDuration...maxDuration).random()
+            let latestStart = next.length - duration
+            let start = (0.0...latestStart).random()
+            
+            // load the asset file
+            do {
+                try loadNextAsset(start: start, for: duration)
+            } catch {
+                print(error)
+                playNext()
+                return
+            }
+            
+            transition(to: FadingIn(
+                track: self,
+                asset: next,
+                assetDuration: duration
+            ))
+        } else if !(self.state is WaitingForAsset) {
+            transition(to: WaitingForAsset(track: self))
         }
-        
-        transition(to: FadingIn(
-            track: self,
-            asset: next,
-            assetDuration: duration
-        ))
     }
 }
 
@@ -237,7 +231,7 @@ protocol TrackState {
     func resume()
 }
 
-class TimedTrackState: TrackState {
+private class TimedTrackState: TrackState {
     private(set) var timeLeft: Double
     private(set) var timer: Timer? = nil
     private var lastResume = Date()
@@ -275,7 +269,7 @@ class TimedTrackState: TrackState {
 }
 
 /// Silence between assets
-class DeadAir: TimedTrackState {
+private class DeadAir: TimedTrackState {
     private let track: AudioTrack
     
     init(track: AudioTrack) {
@@ -294,7 +288,7 @@ class DeadAir: TimedTrackState {
 }
 
 /// Fading into the playing asset
-class FadingIn: TimedTrackState {
+private class FadingIn: TimedTrackState {
     private static let updateInterval = 0.075
     
     private let track: AudioTrack
@@ -365,7 +359,7 @@ class FadingIn: TimedTrackState {
 
 
 /// Fully faded in, playing an asset
-class PlayingAsset: TimedTrackState {
+private class PlayingAsset: TimedTrackState {
     private let track: AudioTrack
     private let asset: Asset
     private let fadeOutDuration: Double
@@ -405,7 +399,7 @@ class PlayingAsset: TimedTrackState {
 }
 
 /// Fading out of the playing asset
-class FadingOut: TimedTrackState {
+private class FadingOut: TimedTrackState {
     private static let updateInterval = 0.075
     
     private let track: AudioTrack
@@ -450,6 +444,29 @@ class FadingOut: TimedTrackState {
     
     override func goToNextState() {
         track.transition(to: DeadAir(track: track))
+    }
+}
+
+/// Waiting for relevant assets to be available
+private class WaitingForAsset: TimedTrackState {
+    private static let updateInterval = 10.0 // seconds
+    
+    private let track: AudioTrack
+    
+    init(track: AudioTrack) {
+        self.track = track
+        super.init(duration: 0)
+    }
+    
+    @available(iOS 10.0, *)
+    override func setupTimer() -> Timer {
+        return Timer.scheduledTimer(
+            withTimeInterval: WaitingForAsset.updateInterval,
+            repeats: true
+        ) { _ in
+            // keep attempting to play the next asset
+            self.track.fadeInNextAsset()
+        }
     }
 }
 
