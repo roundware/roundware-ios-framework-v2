@@ -24,7 +24,7 @@ public class AudioTrack {
     let fadeInTime: ClosedRange<Float>
     let fadeOutTime: ClosedRange<Float>
     let repeatRecordings: Bool
-    let tags: [Int]
+    let tags: [Int]?
     let bannedDuration: Double
     let startWithSilence: Bool
     
@@ -62,7 +62,7 @@ public class AudioTrack {
         fadeInTime: ClosedRange<Float>,
         fadeOutTime: ClosedRange<Float>,
         repeatRecordings: Bool,
-        tags: [Int],
+        tags: [Int]?,
         bannedDuration: Double,
         startWithSilence: Bool
     ) {
@@ -81,19 +81,20 @@ public class AudioTrack {
 
 extension AudioTrack {
     static func from(data: Data) throws -> [AudioTrack] {
-        let items = try JSON(data: data).arrayValue
-        return items.map { it in
-            AudioTrack(
-                id: it["id"].intValue,
-                volume: (it["minvolume"].floatValue)...(it["maxvolume"].floatValue),
-                duration: (it["minduration"].floatValue)...(it["maxduration"].floatValue),
-                deadAir: (it["mindeadair"].floatValue)...(it["maxdeadair"].floatValue),
-                fadeInTime: (it["minfadeintime"].floatValue)...(it["maxfadeintime"].floatValue),
-                fadeOutTime: (it["minfadeouttime"].floatValue)...(it["maxfadeouttime"].floatValue),
-                repeatRecordings: it["repeatrecordings"].bool ?? false,
-                tags: it["tag_filters"].array!.map { $0.int! },
-                bannedDuration: it["banned_duration"].double ?? 600,
-                startWithSilence: it["start_with_silence"].bool ?? true
+        let items = try JSON(data: data).array!
+        return items.map { item in
+            let it = item.dictionary!
+            return AudioTrack(
+                id: it["id"]!.int!,
+                volume: (it["minvolume"]!.float!)...(it["maxvolume"]!.float!),
+                duration: (it["minduration"]!.float!)...(it["maxduration"]!.float!),
+                deadAir: (it["mindeadair"]!.float!)...(it["maxdeadair"]!.float!),
+                fadeInTime: (it["minfadeintime"]!.float!)...(it["maxfadeintime"]!.float!),
+                fadeOutTime: (it["minfadeouttime"]!.float!)...(it["maxfadeouttime"]!.float!),
+                repeatRecordings: it["repeatrecordings"]?.bool ?? false,
+                tags: it["tag_filters"]?.array?.map { $0.int! },
+                bannedDuration: it["banned_duration"]?.double ?? 600,
+                startWithSilence: it["start_with_silence"]?.bool ?? true
             )
         }
     }

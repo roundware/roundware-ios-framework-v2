@@ -31,7 +31,7 @@ extension Asset {
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         dateFormatter.locale = Locale.init(identifier: "en_US_POSIX")
 
-        return items.array!.map { item in
+        return items.array?.map { item in
             let location: CLLocation?
             if let lat = item["latitude"].double, let lng = item["longitude"].double {
                 location = CLLocation(latitude: lat, longitude: lng)
@@ -63,7 +63,7 @@ extension Asset {
                 weight: item["weight"].double ?? 0,
                 description: item["description"].string ?? ""
             )
-        }
+        } ?? []
     }
 }
 
