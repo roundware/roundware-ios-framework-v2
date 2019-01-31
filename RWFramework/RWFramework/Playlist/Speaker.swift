@@ -116,26 +116,22 @@ extension Speaker {
         
         fadeTimer?.invalidate()
         if let player = self.player {
-            if #available(iOS 10.0, *) {
-                let totalDiff = vol - player.volume
-                let delta: Float = 0.075
-                fadeTimer = Timer.scheduledTimer(withTimeInterval: Double(delta), repeats: true) { timer in
-                    let currDiff = vol - player.volume
-                    if currDiff.sign != totalDiff.sign || abs(currDiff) < 0.05 {
-                        // we went just enough or too far
-                        player.volume = vol
-                        
-                        if vol < 0.05 {
-                            // we can't hear it anymore, so pause it.
-                            player.pause()
-                        }
-                        timer.invalidate()
-                    } else {
-                        player.volume += totalDiff * delta / Speaker.fadeDuration
+            let totalDiff = vol - player.volume
+            let delta: Float = 0.075
+            fadeTimer = Timer.scheduledTimer(withTimeInterval: Double(delta), repeats: true) { timer in
+                let currDiff = vol - player.volume
+                if currDiff.sign != totalDiff.sign || abs(currDiff) < 0.05 {
+                    // we went just enough or too far
+                    player.volume = vol
+                    
+                    if vol < 0.05 {
+                        // we can't hear it anymore, so pause it.
+                        player.pause()
                     }
+                    timer.invalidate()
+                } else {
+                    player.volume += totalDiff * delta / Speaker.fadeDuration
                 }
-            } else {
-                // Fallback on earlier versions
             }
         }
         

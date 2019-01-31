@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'Roundware'
-  s.version          = '0.1.1'
+  s.version          = '0.2.0'
   s.summary          = 'Audio framework'
 
 # This description is used to generate tags and improve search results.
@@ -34,14 +34,7 @@ Pod::Spec.new do |s|
 
   s.ios.deployment_target = '10.0'
   s.swift_version = "4.2"
-  
-  # s.resource_bundles = {
-  #   'Roundware' => ['Roundware/Assets/*.png']
-  # }
 
-  # s.public_header_files = 'Pod/Classes/**/*.h'
-  # s.frameworks = 'UIKit', 'MapKit'
-  # s.dependency 'AFNetworking', '~> 2.3'
   s.frameworks = 'AVFoundation', 'SceneKit', 'SpriteKit'
 
   s.dependency "PromisesSwift", "~> 1.2.3"
