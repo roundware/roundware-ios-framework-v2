@@ -77,7 +77,7 @@ struct AnyTagsFilter: AssetFilter {
             else { return .lowest }
 
         let matches = asset.tags.contains { assetTag in
-            listenTags.contains(assetTag) || track.tags.contains(assetTag)
+            listenTags.contains(assetTag)
         }
         // matching only by tag should be the least important filter.
         return matches ? .lowest : .discard
@@ -91,7 +91,7 @@ struct AllTagsFilter: AssetFilter {
             else { return .lowest }
 
         let matches = asset.tags.allSatisfy { assetTag in
-            listenTags.contains(assetTag) || track.tags.contains(assetTag)
+            listenTags.contains(assetTag)
         }
 
         return matches ? .lowest : .discard
