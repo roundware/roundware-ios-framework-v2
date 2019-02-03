@@ -98,12 +98,7 @@ extension Speaker {
         
         if vol > 0.05 {
             // definitely want to create the player if it needs volume
-            if let player = self.player {
-                // if we already have a player, ensure it's playing
-                if player.rate <= 0 {
-                    player.play()
-                }
-            } else {
+            if self.player == nil {
                 player = AVPlayer(url: URL(string: url)!)
                 player!.play()
 
