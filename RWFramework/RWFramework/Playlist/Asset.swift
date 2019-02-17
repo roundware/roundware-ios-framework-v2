@@ -31,7 +31,7 @@ extension Asset {
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         dateFormatter.locale = Locale.init(identifier: "en_US_POSIX")
 
-        return items.array?.map { item in
+        return items.array?.compactMap { item in
             let location: CLLocation?
             if let lat = item["latitude"].double, let lng = item["longitude"].double {
                 location = CLLocation(latitude: lat, longitude: lng)
@@ -51,11 +51,15 @@ extension Asset {
             let createdString = item["created"].string!.replacingOccurrences(
                 of: "\\.\\d+", with: "", options: .regularExpression
             )
+            
+            guard let id = item["id"].int,
+                  let file = item["file"].string
+                else { return nil }
 
             return Asset(
-                id: item["id"].int!,
+                id: id,
                 location: location,
-                file: item["file"].string!,
+                file: file,
                 length: item["audio_length_in_seconds"].double ?? 0,
                 createdDate: dateFormatter.date(from: createdString)!,
                 tags: item["tag_ids"].array!.map { $0.int! },
