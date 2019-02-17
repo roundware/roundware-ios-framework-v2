@@ -4,8 +4,8 @@ import Promises
 public struct TimedAsset: Codable {
     let id: Int
     let asset_id: Int
-    let start: Int
-    let end: Int
+    let start: Double
+    let end: Double
 }
 
 public class TimedAssetFilter: AssetFilter {
@@ -13,24 +13,25 @@ public class TimedAssetFilter: AssetFilter {
 
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         if timedAssets == nil {
+            timedAssets = []
             // load the timed assets
-            do {
-                timedAssets = try await(RWFramework.sharedInstance.apiGetTimedAssets([
-                    "project_id": String(playlist.project.id)
-                ]).timeout(5))
-            } catch {
-                return .discard
+            RWFramework.sharedInstance.apiGetTimedAssets([
+                "project_id": String(playlist.project.id)
+            ]).then { data in
+                self.timedAssets = data
             }
+            return .discard
+        } else if timedAssets!.isEmpty {
+            return .discard
         }
         // keep assets that are slated to start now or in the past few minutes
         //      AND haven't been played before
         // Units: seconds
-        let now = Int(Date().timeIntervalSince(playlist.startTime))
-        let earliest = now - 60*2 // few minutes ago
+        let now = Date().timeIntervalSince(playlist.startTime)
         if (timedAssets!.contains { it in
             return it.asset_id == asset.id &&
                 it.start <= now &&
-                it.start > earliest &&
+                it.end >= now &&
                 // it hasn't been played before.
                 playlist.userAssetData[it.asset_id] == nil
         }) {

@@ -39,6 +39,7 @@ private lazy var __once: () = { () -> Void in
         // and are either geographically or temporally nearby.
         // Accept an asset if one of the following conditions is true
         AnyAssetFilters([
+            TimedAssetFilter(),
             // If an asset has a shape and we AREN'T in it, reject entirely.
             AssetShapeFilter(),
             // if it has no shape, consider a fixed distance from it
