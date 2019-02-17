@@ -54,16 +54,6 @@ extension Speaker {
         return point.toWaypoint().within(attenuationShape)
     }
     
-    private static func distance(shape: [CGPoint], _ loc: CLLocation) -> Double {
-        // find distance to nearest point on the shape
-        let geom = LinearRing(points: shape.map { Coordinate(x: Double($0.x), y: Double($0.y)) })!
-        let pointGeom = Waypoint(
-            latitude: loc.coordinate.latitude,
-            longitude: loc.coordinate.longitude
-        )!
-        return geom.distance(geometry: pointGeom)
-    }
-
     public func distance(to loc: CLLocation) -> Double {
         return self.shape.distance(geometry: loc.toWaypoint())
     }
@@ -94,7 +84,6 @@ extension Speaker {
     @discardableResult
     func updateVolume(at point: CLLocation) -> Float {
         let vol = self.volume(at: point)
-        print("speaker volume = \(vol)")
         
         if vol > 0.05 {
             // definitely want to create the player if it needs volume

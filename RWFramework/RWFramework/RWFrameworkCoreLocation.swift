@@ -29,7 +29,6 @@ extension RWFramework: CLLocationManagerDelegate {
         headingAngle: Double?,
         angularWidth: Double?
     ) {
-        print("assets updating stream params")
         if let r = range { 
             streamOptions["listener_range_min"] = r.lowerBound
             streamOptions["listener_range_max"] = r.upperBound
@@ -37,11 +36,6 @@ extension RWFramework: CLLocationManagerDelegate {
         if let a = headingAngle { streamOptions["listener_heading"] = a }
         if let w = angularWidth { streamOptions["listener_width"] = w }
         
-//        apiPatchStreamsIdWithLocation(
-//            lastRecordedLocation,
-//            tagIds: getSubmittableListenIDsSetAsTags(),
-//            streamPatchOptions: streamOptions
-//        )
         playlist.updateParams(StreamParams(
             location: lastRecordedLocation,
             minDist: streamOptions["listener_range_min"] as? Double,

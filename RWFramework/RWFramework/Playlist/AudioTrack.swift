@@ -100,8 +100,7 @@ extension AudioTrack {
     }
 
     private func setDynamicPan(at assetLoc: CLLocation, _ params: StreamParams) {
-        player.position = assetLoc.toAudioPoint()
-        print("asset is at position \(player.position)")
+        player.position = assetLoc.toAudioPoint(relativeTo: params.location)
     }
     
     func updateParams(_ params: StreamParams) {
@@ -166,6 +165,10 @@ extension AudioTrack {
 
         if !player.isPlaying {
             player.play()
+        }
+
+        if let params = self.playlist?.currentParams {
+            self.updateParams(params)
         }
     }
     
