@@ -113,6 +113,7 @@ extension RWFramework {
         self.apiGetProjectsIdUIGroups(project_id, session_id: session_id)
         self.apiGetTagCategories()
         return self.apiGetProjectsId(project_id, session_id: session_id).then { data -> Project in
+            RWFrameworkConfig.setConfigDataAsDictionary(data, key: "project")
             self.setupRecording()
             return try JSONDecoder().decode(Project.self, from: data)
         }

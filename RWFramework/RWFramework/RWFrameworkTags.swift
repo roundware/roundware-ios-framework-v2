@@ -286,6 +286,17 @@ extension RWFramework {
         }
         return tag_ids
     }
+    
+    public func getSubmittableListenTagIDsSet() -> Set<Int>? {
+        var tag_ids: Set<Int> = []
+        if let selectedIDs = getListenIDsSet() {
+            for id in selectedIDs {
+                let tag_id = getListenTagIDFromID(id)
+                tag_ids.insert(tag_id)
+            }
+        }
+        return tag_ids
+    }
 
     public func getListenIDsSet() -> Set<Int>? {
         if let array = UserDefaults.standard.object(forKey: "listenIDsSet") as? Array<Int> {

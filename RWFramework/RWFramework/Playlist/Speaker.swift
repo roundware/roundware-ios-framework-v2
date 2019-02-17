@@ -13,7 +13,7 @@ import GEOSwift
 import AVFoundation
 
 public class Speaker {
-    private static let fadeDuration: Float = 1.0
+    private static let fadeDuration: Float = 3.0
     
     let id: Int
     let volume: ClosedRange<Float>

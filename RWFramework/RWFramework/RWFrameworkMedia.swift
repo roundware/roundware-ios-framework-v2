@@ -147,7 +147,7 @@ extension RWFramework {
                 }
             }
             // create and store sharing url for current envelope
-            let sharingUrl = RWFrameworkConfig.getConfigValueAsString("sharing_url")
+            let sharingUrl = RWFrameworkConfig.getConfigValueAsString("sharing_url", group: RWFrameworkConfig.ConfigGroup.project)
             let currentSharingUrl = sharingUrl + "?eid=" + String(envelopeID)
             RWFrameworkConfig.setConfigValue("sharing_url_current", value: currentSharingUrl as AnyObject, group: RWFrameworkConfig.ConfigGroup.project)
         }
