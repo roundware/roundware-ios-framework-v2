@@ -100,15 +100,18 @@ struct AllTagsFilter: AssetFilter {
 
 struct TrackTagsFilter: AssetFilter {
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
-        if (track.tags?.count == 0) {
-            return .normal
+        guard let trackTags = track.tags
+            else { return .lowest }
+        
+        if (trackTags.count == 0) {
+            return .lowest
         }
         
         let matches = asset.tags.contains { assetTag in
-            track.tags.contains(assetTag)
+            trackTags.contains(assetTag)
         }
         
-        return matches ? .normal : .discard
+        return matches ? .lowest : .discard
     }
 }
 
