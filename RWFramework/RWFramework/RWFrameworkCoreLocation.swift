@@ -17,6 +17,7 @@ extension RWFramework: CLLocationManagerDelegate {
             let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
             if (geo_listen_enabled) {
                 locationManager.startUpdatingLocation()
+                updateStreamParams(range: nil, headingAngle: nil, angularWidth: nil)
             }
         }
 
@@ -37,7 +38,7 @@ extension RWFramework: CLLocationManagerDelegate {
         if let w = angularWidth { streamOptions["listener_width"] = w }
         
         playlist.updateParams(StreamParams(
-            location: lastRecordedLocation,
+            location: locationManager.location ?? lastRecordedLocation,
             minDist: streamOptions["listener_range_min"] as? Double,
             maxDist: streamOptions["listener_range_max"] as? Double,
             heading: streamOptions["listener_heading"] as? Double,

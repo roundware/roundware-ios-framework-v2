@@ -89,12 +89,15 @@ extension Speaker {
             // definitely want to create the player if it needs volume
             if self.player == nil {
                 player = AVPlayer(url: URL(string: url)!)
-                player!.play()
 
                 looper = looper ?? NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player!.currentItem, queue: .main) { [weak self] _ in
                     self?.player?.seek(to: CMTime.zero)
                     self?.player?.play()
                 }
+            }
+            // make sure this speaker is playing if it needs to be audible
+            if player!.rate == 0.0 && RWFramework.sharedInstance.isPlaying {
+                player!.play()
             }
         }
         

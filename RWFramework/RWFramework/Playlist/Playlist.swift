@@ -223,22 +223,13 @@ extension Playlist {
                     if !self.audioEngine.isRunning {
                         try self.audioEngine.start()
                     }
-                    if it.startWithSilence {
-                        it.holdSilence()
-                    } else {
-                        it.playNext(premature: false)
-                    }
                 }
             }.catch { err in
                 print(err)
             }
         } else {
             self.tracks.forEach { it in
-                if it.currentAsset == nil {
-                    it.playNext(premature: false)
-                } else if let params = currentParams {
-                    it.updateParams(params)
-                }
+                it.updateParams(currentParams!)
             }
         }
     }
@@ -281,13 +272,8 @@ extension Playlist {
     
     /// Framework should call this when stream parameters are updated.
     func updateParams(_ opts: StreamParams) {
-        if project == nil {
-            return
-        }
-
         self.currentParams = opts
-        self.updateParams()
-
+        
         if let heading = opts.heading {
             self.audioMixer.listenerAngularOrientation = AVAudio3DAngularOrientation(
                 yaw: Float(heading),
@@ -296,9 +282,9 @@ extension Playlist {
             )
         }
         
-        let pos = AVAudio3DPoint(x: 0, y: 0, z: 0)
-        self.audioMixer.listenerPosition = pos
-        self.audioMixer.position = pos
+        if project != nil {
+            self.updateParams()
+        }
     }
     
     private func updateParams() {
@@ -321,6 +307,8 @@ extension Playlist {
     }
     
     func start() {
+        RWFramework.sharedInstance.isPlaying = false
+        
         // Starts a session and retrieves project-wide config.
         RWFramework.sharedInstance.apiStartForClientMixing().then { project in
             self.project = project
@@ -361,25 +349,27 @@ extension Playlist {
         )
         // Initial grab of assets and speakers.
         updateTimer?.fire()
-
-        RWFramework.sharedInstance.isPlaying = true
     }
     
     func pause() {
-        RWFramework.sharedInstance.isPlaying = false
-        for s in speakers { s.pause() }
-        for t in tracks { t.pause() }
-        if demoLooper != nil {
-            demoStream?.pause()
+        if RWFramework.sharedInstance.isPlaying {
+            RWFramework.sharedInstance.isPlaying = false
+            for s in speakers { s.pause() }
+            for t in tracks { t.pause() }
+            if demoLooper != nil {
+                demoStream?.pause()
+            }
         }
     }
     
     func resume() {
-        RWFramework.sharedInstance.isPlaying = true
-        for s in speakers { s.resume() }
-        for t in tracks { t.resume() }
-        if demoLooper != nil {
-            demoStream?.play()
+        if !RWFramework.sharedInstance.isPlaying {
+            RWFramework.sharedInstance.isPlaying = true
+            for s in speakers { s.resume() }
+            for t in tracks { t.resume() }
+            if demoLooper != nil {
+                demoStream?.play()
+            }
         }
     }
     
