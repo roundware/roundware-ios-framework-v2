@@ -14,6 +14,7 @@ import SceneKit
 
 struct UserAssetData {
     let lastListen: Date
+    let playCount: Int
 }
 
 /// TODO: Make each of these optional and provide a default constructor
@@ -189,15 +190,33 @@ extension Playlist {
             rank != .discard
         }.sorted { a, b in
             a.1.rawValue < b.1.rawValue
+        }.sorted { a, b in
+            // play less played assets first
+            let dataA = userAssetData[a.0.id]
+            let dataB = userAssetData[b.0.id]
+            if let dataA = dataA, let dataB = dataB {
+                return dataA.playCount <= dataB.playCount
+            } else if dataA != nil {
+                return false
+            } else {
+                return true
+            }
         }.map { (asset, rank) in asset }
         
         print("\(filteredAssets.count) filtered assets")
         
         let next = filteredAssets.first
         if let next = next {
-            userAssetData.updateValue(UserAssetData(lastListen: Date()), forKey: next.id)
+            var playCount = 1
+            if let prevEntry = userAssetData[next.id] {
+                playCount += prevEntry.playCount
         }
+            userAssetData.updateValue(
+                UserAssetData(lastListen: Date(), playCount: playCount),
+                forKey: next.id
+            )
         print("picking asset: \(next)")
+        }
         return next
     }
     
