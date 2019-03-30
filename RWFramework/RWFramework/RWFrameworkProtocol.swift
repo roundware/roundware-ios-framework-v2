@@ -122,7 +122,7 @@ import CoreLocation
     /// Sent after the server successfully patches asset
     @objc optional func rwPatchAssetsIdSuccess(_ data: Data?)
     /// Sent in the case that the server cannot patch asset
-    @objc optional func rwPatchAssetsIdFailure(_ error: NSError?)
+    @objc optional func rwPatchAssetsIdFailure(_ error: Error)
     
     /// Sent after the server successfully posts a vote
     @objc optional func rwPostAssetsIdVotesSuccess(_ data: Data)
@@ -555,12 +555,12 @@ extension RWFramework {
         }
     }
     
-    func rwPatchAssetsIdFailure(_ error: NSError?) {
+    func rwPatchAssetsIdFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
             if (rwfp.rwPatchAssetsIdFailure != nil) {
                 self.dam { rwfp.rwPatchAssetsIdFailure?(error) }
             } else {
-                self.alertOK(self.LS("RWFramework - rwPatchAssetsIdFailure"), message: error!.localizedDescription)
+                self.alertOK(self.LS("RWFramework - rwPatchAssetsIdFailure"), message: error.localizedDescription)
             }
         }
     }

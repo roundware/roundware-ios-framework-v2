@@ -512,23 +512,16 @@ extension RWFramework {
     
 // MARK: PATCH assets id PUBLIC
     
-    public func apiPatchAssetsId(_ asset_id: String, postData: [String: Any] = [:], success:@escaping (_ data: Data?) -> Void, failure:@escaping (_ error: NSError) -> Void) {
+    public func apiPatchAssetsId(_ asset_id: String, postData: [String: Any] = [:]) -> Promise<Data> {
         
-        httpPatchAssetsId(asset_id, postData: postData) { (data, error) -> Void in
-            if (data != nil) && (error == nil) {
-                success(data)
-                self.rwPatchAssetsIdSuccess(data)
-            } else if (error != nil) {
-                failure(error!)
+        return httpPatchAssetsId(asset_id, postData: postData).then { data -> Data in
+            self.rwPatchAssetsIdSuccess(data)
+            return data
+            }.catch { error in
                 self.rwPatchAssetsIdFailure(error)
-                self.apiProcessError(data, error: error!, caller: "apiPatchAssetsId")
-            }
+                self.apiProcessError(nil, error: error, caller: "apiPatchAssetsId")
         }
     }
-    
-    
-    
-
 
     /// MARK: GET assets id PUBLIC
     public func apiGetAssetsId(_ asset_id: String) -> Promise<Data> {
