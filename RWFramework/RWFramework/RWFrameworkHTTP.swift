@@ -167,7 +167,7 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         return getData(from: RWFrameworkURLFactory.getTimedAssetsURL(dict))
     }
 
-    func httpGetAssets(_ dict: [String:String]) -> Promise<Data> {
+    public func httpGetAssets(_ dict: [String:String]) -> Promise<Data> {
         return getData(from: RWFrameworkURLFactory.getAssetsURL(dict))
     }
     

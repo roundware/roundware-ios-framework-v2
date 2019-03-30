@@ -492,7 +492,7 @@ extension RWFramework {
     }
 
     /// MARK: GET assets PUBLIC
-    func apiGetAssets(_ dict: [String:String]) -> Promise<[Asset]> {
+    public func apiGetAssets(_ dict: [String:String]) -> Promise<[Asset]> {
         return httpGetAssets(dict).then { data -> [Asset] in
             self.rwGetAssetsSuccess(data)
             return try Asset.from(data: data)
