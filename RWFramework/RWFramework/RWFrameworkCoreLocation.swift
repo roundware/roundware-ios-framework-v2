@@ -17,7 +17,10 @@ extension RWFramework: CLLocationManagerDelegate {
             let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
             if (geo_listen_enabled) {
                 locationManager.startUpdatingLocation()
-                updateStreamParams(range: nil, headingAngle: nil, angularWidth: nil)
+                if let loc = locationManager.location {
+                    lastRecordedLocation = loc
+                }
+                updateStreamParams()
             }
         }
 
@@ -26,19 +29,27 @@ extension RWFramework: CLLocationManagerDelegate {
     
     /// Update parameters to future stream requests
     public func updateStreamParams(
-        range: ClosedRange<Double>?,
-        headingAngle: Double?,
-        angularWidth: Double?
+        location: CLLocation? = nil,
+        range: ClosedRange<Double>? = nil,
+        headingAngle: Double? = nil,
+        angularWidth: Double? = nil
     ) {
-        if let r = range { 
+        if let r = range {
             streamOptions["listener_range_min"] = r.lowerBound
             streamOptions["listener_range_max"] = r.upperBound
         }
-        if let a = headingAngle { streamOptions["listener_heading"] = a }
-        if let w = angularWidth { streamOptions["listener_width"] = w }
+        if let a = headingAngle {
+            streamOptions["listener_heading"] = a
+        }
+        if let w = angularWidth {
+            streamOptions["listener_width"] = w
+        }
+        if let loc = location {
+            lastRecordedLocation = loc
+        }
         
         playlist.updateParams(StreamParams(
-            location: locationManager.location ?? lastRecordedLocation,
+            location: lastRecordedLocation,
             minDist: streamOptions["listener_range_min"] as? Double,
             maxDist: streamOptions["listener_range_max"] as? Double,
             heading: streamOptions["listener_heading"] as? Double,
@@ -56,23 +67,8 @@ extension RWFramework: CLLocationManagerDelegate {
         let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
         let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
         if (listen_enabled && geo_listen_enabled) {
-//             if (!requestStreamInProgress && !requestStreamSucceeded) {
-// //                playlist.start()
-//                 requestStreamSucceeded = true
-//             } else {
-                // if using range/directional listening, current param values should be inserted here
-                // such that automatic location updates do not turn off range/directional listening by omitting required params
-                playlist.updateParams(StreamParams(
-                    location: locations[0],
-                    minDist: streamOptions["listener_range_min"] as? Double,
-                    maxDist: streamOptions["listener_range_max"] as? Double,
-                    heading: streamOptions["listener_heading"] as? Double,
-                    angularWidth: streamOptions["listener_width"] as? Double
-                ))
-            // }
+            updateStreamParams()
         }
-
-        // TODO: Set theme
 
         rwLocationManager(manager, didUpdateLocations: locations)
     }
