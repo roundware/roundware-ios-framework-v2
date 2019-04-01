@@ -335,11 +335,12 @@ extension RWFramework {
         }
     }
 
-    func apiPatchStreamsIdWithTags(_ tag_ids: String) {
+    func apiPatchStreamsIdWithTags(_ tag_ids: String, streamPatchOptions: [String: Any] = [:]) {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
 
         httpPatchStreamsId(self.streamID.description, tagIds: tag_ids).then { data in
+//            self.patchStreamsIdSuccess(data!)
             self.rwPatchStreamsIdSuccess(data)
         }.catch { error in
             self.rwPatchStreamsIdFailure(error)
@@ -450,10 +451,30 @@ extension RWFramework {
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
 
         return httpPatchEnvelopesId(media, session_id: session_id).then { data -> Void in
+//            self.patchEnvelopesSuccess(data!)
             self.rwPatchEnvelopesIdSuccess(data)
         }.catch { error in
             self.rwPatchEnvelopesIdFailure(error)
             self.apiProcessError(nil, error: error, caller: "apiPatchEnvelopesId")
+        }
+    }
+    
+    func patchEnvelopesSuccess(_ data: Data) {
+        do {
+            let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
+            
+            if let dict = json as? [String:AnyObject] {
+                if let assetId = dict["id"] as? NSNumber {
+                    // only set config value for audio assets
+                    let assetMediaType = dict["media_type"] as? String
+                    if (assetMediaType == "audio") {
+                        RWFrameworkConfig.setConfigValue("most_recent_audio_asset_id", value: assetId, group: RWFrameworkConfig.ConfigGroup.client)
+                    }
+                }
+            }
+        }
+        catch {
+            print(error)
         }
     }
 
@@ -471,7 +492,7 @@ extension RWFramework {
     }
 
     /// MARK: GET assets PUBLIC
-    func apiGetAssets(_ dict: [String:String]) -> Promise<[Asset]> {
+    public func apiGetAssets(_ dict: [String:String]) -> Promise<[Asset]> {
         return httpGetAssets(dict).then { data -> [Asset] in
             self.rwGetAssetsSuccess(data)
             return try Asset.from(data: data)
@@ -486,6 +507,19 @@ extension RWFramework {
             return try JSONDecoder().decode([TimedAsset].self, from: data)
         }.catch { error in
             self.apiProcessError(nil, error: error, caller: "apiGetTimedAssets")
+        }
+    }
+    
+// MARK: PATCH assets id PUBLIC
+    
+    public func apiPatchAssetsId(_ asset_id: String, postData: [String: Any] = [:]) -> Promise<Data> {
+        
+        return httpPatchAssetsId(asset_id, postData: postData).then { data -> Data in
+            self.rwPatchAssetsIdSuccess(data)
+            return data
+            }.catch { error in
+                self.rwPatchAssetsIdFailure(error)
+                self.apiProcessError(nil, error: error, caller: "apiPatchAssetsId")
         }
     }
 

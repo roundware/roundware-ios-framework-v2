@@ -11,9 +11,9 @@ import CoreLocation
 import SwiftyJSON
 import GEOSwift
 
-struct Asset {
+public struct Asset {
     let id: Int
-    let location: CLLocation?
+    public let location: CLLocation?
     let file: String
     let length: Double // in seconds
     let createdDate: Date

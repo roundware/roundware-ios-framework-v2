@@ -119,6 +119,11 @@ import CoreLocation
     /// Sent in the case that the server can not get asset id info
     @objc optional func rwGetAssetsIdFailure(_ error: Error)
 
+    /// Sent after the server successfully patches asset
+    @objc optional func rwPatchAssetsIdSuccess(_ data: Data?)
+    /// Sent in the case that the server cannot patch asset
+    @objc optional func rwPatchAssetsIdFailure(_ error: Error)
+    
     /// Sent after the server successfully posts a vote
     @objc optional func rwPostAssetsIdVotesSuccess(_ data: Data)
     /// Sent in the case that the server can not post a vote
@@ -540,6 +545,22 @@ extension RWFramework {
                 self.dam { rwfp.rwGetAssetsIdFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwGetAssetsIdFailure"), message: error.localizedDescription)
+            }
+        }
+    }
+    
+    func rwPatchAssetsIdSuccess(_ data: Data?) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwPatchAssetsIdSuccess?(data) }
+        }
+    }
+    
+    func rwPatchAssetsIdFailure(_ error: Error) {
+        protocaller { (rwfp, _) -> Void in
+            if (rwfp.rwPatchAssetsIdFailure != nil) {
+                self.dam { rwfp.rwPatchAssetsIdFailure?(error) }
+            } else {
+                self.alertOK(self.LS("RWFramework - rwPatchAssetsIdFailure"), message: error.localizedDescription)
             }
         }
     }

@@ -97,6 +97,10 @@ open class RWFrameworkURLFactory {
     class func getAssetsIdURL(_ asset_id: String) -> String {
         return "\(api())/assets/\(asset_id)/"
     }
+    
+    class func patchAssetsIdURL(_ asset_id: String) -> String {
+        return "\(api())/assets/\(asset_id)/"
+    }
 
     class func postAssetsIdVotesURL(_ asset_id: String) -> String {
         return "\(api())/assets/\(asset_id)/votes/"
