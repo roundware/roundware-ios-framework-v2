@@ -99,9 +99,6 @@ class Playlist {
 }
 
 extension Playlist {
-    // func apply(filter: AssetFilter) {
-    //     playlistFilter.filters.append(filter)
-    // }
     func apply(filter: AssetFilter) {
         self.filters.filters.append(filter)
     }
@@ -271,9 +268,12 @@ extension Playlist {
         ]
         // Only grab assets added since the last update
         if let date = lastUpdate {
+            let timeZone = RWFrameworkConfig.getConfigValueAsNumber("session_timezone").intValue
+
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
             dateFormatter.locale = Locale.init(identifier: "en_US_POSIX")
+            dateFormatter.timeZone = TimeZone(secondsFromGMT: timeZone)
             opts["created__gte"] = dateFormatter.string(from: date)
         }
         

@@ -105,6 +105,20 @@ extension RWFramework {
                 session_id = _session_id
                 RWFrameworkConfig.setConfigValue("session_id", value: session_id, group: RWFrameworkConfig.ConfigGroup.client)
             } // TODO: Handle missing value
+            
+            if let timeZone = dict["timezone"]?.string {
+                // timezone format: -0800 => (-|+)(HH)(MM)
+                let sign = timeZone.first! == "+" ? 1 : -1
+                let hoursStart = timeZone.index(after: timeZone.startIndex)
+                let hoursEnd = timeZone.index(hoursStart, offsetBy: 2)
+                let hours = Int(timeZone[hoursStart..<hoursEnd])!
+                let minutes = Int(timeZone[hoursEnd...])!
+                
+                // convert timezone hours to seconds
+                let seconds = (hours * 60 + minutes) * 60 * sign
+                
+                RWFrameworkConfig.setConfigValue("session_timezone", value: NSNumber(value: seconds))
+            }
         }
 
         let project_id = RWFrameworkConfig.getConfigValueAsNumber("project_id")
