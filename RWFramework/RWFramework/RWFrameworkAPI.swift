@@ -117,7 +117,7 @@ extension RWFramework {
                 // convert timezone hours to seconds
                 let seconds = (hours * 60 + minutes) * 60 * sign
                 
-                RWFrameworkConfig.setConfigValue("session_timezone", value: NSNumber(value: seconds))
+                RWFrameworkConfig.setConfigValue("session_timezone", value: NSNumber(value: seconds), group: .session)
             }
         }
 
