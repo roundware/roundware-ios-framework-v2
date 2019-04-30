@@ -319,7 +319,7 @@ extension Playlist {
     }
     
     /// Periodically check for newly published assets
-    @objc func heartbeat() {
+    @objc internal func refreshAssetPool() {
         self.updateAssets().then {
             // Update filtered assets given any newly uploaded assets
             self.updateParams()
@@ -369,7 +369,7 @@ extension Playlist {
         updateTimer = Timer.scheduledTimer(
             timeInterval: project.asset_refresh_interval,
             target: self,
-            selector: #selector(self.heartbeat),
+            selector: #selector(self.refreshAssetPool),
             userInfo: nil,
             repeats: true
         )

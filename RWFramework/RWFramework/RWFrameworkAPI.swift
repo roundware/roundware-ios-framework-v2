@@ -465,7 +465,7 @@ extension RWFramework {
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
 
         return httpPatchEnvelopesId(media, session_id: session_id).then { data -> Void in
-//            self.patchEnvelopesSuccess(data!)
+            self.patchEnvelopesSuccess(data)
             self.rwPatchEnvelopesIdSuccess(data)
         }.catch { error in
             self.rwPatchEnvelopesIdFailure(error)
