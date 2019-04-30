@@ -77,7 +77,7 @@ class Playlist {
         audioMixer.distanceAttenuationParameters.rolloffFactor = 0.00001
         audioMixer.distanceAttenuationParameters.referenceDistance = 1
         audioMixer.distanceAttenuationParameters.maximumDistance = 200_000
-        audioMixer.renderingAlgorithm = .soundField
+        audioMixer.renderingAlgorithm = .HRTFHQ
 
         // Setup audio engine & mixer
         audioEngine.attach(audioMixer)
@@ -236,7 +236,6 @@ extension Playlist {
             for it in data {
                 // TODO: Try to remove playlist dependency. Maybe pass into method?
                 it.playlist = self
-                it.player.renderingAlgorithm = .soundField
                 self.audioEngine.attach(it.player)
                 self.audioEngine.connect(
                     it.player,

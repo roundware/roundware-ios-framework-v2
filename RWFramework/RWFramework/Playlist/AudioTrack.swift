@@ -205,11 +205,12 @@ extension AudioTrack {
             previousAsset = currentAsset
             currentAsset = next
             
-            let minDuration = min(Double(self.duration.lowerBound), next.length)
-            let maxDuration = min(Double(self.duration.upperBound), next.length)
+            let activeRegionLength = Double(next.activeRegion.upperBound - next.activeRegion.lowerBound)
+            let minDuration = min(Double(self.duration.lowerBound), activeRegionLength)
+            let maxDuration = min(Double(self.duration.upperBound), activeRegionLength)
             let duration = (minDuration...maxDuration).random()
-            let latestStart = next.length - duration
-            let start = (0.0...latestStart).random()
+            let latestStart = Double(next.activeRegion.upperBound) - duration
+            let start = (Double(next.activeRegion.lowerBound)...latestStart).random()
             
             // load the asset file
             do {
