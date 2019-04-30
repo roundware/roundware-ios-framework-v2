@@ -10,17 +10,22 @@ import Foundation
 import CoreLocation
 
 extension RWFramework: CLLocationManagerDelegate {
-
     /// This is called at app startup and also after permission has changed
     public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if status == CLAuthorizationStatus.authorizedAlways || status == CLAuthorizationStatus.authorizedWhenInUse {
             let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
-            if (geo_listen_enabled) {
+            if geo_listen_enabled {
                 locationManager.startUpdatingLocation()
                 if let loc = locationManager.location {
                     lastRecordedLocation = loc
                 }
                 updateStreamParams()
+            }
+            
+            // Only automatically pan by device heading if enabled in project config
+            let pan_by_heading = RWFrameworkConfig.getConfigValueAsBool("pan_by_heading")
+            if pan_by_heading {
+                locationManager.startUpdatingHeading()
             }
         }
 
@@ -67,10 +72,26 @@ extension RWFramework: CLLocationManagerDelegate {
         let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
         let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
         if (listen_enabled && geo_listen_enabled) {
+            // Send parameter update with the newly recorded location
             updateStreamParams()
         }
 
         rwLocationManager(manager, didUpdateLocations: locations)
+    }
+    
+    public func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
+        var headingAngle = newHeading.trueHeading
+        
+        // Use 'course' if the device is pitched up or down far enough.
+        if let attitude = motionManager.deviceMotion?.attitude {
+            let limit = 70.0.degreesToRadians
+            if attitude.pitch > limit || attitude.pitch < -limit {
+                headingAngle = lastRecordedLocation.course
+            }
+        }
+        
+        // Update the playlist with this new device heading
+        updateStreamParams(headingAngle: headingAngle)
     }
 
     /// Called by the CLLocationManager when location update has failed

@@ -9,6 +9,7 @@
 import Foundation
 import UIKit
 import CoreLocation
+import CoreMotion
 import WebKit
 import AVFoundation
 import SystemConfiguration
@@ -27,6 +28,8 @@ private lazy var __once: () = { () -> Void in
     /// A list of delegates that conform to RWFrameworkProtocol (see RWFrameworkProtocol.swift)
     open var delegates: NSHashTable<AnyObject> = NSHashTable.weakObjects()
 
+    let motionManager = CMMotionManager()
+    
     // Location (see RWFrameworkCoreLocation.swift)
     let locationManager: CLLocationManager = CLLocationManager()
     var lastRecordedLocation: CLLocation = CLLocation()
@@ -144,6 +147,7 @@ private lazy var __once: () = { () -> Void in
         mediaArray = loadMediaArray()
         rwUpdateApplicationIconBadgeNumber(mediaArray.count)
         
+        // setup location updates
         locationManager.delegate = self
         locationManager.distanceFilter = kCLDistanceFilterNone // This is updated later once getProjectsIdSuccess is called
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
