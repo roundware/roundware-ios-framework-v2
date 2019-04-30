@@ -1,10 +1,3 @@
-//
-//  Speaker.swift
-//  RWFramework
-//
-//  Created by Taylor Snead on 7/20/18.
-//  Copyright © 2018 Roundware. All rights reserved.
-//
 
 import Foundation
 import CoreLocation

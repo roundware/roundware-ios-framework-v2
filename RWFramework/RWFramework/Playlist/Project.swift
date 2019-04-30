@@ -1,13 +1,6 @@
-//
-//  ProjectConfig.swift
-//  Roundware
-//
-//  Created by Taylor Snead on 10/23/18.
-//
 
 import Foundation
 import CoreLocation
-
 
 struct Project: Codable {
     let id: Int

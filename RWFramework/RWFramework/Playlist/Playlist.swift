@@ -1,10 +1,3 @@
-//
-//  Playlist.swift
-//  RWFramework
-//
-//  Created by Robert Snead on 6/26/18.
-//  Copyright © 2018 Roundware. All rights reserved.
-//
 
 import Foundation
 import CoreLocation

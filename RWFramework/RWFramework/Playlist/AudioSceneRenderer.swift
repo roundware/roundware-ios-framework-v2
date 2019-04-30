@@ -1,6 +1,3 @@
-//
-// Created by Taylor Snead on 12/28/18.
-//
 
 import Foundation
 import SceneKit

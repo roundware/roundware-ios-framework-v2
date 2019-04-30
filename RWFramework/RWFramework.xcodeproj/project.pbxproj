@@ -10,24 +10,6 @@
 		2C2D9D1C2102C6EC00940A25 /* Speaker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2D9D1B2102C6EC00940A25 /* Speaker.swift */; };
 		2C2D9D1E2102C70800940A25 /* Asset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2D9D1D2102C70800940A25 /* Asset.swift */; };
 		2C59A4BB20FAAC900035599D /* Playlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C59A4A720FAAC900035599D /* Playlist.swift */; };
-		2C59A4BC20FAAC900035599D /* NSMutableArray+STKAudioPlayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C59A4A920FAAC900035599D /* NSMutableArray+STKAudioPlayer.h */; };
-		2C59A4BD20FAAC900035599D /* NSMutableArray+STKAudioPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C59A4AA20FAAC900035599D /* NSMutableArray+STKAudioPlayer.m */; };
-		2C59A4BE20FAAC900035599D /* STKAudioPlayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C59A4AB20FAAC900035599D /* STKAudioPlayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		2C59A4BF20FAAC900035599D /* STKAudioPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C59A4AC20FAAC900035599D /* STKAudioPlayer.m */; };
-		2C59A4C020FAAC900035599D /* STKAutoRecoveringHTTPDataSource.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C59A4AD20FAAC900035599D /* STKAutoRecoveringHTTPDataSource.h */; };
-		2C59A4C120FAAC900035599D /* STKAutoRecoveringHTTPDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C59A4AE20FAAC900035599D /* STKAutoRecoveringHTTPDataSource.m */; };
-		2C59A4C220FAAC900035599D /* STKCoreFoundationDataSource.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C59A4AF20FAAC900035599D /* STKCoreFoundationDataSource.h */; };
-		2C59A4C320FAAC900035599D /* STKCoreFoundationDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C59A4B020FAAC900035599D /* STKCoreFoundationDataSource.m */; };
-		2C59A4C420FAAC900035599D /* STKDataSource.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C59A4B120FAAC900035599D /* STKDataSource.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		2C59A4C520FAAC900035599D /* STKDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C59A4B220FAAC900035599D /* STKDataSource.m */; };
-		2C59A4C620FAAC900035599D /* STKDataSourceWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C59A4B320FAAC900035599D /* STKDataSourceWrapper.h */; };
-		2C59A4C720FAAC900035599D /* STKDataSourceWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C59A4B420FAAC900035599D /* STKDataSourceWrapper.m */; };
-		2C59A4C820FAAC900035599D /* STKHTTPDataSource.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C59A4B520FAAC900035599D /* STKHTTPDataSource.h */; };
-		2C59A4C920FAAC900035599D /* STKHTTPDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C59A4B620FAAC900035599D /* STKHTTPDataSource.m */; };
-		2C59A4CA20FAAC900035599D /* STKLocalFileDataSource.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C59A4B720FAAC900035599D /* STKLocalFileDataSource.h */; };
-		2C59A4CB20FAAC900035599D /* STKLocalFileDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C59A4B820FAAC900035599D /* STKLocalFileDataSource.m */; };
-		2C59A4CC20FAAC900035599D /* STKQueueEntry.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C59A4B920FAAC900035599D /* STKQueueEntry.h */; };
-		2C59A4CD20FAAC900035599D /* STKQueueEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C59A4BA20FAAC900035599D /* STKQueueEntry.m */; };
 		2C59A4D020FEB2810035599D /* AudioTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C59A4CF20FEB2810035599D /* AudioTrack.swift */; };
 		2CFB4265211155EE00965CF5 /* AssetFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CFB4264211155EE00965CF5 /* AssetFilter.swift */; };
 		7519C3D01A85511A006A5D1E /* RWFrameworkMedia.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7519C3CF1A85511A006A5D1E /* RWFrameworkMedia.swift */; };
@@ -66,24 +48,6 @@
 		2C2D9D1B2102C6EC00940A25 /* Speaker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Speaker.swift; sourceTree = "<group>"; };
 		2C2D9D1D2102C70800940A25 /* Asset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Asset.swift; sourceTree = "<group>"; };
 		2C59A4A720FAAC900035599D /* Playlist.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Playlist.swift; sourceTree = "<group>"; };
-		2C59A4A920FAAC900035599D /* NSMutableArray+STKAudioPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableArray+STKAudioPlayer.h"; sourceTree = "<group>"; };
-		2C59A4AA20FAAC900035599D /* NSMutableArray+STKAudioPlayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableArray+STKAudioPlayer.m"; sourceTree = "<group>"; };
-		2C59A4AB20FAAC900035599D /* STKAudioPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STKAudioPlayer.h; sourceTree = "<group>"; };
-		2C59A4AC20FAAC900035599D /* STKAudioPlayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STKAudioPlayer.m; sourceTree = "<group>"; };
-		2C59A4AD20FAAC900035599D /* STKAutoRecoveringHTTPDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STKAutoRecoveringHTTPDataSource.h; sourceTree = "<group>"; };
-		2C59A4AE20FAAC900035599D /* STKAutoRecoveringHTTPDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STKAutoRecoveringHTTPDataSource.m; sourceTree = "<group>"; };
-		2C59A4AF20FAAC900035599D /* STKCoreFoundationDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STKCoreFoundationDataSource.h; sourceTree = "<group>"; };
-		2C59A4B020FAAC900035599D /* STKCoreFoundationDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STKCoreFoundationDataSource.m; sourceTree = "<group>"; };
-		2C59A4B120FAAC900035599D /* STKDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STKDataSource.h; sourceTree = "<group>"; };
-		2C59A4B220FAAC900035599D /* STKDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STKDataSource.m; sourceTree = "<group>"; };
-		2C59A4B320FAAC900035599D /* STKDataSourceWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STKDataSourceWrapper.h; sourceTree = "<group>"; };
-		2C59A4B420FAAC900035599D /* STKDataSourceWrapper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STKDataSourceWrapper.m; sourceTree = "<group>"; };
-		2C59A4B520FAAC900035599D /* STKHTTPDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STKHTTPDataSource.h; sourceTree = "<group>"; };
-		2C59A4B620FAAC900035599D /* STKHTTPDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STKHTTPDataSource.m; sourceTree = "<group>"; };
-		2C59A4B720FAAC900035599D /* STKLocalFileDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STKLocalFileDataSource.h; sourceTree = "<group>"; };
-		2C59A4B820FAAC900035599D /* STKLocalFileDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STKLocalFileDataSource.m; sourceTree = "<group>"; };
-		2C59A4B920FAAC900035599D /* STKQueueEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STKQueueEntry.h; sourceTree = "<group>"; };
-		2C59A4BA20FAAC900035599D /* STKQueueEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STKQueueEntry.m; sourceTree = "<group>"; };
 		2C59A4CF20FEB2810035599D /* AudioTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioTrack.swift; sourceTree = "<group>"; };
 		2CFB4264211155EE00965CF5 /* AssetFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetFilter.swift; sourceTree = "<group>"; };
 		7519C3CF1A85511A006A5D1E /* RWFrameworkMedia.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RWFrameworkMedia.swift; sourceTree = "<group>"; };
@@ -131,31 +95,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		2C59A4A820FAAC900035599D /* StreamingKit */ = {
-			isa = PBXGroup;
-			children = (
-				2C59A4A920FAAC900035599D /* NSMutableArray+STKAudioPlayer.h */,
-				2C59A4AA20FAAC900035599D /* NSMutableArray+STKAudioPlayer.m */,
-				2C59A4AB20FAAC900035599D /* STKAudioPlayer.h */,
-				2C59A4AC20FAAC900035599D /* STKAudioPlayer.m */,
-				2C59A4AD20FAAC900035599D /* STKAutoRecoveringHTTPDataSource.h */,
-				2C59A4AE20FAAC900035599D /* STKAutoRecoveringHTTPDataSource.m */,
-				2C59A4AF20FAAC900035599D /* STKCoreFoundationDataSource.h */,
-				2C59A4B020FAAC900035599D /* STKCoreFoundationDataSource.m */,
-				2C59A4B120FAAC900035599D /* STKDataSource.h */,
-				2C59A4B220FAAC900035599D /* STKDataSource.m */,
-				2C59A4B320FAAC900035599D /* STKDataSourceWrapper.h */,
-				2C59A4B420FAAC900035599D /* STKDataSourceWrapper.m */,
-				2C59A4B520FAAC900035599D /* STKHTTPDataSource.h */,
-				2C59A4B620FAAC900035599D /* STKHTTPDataSource.m */,
-				2C59A4B720FAAC900035599D /* STKLocalFileDataSource.h */,
-				2C59A4B820FAAC900035599D /* STKLocalFileDataSource.m */,
-				2C59A4B920FAAC900035599D /* STKQueueEntry.h */,
-				2C59A4BA20FAAC900035599D /* STKQueueEntry.m */,
-			);
-			path = StreamingKit;
-			sourceTree = "<group>";
-		};
 		2C59A4CE20FEB2610035599D /* Playlist */ = {
 			isa = PBXGroup;
 			children = (
@@ -264,16 +203,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				75A7D2D71A745B7400E662A8 /* RWFramework.h in Headers */,
-				2C59A4C020FAAC900035599D /* STKAutoRecoveringHTTPDataSource.h in Headers */,
-				2C59A4C420FAAC900035599D /* STKDataSource.h in Headers */,
-				2C59A4BE20FAAC900035599D /* STKAudioPlayer.h in Headers */,
-				2C59A4C620FAAC900035599D /* STKDataSourceWrapper.h in Headers */,
-				2C59A4C220FAAC900035599D /* STKCoreFoundationDataSource.h in Headers */,
-				2C59A4CA20FAAC900035599D /* STKLocalFileDataSource.h in Headers */,
-				2C59A4BC20FAAC900035599D /* NSMutableArray+STKAudioPlayer.h in Headers */,
-				2C59A4CC20FAAC900035599D /* STKQueueEntry.h in Headers */,
 				75A09F111AE1946200A3B3D9 /* RWFrameworkAudioRecorder.h in Headers */,
-				2C59A4C820FAAC900035599D /* STKHTTPDataSource.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -376,33 +306,24 @@
 			files = (
 				75A2CDC61A8411CA0052F987 /* RWFrameworkAudioRecorder.swift in Sources */,
 				2C59A4BB20FAAC900035599D /* Playlist.swift in Sources */,
-				2C59A4C320FAAC900035599D /* STKCoreFoundationDataSource.m in Sources */,
-				2C59A4C920FAAC900035599D /* STKHTTPDataSource.m in Sources */,
-				2C59A4C720FAAC900035599D /* STKDataSourceWrapper.m in Sources */,
 				75E7DE9D1A7FE0F300B092AF /* RWFrameworkURLFactory.swift in Sources */,
 				7519C3D31A8555DB006A5D1E /* RWFrameworkText.swift in Sources */,
 				7519C3D51A856518006A5D1E /* RWFrameworkCamera.swift in Sources */,
 				2CFB4265211155EE00965CF5 /* AssetFilter.swift in Sources */,
 				75A2CDC21A8410760052F987 /* RWFrameworkCoreLocation.swift in Sources */,
-				2C59A4CD20FAAC900035599D /* STKQueueEntry.m in Sources */,
-				2C59A4CB20FAAC900035599D /* STKLocalFileDataSource.m in Sources */,
 				2C2D9D1C2102C6EC00940A25 /* Speaker.swift in Sources */,
-				2C59A4C120FAAC900035599D /* STKAutoRecoveringHTTPDataSource.m in Sources */,
 				75A2CDC41A8411440052F987 /* RWFrameworkAudioPlayer.swift in Sources */,
 				75A7D3161A75922600E662A8 /* RWFramework.swift in Sources */,
 				75A2E8961A93C7A90008AAF1 /* RWFrameworkAPI.swift in Sources */,
 				7519C3D01A85511A006A5D1E /* RWFrameworkMedia.swift in Sources */,
-				2C59A4BF20FAAC900035599D /* STKAudioPlayer.m in Sources */,
 				2C59A4D020FEB2810035599D /* AudioTrack.swift in Sources */,
 				75A2E8981A93CA7F0008AAF1 /* RWFrameworkTimers.swift in Sources */,
 				75A2E8601A8CFCF90008AAF1 /* RWFrameworkTags.swift in Sources */,
-				2C59A4C520FAAC900035599D /* STKDataSource.m in Sources */,
 				75E08D921AE181BE005AD74D /* RWFrameworkAudioRecorder.m in Sources */,
 				75CDBD3A1AA780A300A14C3C /* RWFrameworkMediaUploader.swift in Sources */,
 				2C2D9D1E2102C70800940A25 /* Asset.swift in Sources */,
 				75FA3DF11A8503FB001D52CC /* RWFrameworkHTTP.swift in Sources */,
 				75743B831A7831130058CCA4 /* RWFrameworkProtocol.swift in Sources */,
-				2C59A4BD20FAAC900035599D /* NSMutableArray+STKAudioPlayer.m in Sources */,
 				75E7DE9F1A7FEDE600B092AF /* RWFrameworkConfig.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

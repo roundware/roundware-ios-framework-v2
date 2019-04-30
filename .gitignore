@@ -1,5 +1,6 @@
 *.xcbkptlist
 *.xcuserstate
+*.xcuserdatad
 .DS_Store
 gen/
 Pods/
