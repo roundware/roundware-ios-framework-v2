@@ -353,7 +353,7 @@ extension RWFramework {
         if (requestStreamSucceeded == false) { return }
         if (self.streamID == 0) { return }
 
-        httpPatchStreamsId(self.streamID.description, tagIds: tag_ids).then { data in
+        httpPatchStreamsId(self.streamID.description, tagIds: tag_ids, streamPatchOptions: streamPatchOptions).then { data in
 //            self.patchStreamsIdSuccess(data!)
             self.rwPatchStreamsIdSuccess(data)
         }.catch { error in
@@ -524,8 +524,7 @@ extension RWFramework {
         }
     }
     
-// MARK: PATCH assets id PUBLIC
-    
+    /// MARK: PATCH assets id PUBLIC
     public func apiPatchAssetsId(_ asset_id: String, postData: [String: Any] = [:]) -> Promise<Data> {
         
         return httpPatchAssetsId(asset_id, postData: postData).then { data -> Data in
@@ -536,6 +535,7 @@ extension RWFramework {
                 self.apiProcessError(nil, error: error, caller: "apiPatchAssetsId")
         }
     }
+
 
     /// MARK: GET assets id PUBLIC
     public func apiGetAssetsId(_ asset_id: String) -> Promise<Data> {

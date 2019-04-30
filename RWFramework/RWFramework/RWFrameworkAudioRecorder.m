@@ -117,7 +117,7 @@ typedef enum {
     
     AVAudioSession *audioSession = [AVAudioSession sharedInstance];
     [audioSession setPreferredSampleRate:self.sampleRate error:&error];
-    [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord error:&error];
+//    [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionDefaultToSpeaker error:&error];
     [audioSession setActive:YES error:&error];
     
     // Update AudioController's sample rate with the one that the audio session finally allowed (hopefully, the preferred sample rate was accepted).
