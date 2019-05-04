@@ -52,6 +52,7 @@ private lazy var __once: () = { () -> Void in
             // or a user-specified distance range
             AllAssetFilters([DistanceRangesFilter(), AngleFilter()]),
         ]),
+        DynamicTagFilter("_ten_most_recent_days", MostRecentFilter(days: 10))
     ], sortBy: [
         SortRandomly(),
     ])

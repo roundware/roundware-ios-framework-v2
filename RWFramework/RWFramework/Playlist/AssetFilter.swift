@@ -2,6 +2,7 @@
 import Foundation
 import Promises
 import GEOSwift
+import SwiftyJSON
 
 /**
  The priority to place on an asset, or to discard it from use.
@@ -245,6 +246,54 @@ struct TimedRepeatFilter: AssetFilter {
             } else {
                 return .discard
             }
+        } else {
+            return .normal
+        }
+    }
+}
+
+struct DynamicTagFilter: AssetFilter {
+    /// Mapping of dynamic filter name to tag id
+    private static let tags = try! JSON(
+        data: UserDefaults.standard.data(forKey: "tags")!
+    ).array!.reduce(into: [String: [Int]]()) { acc, t in
+        let key = t["filter"].string!
+        acc[key] = (acc[key] ?? []) + [t["id"].int!]
+    }
+    
+    private let key: String
+    private let filter: AssetFilter
+
+    init(_ key: String, _ filter: AssetFilter) {
+        self.key = key
+        self.filter = filter
+    }
+
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
+        // see if there are any tags using this filter
+        if let tagIds = DynamicTagFilter.tags[self.key],
+            // grab the list of enabled tags
+            let enabledTagIds = RWFramework.sharedInstance.getSubmittableListenTagIDsSet(),
+            // if any filter tags are enabled, apply the filter
+            tagIds.contains(where: { enabledTagIds.contains($0) }) {
+            return self.filter.keep(asset, playlist: playlist, track: track)
+        } else {
+            return .normal
+        }
+    }
+}
+
+struct MostRecentFilter: AssetFilter {
+    private let maxAge: TimeInterval
+    
+    init(days: Int) {
+        self.maxAge = TimeInterval(days * 24 * 60 * 60)
+    }
+    
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
+        let timeSinceCreated = Date().timeIntervalSince(asset.createdDate)
+        if timeSinceCreated > maxAge {
+            return .discard
         } else {
             return .normal
         }
