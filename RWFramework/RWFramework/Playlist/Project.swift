@@ -13,6 +13,7 @@ struct Project: Codable {
     let out_of_range_url: String
     let out_of_range_distance: Double
     let geo_listen_enabled: Bool
+    let timed_asset_priority: Bool
     let repeat_mode: String
     let ordering: String
 }

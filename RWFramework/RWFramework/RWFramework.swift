@@ -36,11 +36,6 @@ private lazy var __once: () = { () -> Void in
     var streamOptions = [String: Any]()
     var letFrameworkRequestWhenInUseAuthorizationForLocation = true
     let playlist = Playlist(filters: [
-        TimedRepeatFilter(),
-        // all the tags on an asset must be in our list of tags to listen for
-        AnyTagsFilter(),
-        // if any track-level tag filters exist
-        TrackTagsFilter(),
         // and are either geographically or temporally nearby.
         // Accept an asset if one of the following conditions is true
         AnyAssetFilters([
@@ -52,6 +47,11 @@ private lazy var __once: () = { () -> Void in
             // or a user-specified distance range
             AllAssetFilters([DistanceRangesFilter(), AngleFilter()]),
         ]),
+        TimedRepeatFilter(),
+        // all the tags on an asset must be in our list of tags to listen for
+        AnyTagsFilter(),
+        // if any track-level tag filters exist
+        TrackTagsFilter(),
         DynamicTagFilter("_ten_most_recent_days", MostRecentFilter(days: 10))
     ], sortBy: [
         SortRandomly(),

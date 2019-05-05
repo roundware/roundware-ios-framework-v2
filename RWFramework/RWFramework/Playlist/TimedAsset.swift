@@ -24,18 +24,24 @@ public class TimedAssetFilter: AssetFilter {
         } else if timedAssets!.isEmpty {
             return .discard
         }
+        
         // keep assets that are slated to start now or in the past few minutes
         //      AND haven't been played before
         // Units: seconds
         let now = Date().timeIntervalSince(playlist.startTime)
         if (timedAssets!.contains { it in
-            return it.asset_id == asset.id &&
+            it.asset_id == asset.id &&
                 it.start <= now &&
                 it.end >= now &&
                 // it hasn't been played before.
                 playlist.userAssetData[it.asset_id] == nil
         }) {
-            return .highest
+            // Prioritize timed assets only if the project is configured to.
+            if playlist.project.timed_asset_priority {
+                return .highest
+            } else {
+                return .normal
+            }
         }
         
         return .discard
