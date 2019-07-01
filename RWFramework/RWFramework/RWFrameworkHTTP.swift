@@ -192,6 +192,14 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
     func httpGetAssetsIdVotes(_ asset_id: String) -> Promise<Data> {
         return getData(from: RWFrameworkURLFactory.getAssetsIdVotesURL(asset_id))
     }
+
+    func httpGetVotesSummary(type: String?, projectId: String?, assetId: String?) -> Promise<Data> {
+        return getData(from: RWFrameworkURLFactory.getVotesSummaryURL([
+            "type": type ?? "",
+            "asset_id": assetId ?? "",
+            "project_id": projectId ?? ""
+        ]))
+    }
     
     
     func httpGetSpeakers(_ dict: [String:String]) -> Promise<Data> {

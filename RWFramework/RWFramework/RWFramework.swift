@@ -55,6 +55,7 @@ private lazy var __once: () = { () -> Void in
         DynamicTagFilter("_ten_most_recent_days", MostRecentFilter(days: 10))
     ], sortBy: [
         SortRandomly(),
+        SortByLikes(),
     ])
 
     // Audio - Stream (see RWFrameworkAudioPlayer.swift)

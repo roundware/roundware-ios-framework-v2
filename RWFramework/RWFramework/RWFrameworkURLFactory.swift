@@ -110,6 +110,10 @@ open class RWFrameworkURLFactory {
         return "\(api())/assets/\(asset_id)/votes/"
     }
 
+    class func getVotesSummaryURL(_ dict: [String:String]) -> String {
+        return "\(api())/votes/summary/\(dict.toUrlQuery())"
+    }
+
     class func postEventsURL() -> String {
         return "\(api())/events/"
     }
@@ -126,7 +130,9 @@ fileprivate extension Dictionary where Key == String, Value == String {
             result += "?"
         }
         for (key, value) in self {
-            result += (key + "=" + value + "&")
+            if !value.isEmpty {
+                result += (key + "=" + value + "&")
+            }
         }
         return result
     }

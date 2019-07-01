@@ -179,7 +179,7 @@ extension Playlist {
         }.filter { (asset, rank) in
             rank != .discard
         }.sorted { a, b in
-            a.1.rawValue < b.1.rawValue
+            a.1.rawValue <= b.1.rawValue
         }.sorted { a, b in
             // play less played assets first
             let dataA = userAssetData[a.0.id]
@@ -269,16 +269,21 @@ extension Playlist {
             opts["created__gte"] = dateFormatter.string(from: date)
         }
         
-        return rw.apiGetAssets(opts).then { data -> () in
+        return Promise {
+            let data = try await(rw.apiGetAssets(opts))
             self.lastUpdate = Date()
             self.allAssets.append(contentsOf: data)
-
+            print("\(data.count) added assets")
+            
+            // Ensure all sort methods are setup before sorting.
+            _ = try await(all(self.sortMethods.map { $0.onRefreshAssets(in: self) }))
+            
+            // Sort the asset pool.
             for sortMethod in self.sortMethods {
                 self.allAssets.sort(by: { a, b in
                     sortMethod.sortRanking(for: a, in: self) < sortMethod.sortRanking(for: b, in: self)
                 })
             }
-            print("\(data.count) added assets")
         }.catch { err in
             print(err)
             self.lastUpdate = Date()
@@ -322,6 +327,8 @@ extension Playlist {
     }
     
     func start() {
+        DispatchQueue.promises = .global()
+        
         RWFramework.sharedInstance.isPlaying = false
         
         // Starts a session and retrieves project-wide config.
@@ -339,6 +346,8 @@ extension Playlist {
             self.sortMethods = [SortRandomly()]
         case "by_weight":
             self.sortMethods = [SortByWeight()]
+        case "by_like":
+            self.sortMethods = [SortByLikes()]
         default: break
         }
     }

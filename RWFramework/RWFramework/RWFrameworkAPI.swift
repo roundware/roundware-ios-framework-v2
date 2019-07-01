@@ -558,7 +558,6 @@ extension RWFramework {
         }.catch { error in
             self.rwPostAssetsIdVotesFailure(error)
             self.apiProcessError(nil, error: error, caller: "apiPostAssetsIdVotes")
-            
         }
     }
 
@@ -571,6 +570,10 @@ extension RWFramework {
             self.rwGetAssetsIdVotesFailure(error)
             self.apiProcessError(nil, error: error, caller: "apiGetAssetsIdVotes")
         }
+    }
+
+    func apiGetVotesSummary(type: String? = nil, projectId: String? = nil, assetId: String? = nil) -> Promise<Data> {
+        return httpGetVotesSummary(type: type, projectId: projectId, assetId: assetId)
     }
     
     public func apiGetSpeakers(_ dict: [String:String]) -> Promise<[Speaker]> {
