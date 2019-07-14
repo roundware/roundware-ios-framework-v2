@@ -11,6 +11,7 @@ protocol SortMethod {
      assets to be in descending order.
     */
     func sortRanking(for asset: Asset, in playlist: Playlist) -> Double
+
     /// Load any data required before sorting.
     func onRefreshAssets(in playlist: Playlist) -> Promise<Void>
 }
@@ -22,19 +23,27 @@ extension SortMethod {
     }
 }
 
-
+/**
+ Sort assets in totally random order.
+ */
 struct SortRandomly: SortMethod {
     func sortRanking(for asset: Asset, in playlist: Playlist) -> Double {
         return Double.random(in: 0...1)
     }
 }
 
+/**
+ Sort assets in descending order of assigned weight.
+ */
 struct SortByWeight: SortMethod {
     func sortRanking(for asset: Asset, in playlist: Playlist) -> Double {
         return -asset.weight
     }
 }
 
+/**
+ Sort assets in descending order of current number of likes.
+ */
 class SortByLikes: SortMethod {
     private var assetVotes: [Int: Int]? = nil
 

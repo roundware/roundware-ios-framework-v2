@@ -5,10 +5,12 @@ import CoreLocation
 import SceneKit
 import AVKit
 
-/// An AudioTrack has a set of parameters determining how its audio is played.
-/// Assets are provided by the Playlist, so they must match any geometric parameters.
-/// There can be an arbitrary number of audio tracks playing at once
-/// When one needs an asset, it simply grabs the next available matching one from the Playlist.
+/**
+ An AudioTrack has a set of parameters determining how its audio is played.
+ Assets are provided by the Playlist, so they must match any geometric parameters.
+ There can be an arbitrary number of audio tracks playing at once.
+ When one needs an asset, it simply grabs the next available matching one from the Playlist.
+ */
 public class AudioTrack {
     let id: Int
     let volume: ClosedRange<Float>
@@ -27,25 +29,7 @@ public class AudioTrack {
     var state: TrackState? = nil
 
     let player = AVAudioPlayerNode()
-    // SceneKit version
-//    private var player: SCNAudioPlayer? = nil
-//    let node: SCNNode = SCNNode()
 
-    private var playerVolume: Float {
-        get {
-            return player.volume
-//            if let mixer = player.audioNode as? AVAudioMixerNode {
-//                return mixer.volume
-//            }
-//            return 0.0
-        }
-        set(value) {
-            player.volume = value
-//            if let mixer = player!.audioNode as? AVAudioMixerNode {
-//                mixer.volume = value
-//            }
-        }
-    }
 
     init(
         id: Int,
@@ -103,7 +87,7 @@ extension AudioTrack {
     }
     
     /// Plays the next optimal asset nearby.
-    /// @arg premature True if skipping the current asset, rather than fading at the end of it.
+    /// - Parameter premature: whether to fade out the current asset or just start the next one.
     func playNext(premature: Bool = true) {
         // Can't fade out if playing the first asset
         if (premature) {
@@ -192,7 +176,7 @@ extension AudioTrack {
         transition(to: DeadAir(track: self))
     }
     
-    /// - returns: if an asset has been chosen and started
+    /// - Returns: if an asset has been chosen and started
     func fadeInNextAsset() {
         if let next = self.playlist?.next(forTrack: self) {
             previousAsset = currentAsset

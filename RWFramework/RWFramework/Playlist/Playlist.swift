@@ -44,7 +44,6 @@ class Playlist {
 
     private(set) var project: Project!
 
-//    let scene = SCNScene()
     let audioEngine = AVAudioEngine()
     let audioMixer = AVAudioEnvironmentNode()
 

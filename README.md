@@ -5,7 +5,7 @@ Roundware framework, updated for api v2 and re-built in Swift and made open sour
 
 This project consists of the Roundware framework (RWFramework) and an example app that implements the framework (RWExample). Open the `RWFrameworkExample.xcworkspace` Xcode workspace to examine and run the project.
 
-The code is written in Swift 1.2 and currently requires Xcode 6.3 or later and iOS 8 or later.
+The code is written in Swift 4 and currently requires Xcode 9.0 or later and iOS 10 or later.
 
 You can look throughout the code for all methods marked `public` to see what is available to your application. This document outlines some of the more common use cases. Be sure to read the comments on the methods you plan to use.
 
@@ -36,15 +36,16 @@ When you are completely done with the framework you should call `rwf.end()` to g
 
 #### Client-side Mixing
 This branch develops a client-side mixing solution rather than deferring that work to the server.
-Assets are gathered on the client and each `Track` associated with the current session decides if each `Asset` should be played based on the currently applied filters, of which there are two kinds:
-- `AssetFilter`: determines whether to keep an asset in the `Playlist`
-- `TrackFilter`: determines whether a given asset should be played on a particular `Track`
-Each filter determines whether an asset might be played or not and in what ranking order. View the code documentation for each filter for further details on the exact ones used.
+Assets are gathered on the client and each `AudioTrack` associated with the current session decides if an `Asset` should be played based on the currently applied filters.
+When an `AudioTrack` needs a new asset, it asks the `Playlist` for the next prioritized asset, which must pass all the `AssetFilter`s.
+Each `AssetFilter` determines whether an `Asset` might be played or not and in what ranking order.
+View the code documentation for each filter for further details on the exact ones used.
 
 The external usage of the framework remains the same with these changes. Simply call this at the start of your application:
 ```
 RWFramework.sharedInstance.start()
 ```
+
 If the app provides location and orientation information to the framework, it will take that into account:
 ```
 RWFramework.sharedInstance.updateStreamParams(range, heading, angularWidth)

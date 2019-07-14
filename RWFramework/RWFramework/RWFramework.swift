@@ -164,18 +164,19 @@ private lazy var __once: () = { () -> Void in
     }
 
     /// Start kicks everything else off - call this to start the framework running.
-    /// Pass false for letFrameworkRequestWhenInUseAuthorizationForLocation if the caller would rather call requestWhenInUseAuthorizationForLocation() any time after rwGetProjectsIdSuccess is called.
+    /// - Parameter letFrameworkRequestWhenInUseAuthorizationForLocation: false if the caller would rather call requestWhenInUseAuthorizationForLocation() any time after rwGetProjectsIdSuccess is called.
     open func start(_ letFrameworkRequestWhenInUseAuthorizationForLocation: Bool = true) {
-        if (!compatibleOS()) { println("RWFramework requires iOS 8 or later"); return }
-        if (!hostIsReachable()) { println("RWFramework requires network connectivity"); return }
+        if (!compatibleOS()) {
+            println("RWFramework requires iOS 8 or later")
+        } else if (!hostIsReachable()) {
+            println("RWFramework requires network connectivity")
+        } else {
+            self.letFrameworkRequestWhenInUseAuthorizationForLocation = letFrameworkRequestWhenInUseAuthorizationForLocation
+            
+            self.playlist.start()
 
-        self.letFrameworkRequestWhenInUseAuthorizationForLocation = letFrameworkRequestWhenInUseAuthorizationForLocation
-
-        
-        println("start")
-        self.playlist.start()
-
-        preflightRecording()
+            preflightRecording()
+        }
     }
 
     /// Call this if you know you are done with the framework

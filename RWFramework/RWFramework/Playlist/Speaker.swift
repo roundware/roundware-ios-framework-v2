@@ -5,6 +5,10 @@ import SwiftyJSON
 import GEOSwift
 import AVFoundation
 
+/**
+ A polygonal geographic zone within which an ambient audio stream broadcasts continuously to listeners. Speakers can overlap, causing their audio to be mixed together accordingly.
+ Volume attenuation happens linearly over a specified distance from the edge of the Speaker’s defined zone.
+ */
 public class Speaker {
     private static let fadeDuration: Float = 3.0
     

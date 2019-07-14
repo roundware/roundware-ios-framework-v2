@@ -4,6 +4,7 @@ import SceneKit
 import AVKit
 import SpriteKit
 
+/// CURRENTLY UNUSED
 @objc class AudioSceneRenderer: NSObject {
     // relevant to management
     public var scene: SCNScene?
