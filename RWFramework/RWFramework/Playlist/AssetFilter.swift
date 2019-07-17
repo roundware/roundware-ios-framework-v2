@@ -26,6 +26,13 @@ protocol AssetFilter {
     /// Determines whether the given asset should be played on a particular track.
     /// - returns: .discard to skip the asset, otherwise rank it
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority
+    func onUpdateAssets(playlist: Playlist) -> Promise<Void>
+}
+
+extension AssetFilter {
+    func onUpdateAssets(playlist: Playlist) -> Promise<Void> {
+        return Promise(())
+    }
 }
 
 /**
@@ -46,6 +53,11 @@ struct AnyAssetFilters: AssetFilter {
             .map { $0.keep(asset, playlist: playlist, track: track) }
         return ranks.first { $0 != .discard && $0 != .neutral }
             ?? .discard
+    }
+
+    func onUpdateAssets(playlist: Playlist) -> Promise<Void> {
+        return all(self.filters.map { $0.onUpdateAssets(playlist: playlist) })
+            .then { _ -> Void in }
     }
 }
 
@@ -74,6 +86,11 @@ struct AllAssetFilters: AssetFilter {
             // Ideally the first that isn't .neutral
             return ranks.first { $0 != .neutral } ?? ranks.first!
         }
+    }
+
+    func onUpdateAssets(playlist: Playlist) -> Promise<Void> {
+        return all(self.filters.map { $0.onUpdateAssets(playlist: playlist) })
+            .then { _ -> Void in }
     }
 }
 
@@ -259,6 +276,29 @@ struct TimedRepeatFilter: AssetFilter {
             }
         } else {
             return .normal
+        }
+    }
+}
+
+/**
+ Skips assets that the user has blocked,
+ or assets published by someone that the user has blocked.
+ */
+class BlockedAssetsFilter: AssetFilter {
+    private var blockedAssets: [Int]? = nil
+    
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
+        if let blocked = self.blockedAssets, !blocked.contains(asset.id) {
+            return .normal
+        } else {
+            return .discard
+        }
+    }
+
+    func onUpdateAssets(playlist: Playlist) -> Promise<Void> {
+        return RWFramework.sharedInstance.apiGetBlockedAssets().then { d -> Void in
+            let json = try JSON(data: d)
+            self.blockedAssets = json["blocked_asset_ids"].array!.map { $0.int! }
         }
     }
 }

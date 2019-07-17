@@ -523,6 +523,13 @@ extension RWFramework {
             self.apiProcessError(nil, error: error, caller: "apiGetTimedAssets")
         }
     }
+
+    func apiGetBlockedAssets() -> Promise<Data> {
+        let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
+        let project_id = RWFrameworkConfig.getConfigValueAsNumber("project_id")
+
+        return httpGetBlockedAssets(project_id, session_id: session_id)
+    }
     
     /// MARK: PATCH assets id PUBLIC
     public func apiPatchAssetsId(_ asset_id: String, postData: [String: Any] = [:]) -> Promise<Data> {

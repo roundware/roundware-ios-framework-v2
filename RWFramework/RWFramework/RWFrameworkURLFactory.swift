@@ -90,6 +90,10 @@ open class RWFrameworkURLFactory {
         return "\(api())/assets/\(dict.toUrlQuery())"
     }
 
+    class func getBlockedAssetsURL(_ project_id: NSNumber, session_id: NSNumber) -> String {
+        return "\(api())/assets/blocked/?project_id=\(project_id)&session_id=\(session_id)"
+    }
+
     class func getAudioTracksURL(_ dict: [String:String]) -> String {
         return "\(api())/audiotracks/\(dict.toUrlQuery())"
     }

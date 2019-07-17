@@ -13,6 +13,7 @@ import CoreMotion
 import WebKit
 import AVFoundation
 import SystemConfiguration
+import Promises
 
 private let _RWFrameworkSharedInstance = RWFramework()
 
@@ -36,9 +37,9 @@ private lazy var __once: () = { () -> Void in
     var streamOptions = [String: Any]()
     var letFrameworkRequestWhenInUseAuthorizationForLocation = true
     let playlist = Playlist(filters: [
-        // and are either geographically or temporally nearby.
         // Accept an asset if one of the following conditions is true
         AnyAssetFilters([
+            // if an asset is scheduled to play right now
             TimedAssetFilter(),
             // If an asset has a shape and we AREN'T in it, reject entirely.
             AssetShapeFilter(),
@@ -47,10 +48,13 @@ private lazy var __once: () = { () -> Void in
             // or a user-specified distance range
             AllAssetFilters([DistanceRangesFilter(), AngleFilter()]),
         ]),
+        // only repeat assets if there's no other choice
         TimedRepeatFilter(),
+        // skip blocked assets and users
+        BlockedAssetsFilter(),
         // all the tags on an asset must be in our list of tags to listen for
         AnyTagsFilter(),
-        // if any track-level tag filters exist
+        // if any track-level tag filters exist, apply them
         TrackTagsFilter(),
         DynamicTagFilter("_ten_most_recent_days", MostRecentFilter(days: 10))
     ], sortBy: [
@@ -311,5 +315,24 @@ private lazy var __once: () = { () -> Void in
 
         return s
     }
-
+    
+    /// Block a specific asset from being played again.
+    /// Only works in practice if a `BlockedAssetFilter` is applied.
+    public func block(assetId: Int) -> Promise<Void> {
+        return apiPostAssetsIdVotes(
+            assetId.description,
+            vote_type: "block_asset"
+        ).then { _ in
+            self.playlist.updateFilterData()
+        }
+    }
+    
+    public func blockUser(assetId: Int) -> Promise<Void> {
+        return apiPostAssetsIdVotes(
+            assetId.description,
+            vote_type: "block_user"
+        ).then { _ in
+            self.playlist.updateFilterData()
+        }
+    }
 }

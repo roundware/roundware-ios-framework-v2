@@ -170,6 +170,10 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
     public func httpGetAssets(_ dict: [String:String]) -> Promise<Data> {
         return getData(from: RWFrameworkURLFactory.getAssetsURL(dict))
     }
+
+    func httpGetBlockedAssets(_ project_id: NSNumber, session_id: NSNumber) -> Promise<Data> {
+        return getData(from: RWFrameworkURLFactory.getBlockedAssetsURL(project_id, session_id: session_id))
+    }
     
     func httpPatchAssetsId(_ asset_id: String, postData: [String: Any] = [:]) -> Promise<Data> {
         return patchData(
