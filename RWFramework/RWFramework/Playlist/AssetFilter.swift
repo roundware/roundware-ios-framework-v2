@@ -288,10 +288,13 @@ class BlockedAssetsFilter: AssetFilter {
     private var blockedAssets: [Int]? = nil
     
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
-        if let blocked = self.blockedAssets, !blocked.contains(asset.id) {
-            return .normal
-        } else {
+        guard let blocked = self.blockedAssets
+            else { return .neutral }
+        
+        if blocked.contains(asset.id) {
             return .discard
+        } else {
+            return .normal
         }
     }
 
