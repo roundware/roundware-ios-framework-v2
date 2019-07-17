@@ -9,7 +9,7 @@ import GEOSwift
  This currently only considers audio assets.
  */
 public struct Asset {
-    let id: Int
+    public let id: Int
     public let location: CLLocation?
     /// URL pointing to the associated media file, relative to the project server
     let file: String
