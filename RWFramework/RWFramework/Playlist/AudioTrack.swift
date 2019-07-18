@@ -81,8 +81,13 @@ extension AudioTrack {
     }
     
     func updateParams(_ params: StreamParams) {
+        // Pan the audio based on user location relative to the current asset
         if let assetLoc = currentAsset?.location {
             setDynamicPan(at: assetLoc, params)
+        }
+        // Change in parameters may make more assets available
+        if state is WaitingForAsset {
+            fadeInNextAsset()
         }
     }
     
@@ -204,6 +209,7 @@ extension AudioTrack {
                 assetDuration: duration
             ))
         } else if !(self.state is WaitingForAsset) {
+            currentAsset = nil
             transition(to: WaitingForAsset(track: self))
         }
     }
