@@ -57,6 +57,9 @@ public class AudioTrack {
 }
 
 extension AudioTrack {
+    /// Amount of seconds to fade out when skipping an asset
+    private static let skipFadeOutTime = 0.5
+    
     static func from(data: Data) throws -> [AudioTrack] {
         let items = try JSON(data: data).array!
         return items.map { item in
@@ -95,12 +98,15 @@ extension AudioTrack {
     /// - Parameter premature: whether to fade out the current asset or just start the next one.
     func playNext(premature: Bool = true) {
         // Can't fade out if playing the first asset
-        if (premature) {
-            transition(to: FadingOut(
-                track: self,
-                asset: currentAsset!,
-                duration: Double(fadeOutTime.lowerBound)
-            ))
+        if premature {
+            if !(state is FadingOut) {
+                transition(to: FadingOut(
+                    track: self,
+                    asset: currentAsset!,
+                    duration: AudioTrack.skipFadeOutTime,
+                    followedByDeadAir: false
+                ))
+            }
         } else {
             // Just fade in for the first asset or at the end of an asset
             fadeInNextAsset()
@@ -136,6 +142,8 @@ extension AudioTrack {
         try data.write(to: url, options: .atomic)
 
         let file = try AVAudioFile(forReading: url)
+        
+        player.stop()
 
         if let start = start, let duration = duration {
             let startFrame = Int64(start * file.processingFormat.sampleRate)
@@ -400,14 +408,17 @@ private class FadingOut: TimedTrackState {
     
     private let track: AudioTrack
     private let asset: Asset
+    private let followedByDeadAir: Bool
     
     init(
         track: AudioTrack,
         asset: Asset,
-        duration: Double
+        duration: Double,
+        followedByDeadAir: Bool = true
     ) {
         self.track = track
         self.asset = asset
+        self.followedByDeadAir = followedByDeadAir
         super.init(duration: duration)
     }
     
@@ -438,7 +449,11 @@ private class FadingOut: TimedTrackState {
     }
     
     override func goToNextState() {
-        track.transition(to: DeadAir(track: track))
+        if (followedByDeadAir) {
+            track.transition(to: DeadAir(track: track))
+        } else {
+            self.track.fadeInNextAsset()
+        }
     }
 }
 
