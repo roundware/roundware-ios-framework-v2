@@ -256,9 +256,8 @@ extension RWFramework {
 // MARK: --
 
     public func submitListenIDsSetAsTags(streamPatchOptions: [String: Any] = [:]) {
-        let tag_ids = getSubmittableListenIDsSetAsTags()
-        // must add streamPatchOptions in order to preserve any settings user already applied
-        apiPatchStreamsIdWithTags(tag_ids, streamPatchOptions: streamPatchOptions)
+        // Tell the playlist that it can check for newly available assets
+        self.updateStreamParams()
     }
     
     public func getListenTagIDFromID(_ id: Int) -> Int {

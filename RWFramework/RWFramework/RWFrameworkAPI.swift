@@ -354,7 +354,6 @@ extension RWFramework {
         if (self.streamID == 0) { return }
 
         httpPatchStreamsId(self.streamID.description, tagIds: tag_ids, streamPatchOptions: streamPatchOptions).then { data in
-//            self.patchStreamsIdSuccess(data!)
             self.rwPatchStreamsIdSuccess(data)
         }.catch { error in
             self.rwPatchStreamsIdFailure(error)
