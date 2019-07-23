@@ -180,7 +180,7 @@ extension Playlist {
         }.filter { (asset, rank) in
             rank != .discard
         }
-            
+        
         let sortedAssets = filteredAssets.sorted { a, b in
             a.1.rawValue >= b.1.rawValue
         }.sorted { a, b in
@@ -216,8 +216,13 @@ extension Playlist {
     
     private func updateTrackParams() {
         if let tracks = self.tracks, let params = self.currentParams {
-            for track in tracks {
-                track.updateParams(params)
+            do {
+                // update all tracks in parallel, in case they need to load a new track
+                _ = try await(all(tracks.map { t in
+                    Promise { t.updateParams(params) }
+                }))
+            } catch {
+                print(error)
             }
         }
     }
@@ -416,7 +421,7 @@ extension Playlist {
     func skip() {
         // Fade out the currently playing assets on all tracks.
         tracks?.forEach {
-            $0.playNext(premature: true)
+            $0.playNext()
         }
     }
 }
