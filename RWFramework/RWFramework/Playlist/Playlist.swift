@@ -43,8 +43,8 @@ public class Playlist {
 
     private(set) var project: Project!
 
-    let audioEngine = AVAudioEngine()
-    let audioMixer = AVAudioEnvironmentNode()
+    private let audioEngine = AVAudioEngine()
+    private let audioMixer = AVAudioEnvironmentNode()
 
     init(filters: [AssetFilter], sortBy: [SortMethod]) {
         DispatchQueue.promises = .global()
@@ -64,6 +64,28 @@ public class Playlist {
                 self.setupAudioConnection()
             }
         }
+        
+        // Restart the audio engine after interruptions.
+        // For example, another app playing audio over you or the user taking a phone call.
+        NotificationCenter.default.addObserver(
+            forName: AVAudioSession.interruptionNotification,
+            object: audioEngine,
+            queue: .main
+        ) { notification in
+            print("audio engine interruption")
+            let type = AVAudioSession.InterruptionType(
+                rawValue: notification.userInfo![AVAudioSessionInterruptionTypeKey] as! UInt
+            )
+            let options = AVAudioSession.InterruptionOptions(
+                rawValue: notification.userInfo![AVAudioSessionInterruptionOptionKey] as! UInt
+            )
+            if type == AVAudioSession.InterruptionType.ended
+                    && options.contains(.shouldResume)
+                    && !self.audioEngine.isRunning {
+                self.audioEngine.disconnectNodeOutput(self.audioMixer)
+                self.setupAudioConnection()
+            }
+        }
 
         // Push audio attenuation to far away
         audioMixer.distanceAttenuationParameters.distanceAttenuationModel = .linear
@@ -78,6 +100,7 @@ public class Playlist {
     }
     
     private func setupAudioConnection() {
+        print("booting audio engine")
         do {
             audioEngine.connect(
                 audioMixer,
