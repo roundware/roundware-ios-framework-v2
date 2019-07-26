@@ -322,6 +322,30 @@ extension RWFramework {
         UserDefaults.standard.synchronize()
         submitListenIDsSetAsTags(streamPatchOptions: streamPatchOptions)
     }
+    
+    public func getFilterListenIDsSet() -> Set<Int>? {
+        if let array = UserDefaults.standard.object(forKey: "filterListenIDsSet") as? Array<Int> {
+            return Set(array)
+        } else {
+            if let uiconfig = getUIConfig() {
+                var set = Set<Int>()
+                for listen in uiconfig.listen {
+                    for item in listen.display_items {
+                        if item.default_state == true {
+                            set.insert(item.id)
+                        }
+                    }
+                }
+                return set
+            }
+        }
+        return nil
+    }
+    
+    public func setFilterListenIDsSet(_ ids: Set<Int>) {
+        UserDefaults.standard.set(Array(ids), forKey: "filterListenIDsSet")
+        UserDefaults.standard.synchronize()
+    }
 
 // MARK: --
     

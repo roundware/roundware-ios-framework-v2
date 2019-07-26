@@ -16,7 +16,7 @@ public struct Asset {
     /// Duration of the asset in seconds
     let length: Double
     let createdDate: Date
-    let tags: [Int]
+    public let tags: [Int]
     let shape: Geometry?
     let weight: Double
     let description: String

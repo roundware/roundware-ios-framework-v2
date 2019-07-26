@@ -29,7 +29,7 @@ public class Playlist {
     // assets and filters
     private var filters: AllAssetFilters
     private var sortMethods: [SortMethod]
-    private var allAssets = [Asset]()
+    public private(set) var allAssets = [Asset]()
     
     /// Map asset ID to data like last listen time.
     private(set) var userAssetData = [Int: UserAssetData]()
