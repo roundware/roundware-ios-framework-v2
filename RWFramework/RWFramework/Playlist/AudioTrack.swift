@@ -5,6 +5,7 @@ import CoreLocation
 import SceneKit
 import AVKit
 import Promises
+import Repeat
 
 /**
  An AudioTrack has a set of parameters determining how its audio is played.
@@ -198,7 +199,7 @@ extension AudioTrack {
                 try loadNextAsset(start: start, for: duration)
             } catch {
                 print(error)
-                playNext()
+                fadeInNextAsset()
                 return
             }
             
@@ -237,38 +238,50 @@ private class LoadingState: TrackState {
 }
 
 private class TimedTrackState: TrackState {
-    internal let duration: Double
-    private(set) var timeLeft: Double
-    private(set) var timer: Timer? = nil
+    private(set) var timer: Repeater? = nil
+    private var lastDuration: Double
     private var lastResume = Date()
+
+    var timeLeft: Double {
+        if let timer = self.timer, timer.state.isRunning {
+            // playing
+            return lastDuration - Date().timeIntervalSince(lastResume)
+        } else {
+            // paused
+            return lastDuration
+        }
+    }
     
     init(duration: Double) {
-        self.duration = duration
-        self.timeLeft = duration
+        self.lastDuration = duration
     }
     
     func start() {
+        timer = setupTimer()
         resume()
     }
+
     func finish() {
-        timer?.invalidate()
+        timer?.removeAllObservers(thenStop: true)
     }
+
     func goToNextState() {
     }
+
     func pause() {
-        timer?.invalidate()
-        timeLeft -= Date().timeIntervalSince(lastResume)
+        timer?.pause()
+        lastDuration -= Date().timeIntervalSince(lastResume)
     }
-    
-    func setupTimer() -> Timer {
-        return Timer.scheduledTimer(withTimeInterval: timeLeft, repeats: false) { _ in
+
+    func setupTimer() -> Repeater {
+        return .once(after: .seconds(timeLeft)) { _ in
             self.goToNextState()
         }
     }
 
     func resume() {
         lastResume = Date()
-        timer = setupTimer()
+        timer?.start()
     }
 }
 
@@ -319,14 +332,9 @@ private class FadingIn: TimedTrackState {
         super.init(duration: fadeInDur)
     }
     
-    override func setupTimer() -> Timer {
-        let toAdd = Float(FadingIn.updateInterval / self.duration)
-        return Timer.scheduledTimer(
-            withTimeInterval: FadingIn.updateInterval,
-            repeats: true
-        ) { _ in
-            // self.timeLeft -= FadingIn.updateInterval
-            // let progress = (self.duration - self.timeLeft) / self.duration
+    override func setupTimer() -> Repeater {
+        let toAdd = Float(FadingIn.updateInterval / self.timeLeft)
+        return .every(.seconds(FadingIn.updateInterval)) { _ in
             if self.track.player.volume < self.targetVolume {
                 self.track.player.volume += toAdd
             } else {
@@ -423,12 +431,9 @@ private class FadingOut: TimedTrackState {
         super.init(duration: duration)
     }
     
-    override func setupTimer() -> Timer {
-        let toAdd = Float(FadingOut.updateInterval / self.duration)
-        return Timer.scheduledTimer(
-            withTimeInterval: FadingOut.updateInterval,
-            repeats: true
-        ) { _ in
+    override func setupTimer() -> Repeater {
+        let toAdd = Float(FadingOut.updateInterval / self.timeLeft)
+        return .every(.seconds(FadingOut.updateInterval)) { _ in
             if self.track.player.volume > 0 {
                 self.track.player.volume -= toAdd
             } else {
@@ -469,11 +474,8 @@ private class WaitingForAsset: TimedTrackState {
         super.init(duration: 0)
     }
     
-    override func setupTimer() -> Timer {
-        return Timer.scheduledTimer(
-            withTimeInterval: WaitingForAsset.updateInterval,
-            repeats: true
-        ) { _ in
+    override func setupTimer() -> Repeater {
+        return .every(.seconds(WaitingForAsset.updateInterval)) { _ in
             // keep attempting to play the next asset
             self.track.fadeInNextAsset()
         }

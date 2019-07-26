@@ -40,4 +40,5 @@ Pod::Spec.new do |s|
   s.dependency "PromisesSwift", "~> 1.2.3"
   s.dependency "SwiftyJSON", "~> 4.0"
   s.dependency "GEOSwift", "~> 3.0.2"
+  s.dependency "Repeat", "~> 0.5.6"
 end

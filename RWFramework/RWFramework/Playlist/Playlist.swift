@@ -4,6 +4,7 @@ import CoreLocation
 import AVFoundation
 import Promises
 import SceneKit
+import Repeat
 
 struct UserAssetData {
     let lastListen: Date
@@ -21,7 +22,7 @@ struct StreamParams {
 public class Playlist {
     // server communication
     private var lastUpdate: Date? = nil
-    private var updateTimer: Timer? = nil
+    private var updateTimer: Repeater? = nil
     private(set) var currentParams: StreamParams? = nil
     private(set) var startTime = Date()
 
@@ -334,7 +335,7 @@ extension Playlist {
     }
     
     /// Periodically check for newly published assets
-    @objc internal func refreshAssetPool() {
+    internal func refreshAssetPool() {
         self.updateAssets().then {
             // Update filtered assets given any newly uploaded assets
             self.updateParams()
@@ -385,13 +386,9 @@ extension Playlist {
         // Retrieve the list of tracks
         initTracks()
 
-        updateTimer = Timer.scheduledTimer(
-            timeInterval: project.asset_refresh_interval,
-            target: self,
-            selector: #selector(self.refreshAssetPool),
-            userInfo: nil,
-            repeats: true
-        )
+        updateTimer = .every(.seconds(project.asset_refresh_interval)) { _ in
+            self.refreshAssetPool()
+        }
         // Initial grab of assets and speakers.
         updateTimer?.fire()
     }

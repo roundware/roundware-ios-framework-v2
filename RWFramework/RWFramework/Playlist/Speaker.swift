@@ -4,6 +4,7 @@ import CoreLocation
 import SwiftyJSON
 import GEOSwift
 import AVFoundation
+import Repeat
 
 /**
  A polygonal geographic zone within which an ambient audio stream broadcasts continuously to listeners. Speakers can overlap, causing their audio to be mixed together accordingly.
@@ -21,7 +22,7 @@ public class Speaker {
     let attenuationDistance: Int
     private var player: AVPlayer? = nil
     private var looper: Any? = nil
-    private var fadeTimer: Timer? = nil
+    private var fadeTimer: Repeater? = nil
 
     init(
         id: Int,
@@ -67,7 +68,6 @@ extension Speaker {
         if attenuationShapeContains(point) {
             return volume.upperBound
         } else if contains(point) {
-            // TODO: Linearly attenuate instead of just averaging.
             let range = volume.difference
             return volume.lowerBound + range * Float(attenuationRatio(at: point))
         } else {
@@ -98,11 +98,11 @@ extension Speaker {
             }
         }
         
-        fadeTimer?.invalidate()
+        fadeTimer?.removeAllObservers(thenStop: true)
         if let player = self.player {
             let totalDiff = vol - player.volume
             let delta: Float = 0.075
-            fadeTimer = Timer.scheduledTimer(withTimeInterval: Double(delta), repeats: true) { timer in
+            fadeTimer = .every(.seconds(Double(delta))) { timer in
                 let currDiff = vol - player.volume
                 if currDiff.sign != totalDiff.sign || abs(currDiff) < 0.05 {
                     // we went just enough or too far
@@ -112,7 +112,7 @@ extension Speaker {
                         // we can't hear it anymore, so pause it.
                         player.pause()
                     }
-                    timer.invalidate()
+                    timer.removeAllObservers(thenStop: true)
                 } else {
                     player.volume += totalDiff * delta / Speaker.fadeDuration
                 }
