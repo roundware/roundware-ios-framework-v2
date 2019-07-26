@@ -47,6 +47,8 @@ public class Playlist {
     let audioMixer = AVAudioEnvironmentNode()
 
     init(filters: [AssetFilter], sortBy: [SortMethod]) {
+        DispatchQueue.promises = .global()
+
         self.filters = AllAssetFilters(filters)
         self.sortMethods = sortBy
         
@@ -217,13 +219,11 @@ extension Playlist {
     
     private func updateTrackParams() {
         if let tracks = self.tracks, let params = self.currentParams {
-            do {
-                // update all tracks in parallel, in case they need to load a new track
-                _ = try await(all(tracks.map { t in
-                    Promise { t.updateParams(params) }
-                }))
-            } catch {
-                print(error)
+            // update all tracks in parallel, in case they need to load a new track
+            for t in tracks {
+                Promise<Void>(on: .global()) {
+                    t.updateParams(params)
+                }
             }
         }
     }
@@ -278,16 +278,17 @@ extension Playlist {
             dateFormatter.timeZone = TimeZone(secondsFromGMT: timeZone)
             opts["created__gte"] = dateFormatter.string(from: date)
         }
-        
-        return Promise { () -> Promise<Void> in
-            // retrieve newly published assets
-            let data = try await(rw.apiGetAssets(opts))
+
+        // retrieve newly published assets
+        return rw.apiGetAssets(opts).then { data -> () in
             self.allAssets.append(contentsOf: data)
             print("\(data.count) added assets")
-            
+        }.then {
             // Ensure all sort methods are setup before sorting.
-            _ = try await(all(self.sortMethods.map { $0.onRefreshAssets(in: self) }))
-            
+            return all(self.sortMethods.map {
+                $0.onRefreshAssets(in: self)
+            })
+        }.then { _ -> Promise<Void> in
             // Sort the asset pool.
             for sortMethod in self.sortMethods {
                 self.allAssets.sort(by: { a, b in
@@ -346,8 +347,6 @@ extension Playlist {
     }
     
     func start() {
-        DispatchQueue.promises = .global()
-        
         RWFramework.sharedInstance.isPlaying = false
         
         // Starts a session and retrieves project-wide config.
