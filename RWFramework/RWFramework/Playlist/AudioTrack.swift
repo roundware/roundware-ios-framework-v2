@@ -99,13 +99,17 @@ extension AudioTrack {
     /// Plays the next optimal asset nearby.
     /// - Parameter premature: whether to fade out the current asset or just start the next one.
     func playNext() {
-        if !(state is FadingOut) {
-            transition(to: FadingOut(
-                track: self,
-                asset: currentAsset!,
-                duration: AudioTrack.skipFadeOutTime,
-                followedByDeadAir: false
-            ))
+        if state?.canSkip == true {
+            if let asset = currentAsset {
+                transition(to: FadingOut(
+                    track: self,
+                    asset: asset,
+                    duration: AudioTrack.skipFadeOutTime,
+                    followedByDeadAir: false
+                ))
+            } else {
+                fadeInNextAsset()
+            }
         }
     }
     
@@ -221,6 +225,7 @@ extension AudioTrack {
  Silence => FadingIn => PlayingAsset => FadingOut => Silence
  */
 protocol TrackState {
+    var canSkip: Bool { get }
     func start()
     func finish()
     func pause()
@@ -231,6 +236,7 @@ protocol TrackState {
  Dummy state to represent the track while it loads up the next asset.
  */
 private class LoadingState: TrackState {
+    var canSkip: Bool { return false }
     func start() {}
     func finish () {}
     func pause() {}
@@ -241,6 +247,8 @@ private class TimedTrackState: TrackState {
     private(set) var timer: Repeater? = nil
     private var lastDuration: Double
     private var lastResume = Date()
+
+    var canSkip: Bool { return true }
 
     var timeLeft: Double {
         if let timer = self.timer, timer.state.isRunning {
@@ -418,6 +426,8 @@ private class FadingOut: TimedTrackState {
     private let track: AudioTrack
     private let asset: Asset
     private let followedByDeadAir: Bool
+
+    override var canSkip: Bool { return false }
     
     init(
         track: AudioTrack,
@@ -468,6 +478,8 @@ private class WaitingForAsset: TimedTrackState {
     private static let updateInterval = 10.0 // seconds
     
     private let track: AudioTrack
+
+    override var canSkip: Bool { return false }
     
     init(track: AudioTrack) {
         self.track = track
