@@ -17,6 +17,9 @@ import CoreLocation
 // MARK: RWFrameworkProtocol
 @objc public protocol RWFrameworkProtocol: class {
 
+    /// Sent when the framework CSM components are initialized and ready
+    @objc optional func rwStartedSuccessfully()
+
     // API success/failure delegate methods
 
     /// Sent when a token and username are returned from the server
@@ -244,6 +247,12 @@ extension RWFramework {
     }
 
 // MARK: callers
+
+    func rwStartedSuccessfully() {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwStartedSuccessfully?() }
+        }
+    }
 
     func rwPostUsersSuccess(_ data: Data) {
         protocaller { (rwfp, _) -> Void in

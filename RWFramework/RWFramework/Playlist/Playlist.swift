@@ -252,12 +252,12 @@ extension Playlist {
     }
     
     /// Grab the list of `AudioTrack`s for the current project.
-    private func initTracks() {
+    private func initTracks() -> Promise<Void> {
         let rw = RWFramework.sharedInstance
         
-        rw.apiGetAudioTracks([
+        return rw.apiGetAudioTracks([
             "project_id": String(project.id)
-        ]).then { data in
+        ]).then { data -> () in
             print("assets: using " + data.count.description + " tracks")
             for it in data {
                 // TODO: Try to remove playlist dependency. Maybe pass into method?
@@ -359,8 +359,8 @@ extension Playlist {
     }
     
     /// Periodically check for newly published assets
-    internal func refreshAssetPool() {
-        self.updateAssets().then {
+    internal func refreshAssetPool() -> Promise<Void> {
+        return self.updateAssets().then {
             // Update filtered assets given any newly uploaded assets
             self.updateParams()
 
@@ -403,16 +403,21 @@ extension Playlist {
         startTime = Date()
         
         // Start playing background music from speakers.
-        initSpeakers()
+        let speakerUpdate = initSpeakers()
         
         // Retrieve the list of tracks
-        initTracks()
+        let trackUpdate = initTracks()
+
+        // Initial grab of assets and speakers.
+        let assetsUpdate = refreshAssetPool()
+
+        all(speakerUpdate, trackUpdate, assetsUpdate).then { _ in
+            RWFramework.sharedInstance.rwStartedSuccessfully()
+        }
 
         updateTimer = .every(.seconds(project.asset_refresh_interval)) { _ in
             self.refreshAssetPool()
         }
-        // Initial grab of assets and speakers.
-        updateTimer?.fire()
     }
     
     func pause() {
