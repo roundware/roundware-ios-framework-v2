@@ -588,7 +588,7 @@ extension RWFramework {
             return try Speaker.from(data: data)
         }.catch { error in
             self.rwGetSpeakersFailure(error)
-            self.apiProcessError(nil, error: error, caller: "apiGetAssets")
+            self.apiProcessError(nil, error: error, caller: "apiGetSpeakers")
         }
     }
 

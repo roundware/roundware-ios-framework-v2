@@ -94,8 +94,8 @@ extension RWFramework {
         }
 
         func encode(with aCoder: NSCoder) {
-            aCoder.encode(MediaType.allCases.index(of: mediaType)!, forKey: "mediaType")
-            aCoder.encode(MediaStatus.allCases.index(of: mediaStatus)!, forKey: "mediaStatus")
+            aCoder.encode(MediaType.allCases.firstIndex(of: mediaType)!, forKey: "mediaType")
+            aCoder.encode(MediaStatus.allCases.firstIndex(of: mediaStatus)!, forKey: "mediaStatus")
             aCoder.encode(string, forKey: "string")
             aCoder.encode(desc, forKey: "desc")
             aCoder.encode(latitude, forKey: "latitude")

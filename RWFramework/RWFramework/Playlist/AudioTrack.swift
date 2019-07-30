@@ -395,7 +395,7 @@ private class PlayingAsset: TimedTrackState {
         self.asset = asset
         fadeOutDuration = min(Double(track.fadeOutTime.random()), duration / 2)
         // duration of the asset excluding any fades
-        let fullVolumeDuration = duration - fadeOutDuration
+        let fullVolumeDuration = duration - fadeOutDuration + 1.5
         super.init(duration: fullVolumeDuration)
     }
     
