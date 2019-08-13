@@ -205,6 +205,8 @@ extension Playlist {
             (asset, self.filters.keep(asset, playlist: self, track: track))
         }.filter { (asset, rank) in
             rank != .discard
+                // don't pick anything currently playing on another track
+                && !self.currentlyPlayingAssets.contains { $0.id == asset.id }
         }
         
         let sortedAssets = filteredAssets.sorted { a, b in
@@ -226,18 +228,25 @@ extension Playlist {
         
         let next = sortedAssets.first
         if let next = next {
-            var playCount = 1
-            if let prevEntry = userAssetData[next.id] {
-                playCount += prevEntry.playCount
-            }
-            
-            userAssetData.updateValue(
-                UserAssetData(lastListen: Date(), playCount: playCount),
-                forKey: next.id
-            )
             print("picking asset: \(next)")
         }
         return next
+    }
+
+    func recordFinishedPlaying(asset: Asset) {
+        var playCount = 1
+        if let prevEntry = userAssetData[asset.id] {
+            playCount += prevEntry.playCount
+        }
+        
+        userAssetData.updateValue(
+            UserAssetData(lastListen: Date(), playCount: playCount),
+            forKey: asset.id
+        )
+    }
+
+    func passesFilters(_ asset: Asset, forTrack track: AudioTrack) -> Bool {
+        return self.filters.keep(asset, playlist: self, track: track) != .discard
     }
     
     private func updateTrackParams() {
