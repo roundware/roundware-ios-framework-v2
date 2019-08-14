@@ -89,7 +89,7 @@ extension AudioTrack {
         }
     }
 
-    private func setDynamicPan(at assetLoc: CLLocation, _ params: StreamParams) {
+    fileprivate func setDynamicPan(at assetLoc: CLLocation, _ params: StreamParams) {
         player.position = assetLoc.toAudioPoint(relativeTo: params.location)
     }
     
@@ -114,54 +114,24 @@ extension AudioTrack {
                     track: self,
                     asset: asset,
                     duration: AudioTrack.skipFadeOutTime,
-                    followedByDeadAir: false
+                    followedBy: nil
                 ))
             } else {
                 fadeInNextAsset()
             }
         }
     }
-    
-    /// Downloads and starts playing the currently selected asset
-    private func loadNextAsset(start: Double? = nil, for duration: Double? = nil) throws {
-        // Download asset into memory
-        print("downloading asset")
-        let remoteUrl = URL(string: currentAsset!.file)!
-            .deletingPathExtension()
-            .appendingPathExtension("mp3")
-        
-        let data = try Data(contentsOf: remoteUrl)
-        print("asset downloaded as \(remoteUrl.lastPathComponent)")
-        // have to write to file...
-        // Write it to the cache folder so we can easily clean up later.
-        let documentsDir = try FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-        
-        // Remove file of last played asset
-        if let prev = previousAsset {
-            let fileName = URL(string: prev.file)!
-                .deletingPathExtension()
-                .appendingPathExtension("mp3")
-                .lastPathComponent
-            
-            let prevAssetUrl = documentsDir.appendingPathComponent(fileName)
-            try FileManager.default.removeItem(at: prevAssetUrl)
-        }
-        
-        let url = documentsDir.appendingPathComponent(remoteUrl.lastPathComponent)
-        try data.write(to: url, options: .atomic)
 
-        let file = try AVAudioFile(forReading: url)
-
-        if let start = start, let duration = duration {
-            let startFrame = Int64(start * file.processingFormat.sampleRate)
-            let frameCount = UInt32(duration * file.processingFormat.sampleRate)
-            player.scheduleSegment(file, startingFrame: startFrame, frameCount: frameCount, at: nil)
-        } else {
-            player.scheduleFile(file, at: nil)
-        }
-
-        if let params = self.playlist?.currentParams, let loc = currentAsset?.location {
-            self.setDynamicPan(at: loc, params)
+    func replay() {
+        if let curr = currentAsset {
+            transition(to: FadingOut(
+                track: self,
+                asset: curr,
+                duration: Double(fadeOutTime.random()),
+                followedBy: LoadingState(track: self, asset: curr)
+            ))
+        } else if let prev = self.previousAsset {
+            transition(to: LoadingState(track: self, asset: prev))
         }
     }
     
@@ -193,38 +163,7 @@ extension AudioTrack {
     
     /// - Returns: if an asset has been chosen and started
     func fadeInNextAsset() {
-        transition(to: LoadingState())
-        if let next = self.playlist?.next(forTrack: self) {
-            previousAsset = currentAsset
-            currentAsset = next
-            
-            let activeRegionLength = Double(next.activeRegion.upperBound - next.activeRegion.lowerBound)
-            let minDuration = min(Double(self.duration.lowerBound), activeRegionLength)
-            let maxDuration = min(Double(self.duration.upperBound), activeRegionLength)
-            let duration = (minDuration...maxDuration).random()
-            let latestStart = Double(next.activeRegion.upperBound) - duration
-            let start = (Double(next.activeRegion.lowerBound)...latestStart).random()
-            
-            player.stop()
-            
-            // load the asset file
-            do {
-                try loadNextAsset(start: start, for: duration)
-            } catch {
-                print(error)
-                fadeInNextAsset()
-                return
-            }
-            
-            transition(to: FadingIn(
-                track: self,
-                asset: next,
-                assetDuration: duration
-            ))
-        } else if !(self.state is WaitingForAsset) {
-            currentAsset = nil
-            transition(to: WaitingForAsset(track: self))
-        }
+        transition(to: LoadingState(track: self))
     }
 }
 
@@ -248,11 +187,95 @@ protocol TrackState {
  */
 private class LoadingState: TrackState {
     var canSkip: Bool { return false }
-    func start() {}
+
+    private let track: AudioTrack
+    private let asset: Asset?
+
+    init(track: AudioTrack, asset: Asset? = nil) {
+        self.track = track
+        self.asset = asset
+    }
+
+    func start() {
+        if let next = self.asset ?? track.playlist?.next(forTrack: track) {
+            track.previousAsset = track.currentAsset
+            track.currentAsset = next
+
+            let activeRegionLength = Double(next.activeRegion.upperBound - next.activeRegion.lowerBound)
+            let minDuration = min(Double(track.duration.lowerBound), activeRegionLength)
+            let maxDuration = min(Double(track.duration.upperBound), activeRegionLength)
+            let duration = (minDuration...maxDuration).random()
+            let latestStart = Double(next.activeRegion.upperBound) - duration
+            let start = (Double(next.activeRegion.lowerBound)...latestStart).random()
+
+            track.player.stop()
+
+            // load the asset file
+            do {
+                try loadNextAsset(start: start, for: duration)
+            } catch {
+                print(error)
+                track.fadeInNextAsset()
+                return
+            }
+
+            track.transition(to: FadingIn(
+                track: track,
+                asset: next,
+                assetDuration: duration
+            ))
+        } else if !(track.state is WaitingForAsset) {
+            track.currentAsset = nil
+            track.transition(to: WaitingForAsset(track: track))
+        }
+    }
     func finish () {}
     func pause() {}
     func resume() {}
     func onUpdate() {}
+
+    /// Downloads and starts playing the currently selected asset
+    private func loadNextAsset(start: Double? = nil, for duration: Double? = nil) throws {
+        // Download asset into memory
+        print("downloading asset")
+        let remoteUrl = URL(string: track.currentAsset!.file)!
+            .deletingPathExtension()
+            .appendingPathExtension("mp3")
+
+        let data = try Data(contentsOf: remoteUrl)
+        print("asset downloaded as \(remoteUrl.lastPathComponent)")
+        // have to write to file...
+        // Write it to the cache folder so we can easily clean up later.
+        let documentsDir = try FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+
+        // Remove file of last played asset
+        if let prev = track.previousAsset {
+            let fileName = URL(string: prev.file)!
+                .deletingPathExtension()
+                .appendingPathExtension("mp3")
+                .lastPathComponent
+
+            let prevAssetUrl = documentsDir.appendingPathComponent(fileName)
+            try FileManager.default.removeItem(at: prevAssetUrl)
+        }
+
+        let url = documentsDir.appendingPathComponent(remoteUrl.lastPathComponent)
+        try data.write(to: url, options: .atomic)
+
+        let file = try AVAudioFile(forReading: url)
+
+        if let start = start, let duration = duration {
+            let startFrame = Int64(start * file.processingFormat.sampleRate)
+            let frameCount = UInt32(duration * file.processingFormat.sampleRate)
+            track.player.scheduleSegment(file, startingFrame: startFrame, frameCount: frameCount, at: nil)
+        } else {
+            track.player.scheduleFile(file, at: nil)
+        }
+
+        if let params = track.playlist?.currentParams, let loc = track.currentAsset?.location {
+            track.setDynamicPan(at: loc, params)
+        }
+    }
 }
 
 private class TimedTrackState: TrackState {
@@ -466,7 +489,8 @@ private class PlayingAsset: TimedTrackState {
         track.transition(to: FadingOut(
             track: track,
             asset: asset,
-            duration: fadeOutDuration
+            duration: fadeOutDuration,
+            followedBy: DeadAir(track: track)
         ))
     }
 
@@ -476,7 +500,11 @@ private class PlayingAsset: TimedTrackState {
                 track: track,
                 asset: asset,
                 duration: fadeOutDuration,
-                remainingAssetTime: timeLeft
+                followedBy: ResumableDeadAir(
+                    track: track,
+                    asset: asset,
+                    remainingAssetTime: timeLeft
+                )
             ))
         }
     }
@@ -488,8 +516,7 @@ private class FadingOut: TimedTrackState {
     
     private let track: AudioTrack
     private let asset: Asset
-    private let followedByDeadAir: Bool
-    private let remainingAssetTime: Double?
+    private let followedBy: TrackState?
 
     override var canSkip: Bool { return false }
     
@@ -497,13 +524,11 @@ private class FadingOut: TimedTrackState {
         track: AudioTrack,
         asset: Asset,
         duration: Double,
-        followedByDeadAir: Bool = true,
-        remainingAssetTime: Double? = nil
+        followedBy: TrackState? = nil
     ) {
         self.track = track
         self.asset = asset
-        self.followedByDeadAir = followedByDeadAir
-        self.remainingAssetTime = remainingAssetTime
+        self.followedBy = followedBy
         super.init(duration: duration)
     }
     
@@ -532,16 +557,8 @@ private class FadingOut: TimedTrackState {
     }
     
     override func goToNextState() {
-        if (followedByDeadAir) {
-            if let remainingTime = self.remainingAssetTime {
-                track.transition(to: ResumableDeadAir(
-                    track: track,
-                    asset: asset,
-                    remainingAssetTime: remainingTime
-                ))
-            } else {
-                track.transition(to: DeadAir(track: track))
-            }
+        if let nextState = self.followedBy {
+            track.transition(to: nextState)
         } else {
             self.track.fadeInNextAsset()
         }

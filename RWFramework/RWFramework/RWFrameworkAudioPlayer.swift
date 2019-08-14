@@ -67,18 +67,16 @@ extension RWFramework {
 
     /// Next audio
     public func skip() {
-//        apiPostStreamsIdSkip()
         playlist.skip()
     }
 
     /// Replay audio
     public func replay() {
-        apiPostStreamsIdReplay()
+        playlist.replay()
     }
     
     /// Check if stream active
     public func isActive() {
-        apiGetStreamsIdIsActive()
     }
 
 }

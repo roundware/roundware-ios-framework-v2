@@ -457,6 +457,12 @@ extension Playlist {
             $0.playNext()
         }
     }
+
+    func replay() {
+        tracks?.forEach {
+            $0.replay()
+        }
+    }
 }
 
 
