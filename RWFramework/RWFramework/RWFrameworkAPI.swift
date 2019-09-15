@@ -61,6 +61,9 @@ extension RWFramework {
         print("got new user")
         print(data)
         if let dict = try JSON(data: data).dictionary {
+            if let user_id = dict["id"]?.number {
+                RWFrameworkConfig.setConfigValue("user_id", value: user_id, group: RWFrameworkConfig.ConfigGroup.client)
+            } // TODO: Handle missing value
             if let username = dict["username"]?.string {
                 RWFrameworkConfig.setConfigValue("username", value: username, group: RWFrameworkConfig.ConfigGroup.client)
             } // TODO: Handle missing value

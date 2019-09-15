@@ -22,8 +22,9 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
 
         let r = arc4random()
         let recorded_file_name = RWFrameworkConfig.getConfigValueAsString("recorded_file_name")
-// TBD        let recordedFilePath = NSTemporaryDirectory().stringByAppendingPathComponent("\(r)_\(recorded_file_name)")
-        let recordedFilePath = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("\(r)_\(recorded_file_name)").path
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let recordedFilePath = paths[0].appendingPathComponent("\(r)_\(recorded_file_name)").path
+        print("addRecording path: \(recordedFilePath)")
 
         do {
             try FileManager.default.moveItem(atPath: soundFilePath(), toPath: recordedFilePath)
@@ -56,16 +57,16 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     /// Return the path to the recorded sound file
     func soundFilePath() -> String {
         let recorded_file_name = RWFrameworkConfig.getConfigValueAsString("recorded_file_name")
-        // TBD        let soundFilePath = NSTemporaryDirectory().stringByAppendingPathComponent(recorded_file_name)
-        let soundFilePath = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(recorded_file_name)
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let soundFilePath = paths[0].appendingPathComponent(recorded_file_name)
         println(soundFilePath)
         return (soundFilePath.path)
     }
 
     func soundFilePathURL() -> URL {
         let recorded_file_name = RWFrameworkConfig.getConfigValueAsString("recorded_file_name")
-        // TBD        let soundFilePath = NSTemporaryDirectory().stringByAppendingPathComponent(recorded_file_name)
-        let soundFileURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(recorded_file_name)
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let soundFileURL = paths[0].appendingPathComponent(recorded_file_name)
         println(soundFileURL)
         return (soundFileURL)
     }

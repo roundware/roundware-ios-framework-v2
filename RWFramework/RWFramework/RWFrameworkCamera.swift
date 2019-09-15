@@ -98,16 +98,18 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
     }
 
 // MARK: - UIImagePickerControllerDelegate
-
-    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        let mediaType = info[UIImagePickerController.InfoKey.mediaType.rawValue] as! String
-        if mediaType == kUTTypeImage as String {
-            handleImageMediaType(info)
-        } else if mediaType == kUTTypeMovie as String {
-            handleMovieMediaType(info)
-        } else {
-            imagePickerControllerDidCancel(picker)
-        }
+  
+    public func imagePickerController(_ picker: UIImagePickerController,
+                                      didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+      let mediaType = info[.mediaType] as? String
+      if (mediaType == "public.image") {
+          handleImageMediaType(info)
+      } else if mediaType == "public.video" {
+          handleMovieMediaType(info)
+      } else {
+          imagePickerControllerDidCancel(picker)
+      }
+      
     }
 
     public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {

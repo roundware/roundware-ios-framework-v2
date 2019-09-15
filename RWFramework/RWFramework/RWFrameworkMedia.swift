@@ -62,6 +62,7 @@ extension RWFramework {
         var longitude: NSNumber = 0
         var tagIDs: String = ""
         var envelopeID: NSNumber = 0
+        var userID: NSNumber = 0
         var retryCount: NSNumber = 0
 
         init(mediaType: MediaType, string: String, location: CLLocation) {
@@ -142,6 +143,7 @@ extension RWFramework {
             for media: Media in self.mediaArray {
                 if media.mediaStatus == MediaStatus.Hold {
                     media.envelopeID = NSNumber(value: envelopeID)
+                    media.userID = RWFrameworkConfig.getConfigValueAsNumber("user_id", group: RWFrameworkConfig.ConfigGroup.client)
                     media.tagIDs = self.getSubmittableSpeakIDsSetAsTags() //self.getAllSpeakTagsCurrentAsString() // the old way
                     media.mediaStatus = MediaStatus.Ready
                 }

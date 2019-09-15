@@ -108,7 +108,8 @@ extension RWFramework: CLLocationManagerDelegate {
         if (shouldMakeTheRequest) {
             locationManager.distanceFilter = RWFrameworkConfig.getConfigValueAsNumber("distance_filter_in_meters").doubleValue
             if CLLocationManager.authorizationStatus() == .notDetermined {
-                locationManager.requestWhenInUseAuthorization()
+//                locationManager.requestWhenInUseAuthorization()
+                locationManager.requestAlwaysAuthorization() // need Always auth for location to update in background
             }
         }
         return shouldMakeTheRequest

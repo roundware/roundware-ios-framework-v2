@@ -65,9 +65,12 @@ extension RWFramework {
         apiPatchEnvelopesId(media).then { () -> Void in
             self.println("apiPatchEnvelopesId success")
             media.mediaStatus = MediaStatus.UploadCompleted
-            self.playlist.refreshAssetPool()
             self.deleteMediaFile(media)
             self.removeMedia(media)
+            // only refresh asst pool if done uploading all media
+            if self.mediaArray.count == 0 {
+                self.playlist.refreshAssetPool()
+            }
             UIApplication.shared.endBackgroundTask(bti)
             self.uploaderUploading = false
         }.catch { (error: Error) -> Void in

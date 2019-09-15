@@ -152,6 +152,7 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
                         "latitude": media.latitude.stringValue,
                         "longitude": media.longitude.stringValue,
                         "tag_ids": media.tagIDs,
+                        "user_id": media.userID,
                         "description": media.desc] as [String : Any]
         return patchFileAndData(
             to: RWFrameworkURLFactory.patchEnvelopesIdURL(media.envelopeID.stringValue),
