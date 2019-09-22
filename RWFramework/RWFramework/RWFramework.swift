@@ -62,6 +62,18 @@ private lazy var __once: () = { () -> Void in
         SortRandomly(),
         SortByLikes(),
     ])
+    
+    static let decoder: JSONDecoder = {
+        let dec = JSONDecoder()
+        dec.dateDecodingStrategy = .flexibleISO
+        return dec
+    }()
+    
+    static let encoder: JSONEncoder = {
+        let enc = JSONEncoder()
+        enc.dateEncodingStrategy = .formatted(.iso8601Full)
+        return enc
+    }()
 
     // Audio - Stream (see RWFrameworkAudioPlayer.swift)
     var streamURL: URL? = nil
@@ -335,5 +347,39 @@ private lazy var __once: () = { () -> Void in
         ).then { _ in
             self.playlist.updateFilterData()
         }
+    }
+}
+
+extension DateFormatter {
+    static let iso8601Full: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+        formatter.calendar = Calendar(identifier: .iso8601)
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter
+    }()
+    static let iso8601: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.calendar = Calendar(identifier: .iso8601)
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter
+    }()
+}
+
+extension JSONDecoder.DateDecodingStrategy {
+    /// Attempts to decode dates with fractional seconds, then without.
+    static let flexibleISO = custom {
+        let container = try $0.singleValueContainer()
+        let s = try container.decode(String.self)
+        if let date = DateFormatter.iso8601Full.date(from: s) ?? DateFormatter.iso8601.date(from: s) {
+            return date
+        }
+        throw DecodingError.dataCorruptedError(
+            in: container,
+            debugDescription: "Invalid date: \(s)"
+        )
     }
 }

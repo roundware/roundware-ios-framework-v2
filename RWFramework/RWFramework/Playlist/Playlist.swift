@@ -21,7 +21,6 @@ struct StreamParams {
 
 public class Playlist {
     // server communication
-    private var lastUpdate: Date? = nil
     private var updateTimer: Repeater? = nil
     private(set) var currentParams: StreamParams? = nil
     private(set) var startTime = Date()
@@ -29,7 +28,11 @@ public class Playlist {
     // assets and filters
     private var filters: AllAssetFilters
     private var sortMethods: [SortMethod]
-    public private(set) var allAssets = [Asset]()
+    /**
+     Mapping of project id to asset pool, allowing for one app
+     to support loading multiple projects at once.
+     */
+    private var assetPool: AssetPool? = nil
     
     /// Map asset ID to data like last listen time.
     private(set) var userAssetData = [Int: UserAssetData]()
@@ -115,9 +118,33 @@ public class Playlist {
 }
 
 extension Playlist {
+    /**
+     All assets available in the current active project.
+    */
+    public var allAssets: [Asset] {
+        return assetPool?.assets ?? []
+    }
+    
     public var currentlyPlayingAssets: [Asset] {
         return tracks?.compactMap { $0.currentAsset } ?? []
     }
+    
+    private var assetPoolFile: URL? {
+        do {
+            let docsDir = try FileManager.default.url(
+                for: .documentDirectory,
+                in: .userDomainMask,
+                appropriateFor: nil,
+                create: true
+            )
+            // Keep a separate asset pool file for each project
+            return docsDir.appendingPathComponent("asset-pool-\(project.id).json")
+        } catch {
+            print(error)
+            return nil
+        }
+    }
+    
 
     func apply(filter: AssetFilter) {
         self.filters.filters.append(filter)
@@ -201,7 +228,7 @@ extension Playlist {
     /// Picks the next-up asset to play on the given track.
     /// Applies all the playlist-level and track-level filters to make the decision.
     func next(forTrack track: AudioTrack) -> Asset? {
-        let filteredAssets = self.allAssets.lazy.map { asset in
+        let filteredAssets = allAssets.lazy.map { asset in
             (asset, self.filters.keep(asset, playlist: self, track: track))
         }.filter { (asset, rank) in
             rank != .discard
@@ -301,7 +328,7 @@ extension Playlist {
             "submitted": "true"
         ]
         // Only grab assets added since the last update
-        if let date = lastUpdate {
+        if let date = assetPool?.date {
             let timeZone = RWFrameworkConfig.getConfigValueAsNumber("session_timezone", group: .session).intValue
 
             let dateFormatter = DateFormatter()
@@ -312,28 +339,35 @@ extension Playlist {
         }
 
         // retrieve newly published assets
-        return rw.apiGetAssets(opts).then { data -> () in
-            self.allAssets.append(contentsOf: data)
-            print("\(data.count) added assets")
-        }.then {
-            // Ensure all sort methods are setup before sorting.
-            return all(self.sortMethods.map {
+        return rw.apiGetAssets(opts).then { data in
+            // Append new assets to our existing pool
+            var assets = self.assetPool?.assets ?? []
+            assets.append(contentsOf: data)
+
+            // Ensure all sort methods have necessary data before sorting.
+            _ = try await(all(self.sortMethods.map {
                 $0.onRefreshAssets(in: self)
-            })
-        }.then { _ -> Promise<Void> in
+            }))
+            
             // Sort the asset pool.
             for sortMethod in self.sortMethods {
-                self.allAssets.sort(by: { a, b in
+                assets.sort(by: { a, b in
                     sortMethod.sortRanking(for: a, in: self) < sortMethod.sortRanking(for: b, in: self)
                 })
             }
+            
+            // Update this project's asset pool
+            self.assetPool = AssetPool(assets: assets, date: Date())
+            
+            print("\(data.count) added assets, total is \(assets.count)")
 
             // notify filters that the asset pool is updated.
             return self.updateFilterData()
         }.catch { err in
             print(err)
         }.always {
-            self.lastUpdate = Date()
+            // Cache the asset pool to reduce future launch time
+            self.saveAssetPool()
         }
     }
     
@@ -401,6 +435,31 @@ extension Playlist {
         default: break
         }
     }
+
+    private func saveAssetPool() {
+        print("saving asset pool...")
+        do {
+            if let url = assetPoolFile {
+                let data = try RWFramework.encoder.encode(assetPool)
+                try data.write(to: url)
+            }
+        } catch {
+            print(error)
+        }
+    }
+
+    private func loadAssetPool() {
+        // Load existing asset pool from a file
+        print("loading asset pool...")
+        do {
+            if let url = assetPoolFile {
+                let data = try Data(contentsOf: url)
+                assetPool = try RWFramework.decoder.decode(AssetPool.self, from: data)
+            }
+        } catch {
+            print(error)
+        }
+    }
     
     /**
      * Retrieve tags to filter by for the current project.
@@ -410,6 +469,9 @@ extension Playlist {
     private func afterSessionInit() {
         // Mark start of the session
         startTime = Date()
+
+        // Load cached assets first
+        loadAssetPool()
         
         // Start playing background music from speakers.
         let speakerUpdate = initSpeakers()

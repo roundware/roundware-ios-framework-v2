@@ -1,11 +1,11 @@
 
 import Foundation
-import SwiftyJSON
 import CoreLocation
 import SceneKit
 import AVKit
 import Promises
 import Repeat
+import KeyedCodable
 
 /**
  An AudioTrack has a set of parameters determining how its audio is played.
@@ -13,22 +13,17 @@ import Repeat
  There can be an arbitrary number of audio tracks playing at once.
  When one needs an asset, it simply grabs the next available matching one from the Playlist.
  */
-public class AudioTrack {
+public class AudioTrack: Codable {
     let id: Int
-    let volume: ClosedRange<Float>
-    let duration: ClosedRange<Float>
-    let deadAir: ClosedRange<Float>
-    let fadeInTime: ClosedRange<Float>
-    let fadeOutTime: ClosedRange<Float>
     let repeatRecordings: Bool
     let tags: [Int]?
-    let bannedDuration: Double
-    let startWithSilence: Bool
+    let bannedDuration: Double = 600
+    let startWithSilence: Bool = true
     /**
      Whether to fade out the playing asset if it gets filtered out.
      Also enables resuming that asset if it quickly passes the filters again.
      */
-    let fadeOutWhenFiltered: Bool
+    let fadeOutWhenFiltered: Bool = true
     
     var playlist: Playlist? = nil
     var previousAsset: Asset? = nil
@@ -37,57 +32,50 @@ public class AudioTrack {
 
     let player = AVAudioPlayerNode()
 
+    // Bound fields that are accessible by combined ranges
+    private let minVolume: Float
+    private let maxVolume: Float
+    var volume: ClosedRange<Float> { return minVolume...maxVolume }
 
-    init(
-        id: Int,
-        volume: ClosedRange<Float>,
-        duration: ClosedRange<Float>,
-        deadAir: ClosedRange<Float>,
-        fadeInTime: ClosedRange<Float>,
-        fadeOutTime: ClosedRange<Float>,
-        repeatRecordings: Bool,
-        tags: [Int]?,
-        bannedDuration: Double,
-        startWithSilence: Bool,
-        fadeOutWhenFiltered: Bool
-    ) {
-        self.id = id
-        self.volume = volume
-        self.duration = duration
-        self.deadAir = deadAir
-        self.fadeInTime = fadeInTime
-        self.fadeOutTime = fadeOutTime
-        self.repeatRecordings = repeatRecordings
-        self.tags = tags
-        self.bannedDuration = bannedDuration
-        self.startWithSilence = startWithSilence
-        self.fadeOutWhenFiltered = fadeOutWhenFiltered
+    private let minDuration: Float
+    private let maxDuration: Float
+    var duration: ClosedRange<Float> { return minDuration...maxDuration }
+
+    private let minDeadAir: Float
+    private let maxDeadAir: Float
+    var deadAir: ClosedRange<Float> { return minDeadAir...maxDeadAir }
+
+    private let minFadeInTime: Float
+    private let maxFadeInTime: Float
+    var fadeInTime: ClosedRange<Float> { return minFadeInTime...maxFadeInTime }
+
+    private let minFadeOutTime: Float
+    private let maxFadeOutTime: Float
+    var fadeOutTime: ClosedRange<Float> { return minFadeOutTime...maxFadeOutTime }
+
+    enum CodingKeys: String, KeyedKey {
+        case id
+        case minVolume = "minvolume"
+        case maxVolume = "maxvolume"
+        case minDuration = "minduration"
+        case maxDuration = "maxduration"
+        case minDeadAir = "mindeadair"
+        case maxDeadAir = "maxdeadair"
+        case minFadeInTime = "minfadeintime"
+        case maxFadeInTime = "maxfadeintime"
+        case minFadeOutTime = "minfadeouttime"
+        case maxFadeOutTime = "maxfadeouttime"
+        case repeatRecordings = "repeatrecordings"
+        case tags = "tag_filters"
+        case bannedDuration = "banned_duration"
+        case startWithSilence = "start_with_silence"
+        case fadeOutWhenFiltered = "fadeout_when_filtered"
     }
 }
 
 extension AudioTrack {
     /// Amount of seconds to fade out when skipping an asset
     private static let skipFadeOutTime: Double = 1.0
-    
-    static func from(data: Data) throws -> [AudioTrack] {
-        let items = try JSON(data: data).array!
-        return items.map { item in
-            let it = item.dictionary!
-            return AudioTrack(
-                id: it["id"]!.int!,
-                volume: (it["minvolume"]!.float!)...(it["maxvolume"]!.float!),
-                duration: (it["minduration"]!.float!)...(it["maxduration"]!.float!),
-                deadAir: (it["mindeadair"]!.float!)...(it["maxdeadair"]!.float!),
-                fadeInTime: (it["minfadeintime"]!.float!)...(it["maxfadeintime"]!.float!),
-                fadeOutTime: (it["minfadeouttime"]!.float!)...(it["maxfadeouttime"]!.float!),
-                repeatRecordings: it["repeatrecordings"]?.bool ?? false,
-                tags: it["tag_filters"]?.array?.map { $0.int! },
-                bannedDuration: it["banned_duration"]?.double ?? 600,
-                startWithSilence: it["start_with_silence"]?.bool ?? true,
-                fadeOutWhenFiltered: it["fadeout_when_filtered"]?.bool ?? true
-            )
-        }
-    }
 
     fileprivate func setDynamicPan(at assetLoc: CLLocation, _ params: StreamParams) {
         player.position = assetLoc.toAudioPoint(relativeTo: params.location)

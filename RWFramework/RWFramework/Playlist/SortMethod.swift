@@ -1,6 +1,5 @@
 
 import Foundation
-import SwiftyJSON
 import Promises
 
 protocol SortMethod {
@@ -61,12 +60,15 @@ class SortByLikes: SortMethod {
             type: "like",
             projectId: projectId.description
         ).then { data -> Void in
-            let voteData = try JSON(data: data).array
-            self.assetVotes = voteData?.reduce(into: [Int: Int]()) { acc, data in
-                let assetId = data["asset_id"].int!
-                let votes = data["asset_votes"].int!
-                acc[assetId] = votes
+            let voteData = try RWFramework.decoder.decode([AssetVote].self, from: data)
+            self.assetVotes = voteData.reduce(into: [Int: Int]()) { acc, item in
+                acc[item.asset_id] = item.asset_votes
             }
         }
+    }
+
+    private struct AssetVote: Codable {
+        let asset_id: Int
+        let asset_votes: Int
     }
 }

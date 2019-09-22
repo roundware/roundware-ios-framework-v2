@@ -132,7 +132,7 @@ extension RWFramework {
         return self.apiGetProjectsId(project_id, session_id: session_id).then { data -> Project in
             RWFrameworkConfig.setConfigDataAsDictionary(data, key: "project")
             self.setupRecording()
-            return try JSONDecoder().decode(Project.self, from: data)
+            return try RWFramework.decoder.decode(Project.self, from: data)
         }
     }
 
@@ -501,7 +501,7 @@ extension RWFramework {
     
     public func apiGetAudioTracks(_ dict: [String:String]) -> Promise<[AudioTrack]> {
         return httpGetAudioTracks(dict).then { data in
-            try AudioTrack.from(data: data)
+            try RWFramework.decoder.decode([AudioTrack].self, from: data)
         }.catch { error in
             self.apiProcessError(nil, error: error, caller: "apiGetAudioTracks")
         }
@@ -511,7 +511,7 @@ extension RWFramework {
     public func apiGetAssets(_ dict: [String:String]) -> Promise<[Asset]> {
         return httpGetAssets(dict).then { data -> [Asset] in
             self.rwGetAssetsSuccess(data)
-            return try Asset.from(data: data)
+            return try RWFramework.decoder.decode([Asset].self, from: data)
         }.catch { error in
             self.rwGetAssetsFailure(error)
             self.apiProcessError(nil, error: error, caller: "apiGetAssets")
@@ -520,7 +520,7 @@ extension RWFramework {
 
     public func apiGetTimedAssets(_ dict: [String:String]) -> Promise<[TimedAsset]> {
         return httpGetTimedAssets(dict).then { data -> [TimedAsset] in
-            return try JSONDecoder().decode([TimedAsset].self, from: data)
+            return try RWFramework.decoder.decode([TimedAsset].self, from: data)
         }.catch { error in
             self.apiProcessError(nil, error: error, caller: "apiGetTimedAssets")
         }
