@@ -9,7 +9,6 @@
 import Foundation
 import CoreLocation
 import Promises
-import SwiftyJSON
 
 extension RWFramework {
 
@@ -60,14 +59,14 @@ extension RWFramework {
     private func saveUserInfo(_ data: Data) throws {
         print("got new user")
         print(data)
-        if let dict = try JSON(data: data).dictionary {
-            if let user_id = dict["id"]?.number {
-                RWFrameworkConfig.setConfigValue("user_id", value: user_id, group: RWFrameworkConfig.ConfigGroup.client)
+        if let user = try? RWFramework.decoder.decode(User.self, from: data) {
+            if let user_id = user.id {
+                RWFrameworkConfig.setConfigValue("user_id", value: NSNumber(value: user_id), group: RWFrameworkConfig.ConfigGroup.client)
             } // TODO: Handle missing value
-            if let username = dict["username"]?.string {
+            if let username = user.username {
                 RWFrameworkConfig.setConfigValue("username", value: username, group: RWFrameworkConfig.ConfigGroup.client)
             } // TODO: Handle missing value
-            if let token = dict["token"]?.string {
+            if let token = user.token {
                 RWFrameworkConfig.setConfigValue("token", value: token, group: RWFrameworkConfig.ConfigGroup.client)
             } // TODO: Handle missing value
         }
@@ -103,13 +102,13 @@ extension RWFramework {
 
     private func setupClientSession(_ data: Data) throws -> Promise<Project> {
         var session_id : NSNumber = 0
-        if let dict = try JSON(data: data).dictionary {
-            if let _session_id = dict["id"]?.number {
-                session_id = _session_id
+        if let dict = try? RWFramework.decoder.decode(Session.self, from: data) {
+            if let _session_id = dict.id {
+                session_id = NSNumber(value: _session_id)
                 RWFrameworkConfig.setConfigValue("session_id", value: session_id, group: RWFrameworkConfig.ConfigGroup.client)
             } // TODO: Handle missing value
             
-            if let timeZone = dict["timezone"]?.string {
+            if let timeZone = dict.timezone {
                 // timezone format: -0800 => (-|+)(HH)(MM)
                 let sign = timeZone.first! == "+" ? 1 : -1
                 let hoursStart = timeZone.index(after: timeZone.startIndex)
@@ -138,9 +137,9 @@ extension RWFramework {
 
     private func setupSession(_ data: Data) throws {
         var session_id : NSNumber = 0
-        if let dict = try JSON(data: data).dictionary {
-            if let _session_id = dict["id"]?.number {
-                session_id = _session_id
+        if let dict = try? RWFramework.decoder.decode(Session.self, from: data) {
+            if let _session_id = dict.id {
+                session_id = NSNumber(value: _session_id)
                 RWFrameworkConfig.setConfigValue("session_id", value: session_id, group: RWFrameworkConfig.ConfigGroup.client)
             } // TODO: Handle missing value
         }
@@ -168,41 +167,39 @@ extension RWFramework {
     }
 
     private func setupStream(_ data: Data, project_id: NSNumber, session_id: NSNumber) throws {
-        if let dict = try JSON(data: data).dictionary {
-            RWFrameworkConfig.setConfigDataAsDictionary(data, key: "project")
+        RWFrameworkConfig.setConfigDataAsDictionary(data, key: "project")
 
-            // TODO: where is this going to come from?
-            func configDisplayStartupMessage() {
-                let startupMessage = RWFrameworkConfig.getConfigValueAsString("startup_message", group: RWFrameworkConfig.ConfigGroup.notifications)
-                if (startupMessage.lengthOfBytes(using: String.Encoding.utf8) > 0) {
-                    self.rwUpdateStatus(startupMessage)
-                }
+        // TODO: where is this going to come from?
+        func configDisplayStartupMessage() {
+            let startupMessage = RWFrameworkConfig.getConfigValueAsString("startup_message", group: RWFrameworkConfig.ConfigGroup.notifications)
+            if (startupMessage.lengthOfBytes(using: String.Encoding.utf8) > 0) {
+                self.rwUpdateStatus(startupMessage)
             }
-            configDisplayStartupMessage()
-
-            if letFrameworkRequestWhenInUseAuthorizationForLocation {
-                _ = requestWhenInUseAuthorizationForLocation()
-            }
-
-            let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
-            if (listen_enabled) {
-                let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
-                if (!geo_listen_enabled) {
-                    apiPostStreams()
-                }
-                startHeartbeatTimer()
-            }
-
-            setupRecording()
-
-            // getProjectsIdSucceeded = true
-            
-//                apiGetProjectsIdTags(project_id, session_id: session_id)
-            
-            // a simpler alternative to apiGetProjectsIdTags and it's subsequent calls but needs
-            // to be properly vetted before turning off the more complex calls
-//                apiGetUIConfig(project_id, session_id: session_id)
         }
+        configDisplayStartupMessage()
+
+        if letFrameworkRequestWhenInUseAuthorizationForLocation {
+            _ = requestWhenInUseAuthorizationForLocation()
+        }
+
+        let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
+        if (listen_enabled) {
+            let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
+            if (!geo_listen_enabled) {
+                apiPostStreams()
+            }
+            startHeartbeatTimer()
+        }
+
+        setupRecording()
+
+        // getProjectsIdSucceeded = true
+        
+//                apiGetProjectsIdTags(project_id, session_id: session_id)
+        
+        // a simpler alternative to apiGetProjectsIdTags and it's subsequent calls but needs
+        // to be properly vetted before turning off the more complex calls
+//                apiGetUIConfig(project_id, session_id: session_id)
     }
     
     func setupRecording() {
@@ -306,10 +303,10 @@ extension RWFramework {
     }
 
     private func postStreamsSuccess(_ data: Data, session_id: NSNumber) throws {
-        if let dict = try JSON(data: data).dictionary {
-            if let stream_url = dict["stream_url"]?.string {
+        if let dict = try? RWFramework.decoder.decode(Stream.self, from: data) {
+            if let stream_url = dict.url {
                 self.streamURL = URL(string: stream_url)!
-                if let stream_id = dict["stream_id"]?.int {
+                if let stream_id = dict.id {
                     self.streamID = stream_id
 //                    self.createPlayer()
                     self.requestStreamSucceeded = true
@@ -324,7 +321,7 @@ extension RWFramework {
                     self.rwUpdateStatus(userMessage!, title: "Out of Range!")
                 }
             }
-            requestStreamDisplayUserMessage(dict["user_message"]?.string)
+            requestStreamDisplayUserMessage(dict.userMessage)
         }
     }
 
@@ -444,7 +441,7 @@ extension RWFramework {
             self.apiProcessError(nil, error: error, caller: "apiGetStreamsIdIsActive")
         }
     }
-    
+
 
     /// MARK: POST envelopes
     func apiPostEnvelopes() -> Promise<Int> {
@@ -454,8 +451,8 @@ extension RWFramework {
             self.rwPostEnvelopesSuccess(data)
             
             // return the id of the created envelope
-            let dict = try JSON(data: data)
-            return dict["id"].int!
+            let dict = try RWFramework.decoder.decode(Envelope.self, from: data)
+            return dict.id
         }.catch { error in
             self.rwPostEnvelopesFailure(error)
             self.apiProcessError(nil, error: error, caller: "apiPostEnvelopes")
@@ -588,7 +585,7 @@ extension RWFramework {
     public func apiGetSpeakers(_ dict: [String:String]) -> Promise<[Speaker]> {
         return httpGetSpeakers(dict).then { data -> [Speaker] in
             self.rwGetSpeakersSuccess(data)
-            return try Speaker.from(data: data)
+            return try RWFramework.decoder.decode([Speaker].self, from: data)
         }.catch { error in
             self.rwGetSpeakersFailure(error)
             self.apiProcessError(nil, error: error, caller: "apiGetSpeakers")
@@ -640,4 +637,31 @@ extension RWFramework {
             logToServer("client_error", data: "\(caller): \(detailStringValue) NSError = \(error.code) \(error.description)")
         }
     }
+}
+
+// Data models corresponding to server responses
+private struct Session: Codable {
+    let id: Int?
+    let timezone: String?
+}
+
+private struct User: Codable {
+    let id: Int?
+    let username: String?
+    let token: String?
+}
+
+private struct Stream: Codable {
+    let id: Int?
+    let url: String?
+    let userMessage: String?
+    enum CodingKeys: String, CodingKey {
+        case id = "stream_id"
+        case url = "stream_url"
+        case userMessage = "user_message"
+    }
+}
+
+private struct Envelope: Codable {
+    let id: Int
 }

@@ -1,7 +1,6 @@
 
 import Foundation
 import CoreLocation
-import SwiftyJSON
 import GEOSwift
 import AVFoundation
 import Repeat
@@ -10,36 +9,48 @@ import Repeat
  A polygonal geographic zone within which an ambient audio stream broadcasts continuously to listeners. Speakers can overlap, causing their audio to be mixed together accordingly.
  Volume attenuation happens linearly over a specified distance from the edge of the Speaker’s defined zone.
  */
-public class Speaker {
+public class Speaker: Codable {
     private static let fadeDuration: Float = 3.0
     
     let id: Int
-    let volume: ClosedRange<Float>
     let url: String
     let backupUrl: String
-    let shape: Geometry
-    let attenuationShape: Geometry
     let attenuationDistance: Int
+
+    private let minVolume: Float
+    private let maxVolume: Float
+    var volume: ClosedRange<Float> { return minVolume...maxVolume }
+
+    private let boundaryData: ShapeCollectionData
+    lazy var shape: Geometry = {
+        return GeometryCollection(geometries: boundaryData.coordinates.map { line in
+            Polygon(shell: LinearRing(points: line.map { p in
+                Coordinate(x: p[0], y: p[1])
+            })!, holes: nil)!
+        })!
+    }()
+    
+    private let attenShapeData: ShapeData
+    lazy var attenuationShape: Geometry = {
+        return Polygon(shell: LinearRing(points: attenShapeData.coordinates.map { it in
+            Coordinate(x: it[0], y: it[1])
+        })!, holes: nil)!
+    }()
+    
     private var player: AVPlayer? = nil
     private var looper: Any? = nil
     private var fadeTimer: Repeater? = nil
 
-    init(
-        id: Int,
-        volume: ClosedRange<Float>,
-        url: String,
-        backupUrl: String,
-        shape: Geometry,
-        attenuationShape: Geometry,
-        attenuationDistance: Int
-    ) {
-        self.id = id
-        self.volume = volume
-        self.url = url
-        self.backupUrl = backupUrl
-        self.shape = shape
-        self.attenuationShape = attenuationShape
-        self.attenuationDistance = attenuationDistance
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case url = "uri"
+        case backupUrl = "backupuri"
+        case minVolume = "minvolume"
+        case maxVolume = "maxvolume"
+        case attenuationDistance = "attenuation_distance"
+        case boundaryData = "boundary"
+        case attenShapeData = "attenuation_border"
     }
 }
 
@@ -128,42 +139,5 @@ extension Speaker {
     
     func pause() {
         player?.pause()
-    }
-    
-    static func from(data: Data) throws -> [Speaker] {
-        let json = try JSON(data: data)
-        
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        dateFormatter.locale = Locale.init(identifier: "en_US_POSIX")
-
-        return json.array!.map { obj in
-            let it = obj.dictionaryValue
-            let boundary = it["boundary"]!["coordinates"].array!
-            let attenBound = it["attenuation_border"]!["coordinates"].array!
-            let innerShape = Polygon(shell: LinearRing(points: attenBound.map { it in
-                Coordinate(x: it[0].double!, y: it[1].double!)
-            })!, holes: nil)!
-            let outerShape = GeometryCollection(geometries: boundary.map { line in
-                Polygon(shell: LinearRing(points: line.array!.map { p in
-                    Coordinate(x: p[0].double!, y: p[1].double!)
-                })!, holes: nil)!
-            })!
-            return Speaker(
-                id: it["id"]!.int!,
-                volume: it["minvolume"]!.float!...it["maxvolume"]!.float!,
-                url: it["uri"]!.string!,
-                backupUrl: it["backupuri"]!.string!,
-                shape: outerShape,
-                attenuationShape: innerShape,
-                attenuationDistance: it["attenuation_distance"]!.int!
-            )
-        }
-    }
-}
-
-extension CLLocation {
-    func toWaypoint() -> Waypoint {
-        return Waypoint(latitude: coordinate.latitude, longitude: coordinate.longitude)!
     }
 }

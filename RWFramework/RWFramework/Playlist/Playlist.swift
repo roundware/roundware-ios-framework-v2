@@ -254,7 +254,7 @@ extension Playlist {
         
         let next = sortedAssets.first
         if let next = next {
-            print("picking asset: \(next)")
+            print("picking asset: \(next.id)")
         }
         return next
     }
@@ -582,9 +582,4 @@ extension CLLocation {
             z: Float(latDist * latMult * mult)
         )
     }
-}
-
-extension Double {
-    var degreesToRadians: Double { return self * .pi / 180 }
-    var radiansToDegrees: Double { return self * 180 / .pi }
 }

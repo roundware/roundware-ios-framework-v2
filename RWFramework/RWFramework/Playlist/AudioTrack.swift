@@ -5,7 +5,6 @@ import SceneKit
 import AVKit
 import Promises
 import Repeat
-import KeyedCodable
 
 /**
  An AudioTrack has a set of parameters determining how its audio is played.
@@ -55,7 +54,7 @@ public class AudioTrack: Codable {
     private let maxFadeOutTime: Float
     var fadeOutTime: ClosedRange<Float> { return minFadeOutTime...maxFadeOutTime }
 
-    enum CodingKeys: String, KeyedKey {
+    enum CodingKeys: String, CodingKey {
         case id
         case minVolume = "minvolume"
         case maxVolume = "maxvolume"
@@ -578,23 +577,5 @@ private class WaitingForAsset: TimedTrackState {
             // keep attempting to play the next asset
             self.track.fadeInNextAsset()
         }
-    }
-}
-
-
-extension ClosedRange where Bound == Float {
-    func random() -> Bound {
-        return Bound.random(in: self)
-    }
-}
-extension ClosedRange where Bound == Double {
-    func random() -> Bound {
-        return Bound.random(in: self)
-    }
-}
-
-extension ClosedRange where Bound: Numeric {
-    var difference: Bound {
-        return upperBound - lowerBound
     }
 }

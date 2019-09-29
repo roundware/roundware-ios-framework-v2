@@ -2,13 +2,12 @@
 import Foundation
 import CoreLocation
 import GEOSwift
-import KeyedCodable
 
 /**
  An individual piece of media contributed by a user or by project administrators.
  This currently only considers audio assets.
  */
-public struct Asset: Codable {
+public class Asset: Codable {
     public let id: Int
     /// URL pointing to the associated media file, relative to the project server
     let file: String
@@ -21,11 +20,21 @@ public struct Asset: Codable {
     let submitted: Bool?
     private let longitude: Double?
     private let latitude: Double?
-    private let coordinates: [[Double]]?
     private let startTime: Double?
     private let endTime: Double?
     
-    enum CodingKeys: String, KeyedKey {
+    private let shapeData: ShapeData?
+    lazy var shape: Geometry? = {
+        if let coords = shapeData?.coordinates {
+            return Polygon(shell: LinearRing(points: coords.map { p in
+                Coordinate(x: p[0], y: p[1])
+            })!, holes: nil)
+        } else {
+            return nil
+        }
+    }()
+    
+    enum CodingKeys: String, CodingKey {
         case id
         case longitude
         case latitude
@@ -38,7 +47,7 @@ public struct Asset: Codable {
         case length = "audio_length_in_seconds"
         case tags = "tag_ids"
         case createdDate = "created"
-        case coordinates = "shape.coordinates"
+        case shapeData = "shape"
     }
 }
 
@@ -46,16 +55,6 @@ extension Asset {
     /// Range of time within the associated file that this asset represents.
     var activeRegion: ClosedRange<Double> {
         return (startTime ?? 0)...(endTime ?? length ?? 0)
-    }
-    
-    var shape: Geometry? {
-        if let coords = self.coordinates {
-            return Polygon(shell: LinearRing(points: coords.map { p in
-                Coordinate(x: p[0], y: p[1])
-            })!, holes: nil)
-        } else {
-            return nil
-        }
     }
     
     public var location: CLLocation? {
@@ -66,7 +65,6 @@ extension Asset {
         }
     }
 }
-
 
 struct AssetPool: Codable {
     let assets: [Asset]

@@ -2,7 +2,6 @@
 import Foundation
 import Promises
 import GEOSwift
-import SwiftyJSON
 
 /**
  The priority to place on an asset, or to discard it from use.
@@ -285,10 +284,10 @@ struct TimedRepeatFilter: AssetFilter {
  or assets published by someone that the user has blocked.
  */
 class BlockedAssetsFilter: AssetFilter {
-    private var blockedAssets: [Int]? = nil
+    private var blockedAssets: BlockedAssets? = nil
     
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
-        guard let blocked = self.blockedAssets
+        guard let blocked = self.blockedAssets?.ids
             else { return .neutral }
         
         if blocked.contains(asset.id) {
@@ -300,8 +299,14 @@ class BlockedAssetsFilter: AssetFilter {
 
     func onUpdateAssets(playlist: Playlist) -> Promise<Void> {
         return RWFramework.sharedInstance.apiGetBlockedAssets().then { d -> Void in
-            let json = try JSON(data: d)
-            self.blockedAssets = json["blocked_asset_ids"].array!.map { $0.int! }
+            self.blockedAssets = try RWFramework.decoder.decode(BlockedAssets.self, from: d)
+        }
+    }
+
+    private struct BlockedAssets: Codable {
+        let ids: [Int]
+        enum CodingKeys: String, CodingKey {
+            case ids = "blocked_asset_ids"
         }
     }
 }
@@ -312,11 +317,12 @@ class BlockedAssetsFilter: AssetFilter {
  */
 struct DynamicTagFilter: AssetFilter {
     /// Mapping of dynamic filter name to tag id
-    private static let tags = try! JSON(
-        data: UserDefaults.standard.data(forKey: "tags")!
-    ).array!.reduce(into: [String: [Int]]()) { acc, t in
-        let key = t["filter"].string!
-        acc[key] = (acc[key] ?? []) + [t["id"].int!]
+    private static let tags = try! RWFramework.decoder.decode(
+        [DynamicTag].self,
+        from: UserDefaults.standard.data(forKey: "tags")!
+    ).reduce(into: [String: [Int]]()) { acc, t in
+        let key = t.filter
+        acc[key] = (acc[key] ?? []) + [t.id]
     }
     
     private let key: String
@@ -338,6 +344,11 @@ struct DynamicTagFilter: AssetFilter {
         } else {
             return .neutral
         }
+    }
+
+    private struct DynamicTag: Codable {
+        let id: Int
+        let filter: String
     }
 }
 
