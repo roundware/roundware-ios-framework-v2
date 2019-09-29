@@ -30,6 +30,7 @@ public class AudioTrack: Codable {
     var previousAsset: Asset? = nil
     var currentAsset: Asset? = nil
     var state: TrackState? = nil
+    fileprivate var isPlaying: Bool = false
 
     let player = AVAudioPlayerNode()
 
@@ -93,7 +94,7 @@ extension AudioTrack {
             self.setDynamicPan(at: assetLoc, params)
         }
         // Change in parameters may make more assets available
-        if self.state is WaitingForAsset {
+        if isPlaying && self.state is WaitingForAsset {
             self.fadeInNextAsset()
         }
         self.state?.onUpdate()
@@ -102,6 +103,7 @@ extension AudioTrack {
     /// Plays the next optimal asset nearby.
     /// - Parameter premature: whether to fade out the current asset or just start the next one.
     public func playNext(asset next: Asset? = nil) {
+        isPlaying = true
         if state?.canSkip == true, let asset = currentAsset {
             var nextState: TrackState? = nil
             if let next = next {
@@ -133,9 +135,11 @@ extension AudioTrack {
     
     func pause() {
         state?.pause()
+        isPlaying = false
     }
     
     func resume() {
+        isPlaying = true
         // The first time we hit play, consider whether the track
         // is configured to start with silence or an asset.
         if let state = state {
@@ -277,6 +281,7 @@ private class TimedTrackState: TrackState {
     private(set) var timer: Repeater? = nil
     private var lastDuration: Double
     private var lastResume = Date()
+    let track: AudioTrack
 
     var canSkip: Bool { return true }
 
@@ -290,13 +295,18 @@ private class TimedTrackState: TrackState {
         }
     }
     
-    init(duration: Double) {
+    init(track: AudioTrack, duration: Double) {
+        self.track = track
         self.lastDuration = duration
     }
     
     func start() {
         timer = setupTimer()
-        resume()
+        if track.isPlaying {
+            resume()
+        } else {
+            pause()
+        }
     }
 
     func finish() {
@@ -328,13 +338,10 @@ private class TimedTrackState: TrackState {
 
 /// Silence between assets
 private class DeadAir: TimedTrackState {
-    private let track: AudioTrack
-    
     override var canSkip: Bool { return false }
     
     init(track: AudioTrack) {
-        self.track = track
-        super.init(duration: Double(track.deadAir.random()))
+        super.init(track: track, duration: Double(track.deadAir.random()))
     }
     
     override func resume() {
@@ -348,7 +355,6 @@ private class DeadAir: TimedTrackState {
 }
 
 private class ResumableDeadAir: TimedTrackState {
-    private let track: AudioTrack
     /// Last played track that can be resumed if eligible.
     private let asset: Asset
     private let remainingDurationOfAsset: Double
@@ -356,10 +362,9 @@ private class ResumableDeadAir: TimedTrackState {
     override var canSkip: Bool { return false }
 
     init(track: AudioTrack, asset: Asset, remainingAssetTime: Double) {
-        self.track = track
         self.asset = asset
         self.remainingDurationOfAsset = remainingAssetTime
-        super.init(duration: Double(track.deadAir.upperBound))
+        super.init(track: track, duration: Double(track.deadAir.upperBound))
     }
 
     override func start() {
@@ -387,7 +392,6 @@ private class ResumableDeadAir: TimedTrackState {
 private class FadingIn: TimedTrackState {
     private static let updateInterval = 0.02
     
-    private let track: AudioTrack
     private let asset: Asset
     private let fullVolumeDuration: Double
     private let targetVolume: Float
@@ -398,7 +402,6 @@ private class FadingIn: TimedTrackState {
         // total chosen duration of asset, including fade in and out
         assetDuration: Double
     ) {
-        self.track = track
         self.asset = asset
         
         let fadeInDur = min(Double(track.fadeInTime.random()), assetDuration / 2)
@@ -408,7 +411,7 @@ private class FadingIn: TimedTrackState {
         // (total duration of asset) - (fade in duration)
         self.fullVolumeDuration = assetDuration - fadeInDur
         
-        super.init(duration: fadeInDur)
+        super.init(track: track, duration: fadeInDur)
     }
     
     override func setupTimer() -> Repeater {
@@ -452,7 +455,6 @@ private class FadingIn: TimedTrackState {
 
 /// Fully faded in, playing an asset
 private class PlayingAsset: TimedTrackState {
-    private let track: AudioTrack
     private let asset: Asset
     private let fadeOutDuration: Double
     
@@ -462,12 +464,11 @@ private class PlayingAsset: TimedTrackState {
         /// total duration of asset including fade out time
         duration: Double
     ) {
-        self.track = track
         self.asset = asset
         fadeOutDuration = min(Double(track.fadeOutTime.random()), duration / 2)
         // duration of the asset excluding any fades
         let fullVolumeDuration = duration - fadeOutDuration + 1.5
-        super.init(duration: fullVolumeDuration)
+        super.init(track: track, duration: fullVolumeDuration)
     }
     
     override func pause() {
@@ -513,7 +514,6 @@ private class PlayingAsset: TimedTrackState {
 private class FadingOut: TimedTrackState {
     private static let updateInterval = 0.02
     
-    private let track: AudioTrack
     private let asset: Asset
     private let followedBy: TrackState?
 
@@ -525,10 +525,9 @@ private class FadingOut: TimedTrackState {
         duration: Double,
         followedBy: TrackState? = nil
     ) {
-        self.track = track
         self.asset = asset
         self.followedBy = followedBy
-        super.init(duration: duration)
+        super.init(track: track, duration: duration)
     }
     
     override func setupTimer() -> Repeater {
@@ -567,14 +566,11 @@ private class FadingOut: TimedTrackState {
 /// Waiting for relevant assets to be available
 private class WaitingForAsset: TimedTrackState {
     private static let updateInterval = 10.0 // seconds
-    
-    private let track: AudioTrack
 
     override var canSkip: Bool { return false }
     
     init(track: AudioTrack) {
-        self.track = track
-        super.init(duration: 0)
+        super.init(track: track, duration: 0)
     }
     
     override func setupTimer() -> Repeater {
