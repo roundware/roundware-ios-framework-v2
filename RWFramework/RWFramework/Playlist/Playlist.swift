@@ -323,8 +323,7 @@ extension Playlist {
         var opts = [
             "project_id": String(project.id),
             "media_type": "audio",
-            "language": "en",
-            "submitted": "true"
+            "language": "en"
         ]
         // Only grab assets added since the last update
         if let date = assetPool?.date {
@@ -334,14 +333,22 @@ extension Playlist {
             dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
             dateFormatter.locale = Locale.init(identifier: "en_US_POSIX")
             dateFormatter.timeZone = TimeZone(secondsFromGMT: timeZone)
-            opts["created__gte"] = dateFormatter.string(from: date)
+            opts["updated__gte"] = dateFormatter.string(from: date)
+        } else {
+            // On the first call for the asset pool, we only want submitted assets.
+            // On subsequent calls, we'll need to know if anything was unsubmitted.
+            opts["submitted"] = "true"
         }
 
         // retrieve newly published assets
-        return rw.apiGetAssets(opts).then { data in
-            // Append new assets to our existing pool
+        return rw.apiGetAssets(opts).then { updatedAssets in
             var assets = self.assetPool?.assets ?? []
-            assets.append(contentsOf: data)
+            // Remove all old duplicates
+            assets.removeAll { a in updatedAssets.contains { b in a.id == b.id } }
+            // Append updated assets to our existing pool
+            assets.append(contentsOf: updatedAssets)
+            // Remove any unsubmitted ones.
+            assets.removeAll { $0.submitted == false }
 
             // Ensure all sort methods have necessary data before sorting.
             _ = try await(all(self.sortMethods.map {
@@ -358,7 +365,7 @@ extension Playlist {
             // Update this project's asset pool
             self.assetPool = AssetPool(assets: assets, date: Date())
             
-            print("\(data.count) added assets, total is \(assets.count)")
+            print("\(updatedAssets.count) updated assets, total is \(assets.count)")
 
             // notify filters that the asset pool is updated.
             return self.updateFilterData()

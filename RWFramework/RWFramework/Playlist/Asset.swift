@@ -18,6 +18,7 @@ public struct Asset: Codable {
     public let tags: [Int]
     let weight: Double
     let description: String
+    let submitted: Bool?
     private let longitude: Double?
     private let latitude: Double?
     private let coordinates: [[Double]]?
@@ -31,6 +32,7 @@ public struct Asset: Codable {
         case file
         case weight
         case description
+        case submitted
         case startTime = "start_time"
         case endTime = "end_time"
         case length = "audio_length_in_seconds"
