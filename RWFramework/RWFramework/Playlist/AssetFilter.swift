@@ -9,7 +9,7 @@ import SwiftyJSON
  Multiple assets with the same priority will be sorted by
  project-level ordering preferences.
  */
-enum AssetPriority: Int {
+enum AssetPriority: Int, CaseIterable {
     /// Discard the asset always
     case discard = -1
 

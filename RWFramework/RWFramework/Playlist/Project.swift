@@ -18,9 +18,6 @@ struct Project: Codable {
     /// Should assets be filtered by their location?
     let geo_listen_enabled: Bool
 
-    /// Should timed assets be prioritized over others?
-    let timed_asset_priority: Bool
-
     let repeat_mode: String
     let ordering: String
 

@@ -12,6 +12,10 @@ public class TimedAssetFilter: AssetFilter {
     private var timedAssets: [TimedAsset]? = nil
 
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
+        if track.timedAssetPriority == .discard {
+            return .discard
+        }
+        
         // keep assets that are slated to start now or in the past few minutes
         //      AND haven't been played before
         // Units: seconds
@@ -23,12 +27,8 @@ public class TimedAssetFilter: AssetFilter {
                 // it hasn't been played before.
                 playlist.userAssetData[it.asset_id] == nil
         }) {
-            // Prioritize timed assets only if the project is configured to.
-            if playlist.project.timed_asset_priority {
-                return .highest
-            } else {
-                return .normal
-            }
+            // Prioritize timed assets only if the track is configured to.
+            return track.timedAssetPriority
         }
         
         return .discard

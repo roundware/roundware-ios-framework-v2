@@ -24,6 +24,7 @@ public class AudioTrack: Codable {
      Also enables resuming that asset if it quickly passes the filters again.
      */
     let fadeOutWhenFiltered: Bool = true
+    private let timedAssetPriorityStr: String
     
     var playlist: Playlist? = nil
     var previousAsset: Asset? = nil
@@ -70,10 +71,15 @@ public class AudioTrack: Codable {
         case bannedDuration = "banned_duration"
         case startWithSilence = "start_with_silence"
         case fadeOutWhenFiltered = "fadeout_when_filtered"
+        case timedAssetPriorityStr = "timed_asset_priority"
     }
 }
 
 extension AudioTrack {
+    var timedAssetPriority: AssetPriority {
+        return AssetPriority.allCases.first { "\($0)" == timedAssetPriorityStr }!
+    }
+    
     /// Amount of seconds to fade out when skipping an asset
     private static let skipFadeOutTime: Double = 1.0
 
