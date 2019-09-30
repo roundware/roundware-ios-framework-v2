@@ -16,20 +16,20 @@ public class AudioTrack: Codable {
     let id: Int
     let repeatRecordings: Bool
     let tags: [Int]?
-    let bannedDuration: Double = 600
-    let startWithSilence: Bool = true
+    private(set) var bannedDuration: Double = 600
+    private(set) var startWithSilence: Bool = true
     /**
      Whether to fade out the playing asset if it gets filtered out.
      Also enables resuming that asset if it quickly passes the filters again.
      */
-    let fadeOutWhenFiltered: Bool = true
+    private(set) var fadeOutWhenFiltered: Bool = true
     private let timedAssetPriorityStr: String
     
     var playlist: Playlist? = nil
     var previousAsset: Asset? = nil
     var currentAsset: Asset? = nil
     var state: TrackState? = nil
-    fileprivate var isPlaying: Bool = false
+    private(set) var isPlaying: Bool = false
 
     let player = AVAudioPlayerNode()
 
