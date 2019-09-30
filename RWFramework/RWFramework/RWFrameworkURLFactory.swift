@@ -42,38 +42,6 @@ open class RWFrameworkURLFactory {
         return "\(api())/projects/\(project_id.stringValue)/uiconfig/?session_id=\(session_id.stringValue)"
     }
 
-    class func postStreamsURL() -> String {
-        return "\(api())/streams/"
-    }
-
-    class func patchStreamsIdURL(_ stream_id: String) -> String {
-        return "\(api())/streams/\(stream_id)/"
-    }
-
-    class func postStreamsIdHeartbeatURL(_ stream_id: String) -> String {
-        return "\(api())/streams/\(stream_id)/heartbeat/"
-    }
-
-    class func postStreamsIdReplayURL(_ stream_id: String) -> String {
-        return "\(api())/streams/\(stream_id)/replayasset/"
-    }
-
-    class func postStreamsIdSkipURL(_ stream_id: String) -> String {
-        return "\(api())/streams/\(stream_id)/skipasset/"
-    }
-
-    class func postStreamsIdPauseURL(_ stream_id: String) -> String {
-        return "\(api())/streams/\(stream_id)/pause/"
-    }
-
-    class func postStreamsIdResumeURL(_ stream_id: String) -> String {
-        return "\(api())/streams/\(stream_id)/resume/"
-    }
-
-    class func getStreamsIdIsActiveURL(_ stream_id: String) -> String {
-        return "\(api())/streams/\(stream_id)/isactive/"
-    }
-
     class func postEnvelopesURL() -> String {
         return "\(api())/envelopes/"
     }

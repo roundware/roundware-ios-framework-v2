@@ -34,7 +34,13 @@ private lazy var __once: () = { () -> Void in
     // Location (see RWFrameworkCoreLocation.swift)
     let locationManager: CLLocationManager = CLLocationManager()
     var lastRecordedLocation: CLLocation = CLLocation()
-    var streamOptions = [String: Any]()
+    var streamOptions = StreamParams(
+        location: CLLocation(),
+        minDist: nil,
+        maxDist: nil,
+        heading: nil,
+        angularWidth: nil
+    )
     var letFrameworkRequestWhenInUseAuthorizationForLocation = true
 
     public let playlist = Playlist(filters: [
@@ -75,20 +81,6 @@ private lazy var __once: () = { () -> Void in
         return enc
     }()
 
-    // Audio - Stream (see RWFrameworkAudioPlayer.swift)
-    var streamURL: URL? = nil
-    var streamID = 0
-    var player: AVPlayer? = nil {
-        willSet {
-            self.player?.currentItem?.removeObserver(self, forKeyPath: "timedMetadata")
-        }
-        didSet {
-            self.player?.currentItem?.addObserver(self, forKeyPath: "timedMetadata", options: NSKeyValueObservingOptions.new, context: nil)
-        }
-    }
-    /// True if the player (streamer) is currently playing (streaming)
-    open var isPlaying = false
-
     // Audio - Record (see RWFrameworkAudioRecorder.swift)
     /// RWFrameworkAudioRecorder.swift calls code in RWFrameworkAudioRecorder.m to perform recording when true
     let useComplexRecordingMechanism = false
@@ -107,12 +99,10 @@ private lazy var __once: () = { () -> Void in
     }
 
     // Flags
-    // var postUsersSucceeded = false
     var postSessionsSucceeded = false
-    // var getProjectsIdSucceeded = false
     var getProjectsIdTagsSucceeded = false {
         didSet {
-            if getProjectsIdTagsSucceeded && requestStreamSucceeded {
+            if getProjectsIdTagsSucceeded {
                 timeToSendTheListenTags = true
             }
         }
@@ -120,15 +110,6 @@ private lazy var __once: () = { () -> Void in
     var getProjectsIdUIGroupsSucceeded = false
     var getTagCategoriesSucceeded = false
     var getUIConfigSucceeded = false
-    public var requestStreamInProgress = false
-    public var requestStreamSucceeded = false {
-        didSet {
-            if getProjectsIdTagsSucceeded && requestStreamSucceeded {
-                timeToSendTheListenTags = true
-            }
-        }
-    }
-    // var timeToSendTheListenTagsOnceToken: Int = 0
     var timeToSendTheListenTags = false {
         didSet {
             if timeToSendTheListenTags {
@@ -138,7 +119,6 @@ private lazy var __once: () = { () -> Void in
     }
 
     // Timers (see RWFrameworkTimers.swift)
-    var heartbeatTimer: Timer? = nil
     var audioTimer: Timer? = nil
     var uploadTimer: Timer? = nil
 
@@ -174,10 +154,6 @@ private lazy var __once: () = { () -> Void in
         locationManager.pausesLocationUpdatesAutomatically = true
 
         addAudioInterruptionNotification()
-    }
-
-    deinit {
-        self.player?.currentItem?.removeObserver(self, forKeyPath: "timedMetadata")
     }
 
     /// Start kicks everything else off - call this to start the framework running.

@@ -8,7 +8,7 @@ import GEOSwift
  Multiple assets with the same priority will be sorted by
  project-level ordering preferences.
  */
-enum AssetPriority: Int, CaseIterable {
+public enum AssetPriority: Int, CaseIterable {
     /// Discard the asset always
     case discard = -1
 
@@ -21,7 +21,7 @@ enum AssetPriority: Int, CaseIterable {
 }
 
 /// Filter applied to assets as candidates for a specific track
-protocol AssetFilter {
+public protocol AssetFilter {
     /// Determines whether the given asset should be played on a particular track.
     /// - returns: .discard to skip the asset, otherwise rank it
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority

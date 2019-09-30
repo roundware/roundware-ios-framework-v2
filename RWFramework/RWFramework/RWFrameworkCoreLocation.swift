@@ -39,27 +39,17 @@ extension RWFramework: CLLocationManagerDelegate {
         headingAngle: Double? = nil,
         angularWidth: Double? = nil
     ) {
-        if let r = range {
-            streamOptions["listener_range_min"] = r.lowerBound
-            streamOptions["listener_range_max"] = r.upperBound
-        }
-        if let a = headingAngle {
-            streamOptions["listener_heading"] = a
-        }
-        if let w = angularWidth {
-            streamOptions["listener_width"] = w
-        }
         if let loc = location {
             lastRecordedLocation = loc
         }
-        
-        playlist.updateParams(StreamParams(
-            location: lastRecordedLocation,
-            minDist: streamOptions["listener_range_min"] as? Double,
-            maxDist: streamOptions["listener_range_max"] as? Double,
-            heading: streamOptions["listener_heading"] as? Double,
-            angularWidth: streamOptions["listener_width"] as? Double
-        ))
+        streamOptions = StreamParams(
+            location: location ?? streamOptions.location,
+            minDist: range?.lowerBound ?? streamOptions.minDist,
+            maxDist: range?.upperBound ?? streamOptions.maxDist,
+            heading: headingAngle ?? streamOptions.heading,
+            angularWidth: angularWidth ?? streamOptions.angularWidth
+        )
+        playlist.updateParams(streamOptions)
     }
 
     /// Called by the CLLocationManager when location has been updated

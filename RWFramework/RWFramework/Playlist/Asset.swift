@@ -9,12 +9,12 @@ import GEOSwift
  */
 public class Asset: Codable {
     public let id: Int
+    public let tags: [Int]
     /// URL pointing to the associated media file, relative to the project server
     let file: String
     /// Duration of the asset in seconds
     let length: Double?
     let createdDate: Date
-    public let tags: [Int]
     let weight: Double
     let description: String
     let submitted: Bool?
@@ -66,7 +66,7 @@ extension Asset {
     }
 }
 
-struct AssetPool: Codable {
+public struct AssetPool: Codable {
     let assets: [Asset]
     let date: Date
 }

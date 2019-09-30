@@ -29,7 +29,7 @@ public class AudioTrack: Codable {
     var previousAsset: Asset? = nil
     var currentAsset: Asset? = nil
     var state: TrackState? = nil
-    fileprivate var isPlaying: Bool = false
+    private(set) var isPlaying: Bool = false
 
     let player = AVAudioPlayerNode()
 

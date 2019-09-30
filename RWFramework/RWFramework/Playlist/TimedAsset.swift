@@ -11,7 +11,7 @@ public struct TimedAsset: Codable {
 public class TimedAssetFilter: AssetFilter {
     private var timedAssets: [TimedAsset]? = nil
 
-    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
+    public func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         if track.timedAssetPriority == .discard {
             return .discard
         }
@@ -34,7 +34,7 @@ public class TimedAssetFilter: AssetFilter {
         return .discard
     }
 
-    func onUpdateAssets(playlist: Playlist) -> Promise<Void> {
+    public func onUpdateAssets(playlist: Playlist) -> Promise<Void> {
         if timedAssets == nil {
             return RWFramework.sharedInstance.apiGetTimedAssets([
                 "project_id": String(playlist.project.id)

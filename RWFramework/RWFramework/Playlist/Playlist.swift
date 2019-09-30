@@ -28,17 +28,18 @@ public class Playlist {
     // assets and filters
     private var filters: AllAssetFilters
     private var sortMethods: [SortMethod]
+
+    /// Map asset ID to data like last listen time.
+    private(set) var userAssetData = [Int: UserAssetData]()
+
     /**
      Mapping of project id to asset pool, allowing for one app
      to support loading multiple projects at once.
      */
     private var assetPool: AssetPool? = nil
-    
-    /// Map asset ID to data like last listen time.
-    private(set) var userAssetData = [Int: UserAssetData]()
 
     // audio tracks, background and foreground
-    private(set) var speakers: [Speaker] = []
+    public private(set) var speakers: [Speaker] = []
     public private(set) var tracks: [AudioTrack] = []
 
     private var demoStream: AVPlayer? = nil
@@ -117,7 +118,17 @@ public class Playlist {
     }
 }
 
+// Start-up and public API
 extension Playlist {
+    // Public API
+    public var isPlaying: Bool {
+        return self.tracks.contains { $0.isPlaying }
+    }
+
+    func lastListenDate(for asset: Asset) -> Date? {
+        return self.userAssetData[asset.id]?.lastListen
+    }
+    
     /**
      All assets available in the current active project.
     */
@@ -128,7 +139,8 @@ extension Playlist {
     public var currentlyPlayingAssets: [Asset] {
         return tracks.compactMap { $0.currentAsset }
     }
-    
+
+    // Internal
     private var assetPoolFile: URL? {
         do {
             let docsDir = try FileManager.default.url(
@@ -144,18 +156,112 @@ extension Playlist {
             return nil
         }
     }
-    
 
-    func apply(filter: AssetFilter) {
+    func start() {
+        // Starts a session and retrieves project-wide config.
+        RWFramework.sharedInstance.apiStartForClientMixing().then { project in
+            self.project = project
+            print("project settings: \(project)")
+            self.useProjectDefaults()
+            self.afterSessionInit()
+        }
+    }
+
+    private func useProjectDefaults() {
+        switch project.ordering {
+        case "random":
+            self.sortMethods = [SortRandomly()]
+        case "by_weight":
+            self.sortMethods = [SortByWeight()]
+        case "by_like":
+            self.sortMethods = [SortByLikes()]
+        default: break
+        }
+    }
+
+    /**
+     * Retrieve tags to filter by for the current project.
+     * Setup the speakers for background audio.
+     * Retrieve the list of all assets and check for new assets every few minutes.
+    **/
+    private func afterSessionInit() {
+        // Mark start of the session
+        startTime = Date()
+
+        // Load cached assets first
+        loadAssetPool()
+        
+        // Start playing background music from speakers.
+        let speakerUpdate = initSpeakers()
+        
+        // Retrieve the list of tracks
+        let trackUpdate = initTracks()
+
+        // Initial grab of assets and speakers.
+        let assetsUpdate = refreshAssetPool()
+
+        all(speakerUpdate, trackUpdate, assetsUpdate).then { _ in
+            RWFramework.sharedInstance.rwStartedSuccessfully()
+        }
+
+        updateTimer = .every(.seconds(project.asset_refresh_interval)) { _ in
+            self.refreshAssetPool()
+        }
+    }
+
+    func pause() {
+        if isPlaying {
+            for s in speakers { s.pause() }
+            for t in tracks { t.pause() }
+            if demoLooper != nil {
+                demoStream?.pause()
+            }
+        }
+    }
+    
+    func resume() {
+        if !isPlaying {
+            for s in speakers { s.resume() }
+            for t in tracks { t.resume() }
+            if demoLooper != nil {
+                demoStream?.play()
+            }
+        }
+    }
+    
+    func skip() {
+        // Fade out the currently playing assets on all tracks.
+        for t in tracks {
+            t.playNext()
+        }
+    }
+
+    func replay() {
+        for t in tracks {
+            t.replay()
+        }
+    }
+}
+
+// Filters functionality
+extension Playlist {
+    public func apply(filter: AssetFilter) {
         self.filters.filters.append(filter)
     }
-    
-    func lastListenDate(for asset: Asset) -> Date? {
-        return self.userAssetData[asset.id]?.lastListen
+
+    func updateFilterData() -> Promise<Void> {
+        return self.filters.onUpdateAssets(playlist: self)
+            .recover { err in print(err) }
     }
-    
+
+    func passesFilters(_ asset: Asset, forTrack track: AudioTrack) -> Bool {
+        return self.filters.keep(asset, playlist: self, track: track) != .discard
+    }
+}
+
+// Speaker-associated functionality
+extension Playlist {
     /// Prepares all the speakers for this project.
-    @discardableResult
     private func initSpeakers() -> Promise<[Speaker]> {
         return RWFramework.sharedInstance.apiGetSpeakers([
             "project_id": String(project.id),
@@ -223,7 +329,49 @@ extension Playlist {
             demoStream.pause()
         }
     }
-    
+}
+
+// Track-associated functionality
+extension Playlist {
+    /// Grab the list of `AudioTrack`s for the current project.
+    private func initTracks() -> Promise<Void> {
+        let rw = RWFramework.sharedInstance
+        
+        return rw.apiGetAudioTracks([
+            "project_id": String(project.id)
+        ]).then { data -> () in
+            print("assets: using " + data.count.description + " tracks")
+            for it in data {
+                // TODO: Try to remove playlist dependency. Maybe pass into method?
+                it.playlist = self
+                self.audioEngine.attach(it.player)
+                self.audioEngine.connect(
+                    it.player,
+                    to: self.audioMixer,
+                    format: AVAudioFormat(standardFormatWithSampleRate: 96000, channels: 1)
+                )
+                
+            }
+            if !self.audioEngine.isRunning {
+                try self.audioEngine.start()
+            }
+            self.tracks = data
+        }.catch { err in
+            print(err)
+        }
+    }
+
+    private func updateTrackParams() {
+        if let params = self.currentParams {
+            // update all tracks in parallel, in case they need to load a new track
+            for t in tracks {
+                Promise<Void>(on: .global()) {
+                    t.updateParams(params)
+                }
+            }
+        }
+    }
+
     /// Picks the next-up asset to play on the given track.
     /// Applies all the playlist-level and track-level filters to make the decision.
     func next(forTrack track: AudioTrack) -> Asset? {
@@ -258,62 +406,21 @@ extension Playlist {
         }
         return next
     }
+}
 
-    func recordFinishedPlaying(asset: Asset) {
-        var playCount = 1
-        if let prevEntry = userAssetData[asset.id] {
-            playCount += prevEntry.playCount
+// Asset pool functionality
+extension Playlist {
+    /// Periodically check for newly published assets
+    func refreshAssetPool() -> Promise<Void> {
+        return self.updateAssets().then {
+            // Update filtered assets given any newly uploaded assets
+            self.updateParams()
+
+            let locRequested = RWFramework.sharedInstance.requestWhenInUseAuthorizationForLocation()
+            print("location requested? \(locRequested)")
         }
-        
-        userAssetData.updateValue(
-            UserAssetData(lastListen: Date(), playCount: playCount),
-            forKey: asset.id
-        )
     }
 
-    func passesFilters(_ asset: Asset, forTrack track: AudioTrack) -> Bool {
-        return self.filters.keep(asset, playlist: self, track: track) != .discard
-    }
-    
-    private func updateTrackParams() {
-        if let params = self.currentParams {
-            // update all tracks in parallel, in case they need to load a new track
-            for t in tracks {
-                Promise<Void>(on: .global()) {
-                    t.updateParams(params)
-                }
-            }
-        }
-    }
-    
-    /// Grab the list of `AudioTrack`s for the current project.
-    private func initTracks() -> Promise<Void> {
-        let rw = RWFramework.sharedInstance
-        
-        return rw.apiGetAudioTracks([
-            "project_id": String(project.id)
-        ]).then { data -> () in
-            print("assets: using " + data.count.description + " tracks")
-            for it in data {
-                // TODO: Try to remove playlist dependency. Maybe pass into method?
-                it.playlist = self
-                self.audioEngine.attach(it.player)
-                self.audioEngine.connect(
-                    it.player,
-                    to: self.audioMixer,
-                    format: AVAudioFormat(standardFormatWithSampleRate: 96000, channels: 1)
-                )
-                
-            }
-            if !self.audioEngine.isRunning {
-                try self.audioEngine.start()
-            }
-            self.tracks = data
-        }.catch { err in
-            print(err)
-        }
-    }
-    
     /// Retrieve audio assets stored on the server.
     /// At the start of a session, gets all the assets.
     /// After that, only adds the assets uploaded since the last call of this function.
@@ -376,12 +483,7 @@ extension Playlist {
             self.saveAssetPool()
         }
     }
-    
-    func updateFilterData() -> Promise<Void> {
-        return self.filters.onUpdateAssets(playlist: self)
-            .recover { err in print(err) }
-    }
-    
+
     /// Framework should call this when stream parameters are updated.
     func updateParams(_ opts: StreamParams) {
         self.currentParams = opts
@@ -402,44 +504,20 @@ extension Playlist {
     private func updateParams() {
         updateSpeakerVolumes()
         // TODO: Use a filter to clear data for assets we've moved away from.
-        
         // Tell our tracks to play any new assets.
         self.updateTrackParams()
     }
-    
-    /// Periodically check for newly published assets
-    internal func refreshAssetPool() -> Promise<Void> {
-        return self.updateAssets().then {
-            // Update filtered assets given any newly uploaded assets
-            self.updateParams()
 
-            let locRequested = RWFramework.sharedInstance.requestWhenInUseAuthorizationForLocation()
-            print("location requested? \(locRequested)")
+    func recordFinishedPlaying(asset: Asset) {
+        var playCount = 1
+        if let prevEntry = userAssetData[asset.id] {
+            playCount += prevEntry.playCount
         }
-    }
-    
-    func start() {
-        RWFramework.sharedInstance.isPlaying = false
         
-        // Starts a session and retrieves project-wide config.
-        RWFramework.sharedInstance.apiStartForClientMixing().then { project in
-            self.project = project
-            print("project settings: \(project)")
-            self.useProjectDefaults()
-            self.afterSessionInit()
-        }
-    }
-
-    private func useProjectDefaults() {
-        switch project.ordering {
-        case "random":
-            self.sortMethods = [SortRandomly()]
-        case "by_weight":
-            self.sortMethods = [SortByWeight()]
-        case "by_like":
-            self.sortMethods = [SortByLikes()]
-        default: break
-        }
+        userAssetData.updateValue(
+            UserAssetData(lastListen: Date(), playCount: playCount),
+            forKey: asset.id
+        )
     }
 
     private func saveAssetPool() {
@@ -465,121 +543,5 @@ extension Playlist {
         } catch {
             print(error)
         }
-    }
-    
-    /**
-     * Retrieve tags to filter by for the current project.
-     * Setup the speakers for background audio.
-     * Retrieve the list of all assets and check for new assets every few minutes.
-    **/
-    private func afterSessionInit() {
-        // Mark start of the session
-        startTime = Date()
-
-        // Load cached assets first
-        loadAssetPool()
-        
-        // Start playing background music from speakers.
-        let speakerUpdate = initSpeakers()
-        
-        // Retrieve the list of tracks
-        let trackUpdate = initTracks()
-
-        // Initial grab of assets and speakers.
-        let assetsUpdate = refreshAssetPool()
-
-        all(speakerUpdate, trackUpdate, assetsUpdate).then { _ in
-            RWFramework.sharedInstance.rwStartedSuccessfully()
-        }
-
-        updateTimer = .every(.seconds(project.asset_refresh_interval)) { _ in
-            self.refreshAssetPool()
-        }
-    }
-    
-    func pause() {
-        if RWFramework.sharedInstance.isPlaying {
-            RWFramework.sharedInstance.isPlaying = false
-            for s in speakers { s.pause() }
-            for t in tracks { t.pause() }
-            if demoLooper != nil {
-                demoStream?.pause()
-            }
-        }
-    }
-    
-    func resume() {
-        if !RWFramework.sharedInstance.isPlaying {
-            RWFramework.sharedInstance.isPlaying = true
-            for s in speakers { s.resume() }
-            for t in tracks { t.resume() }
-            if demoLooper != nil {
-                demoStream?.play()
-            }
-        }
-    }
-    
-    func skip() {
-        // Fade out the currently playing assets on all tracks.
-        for t in tracks {
-            t.playNext()
-        }
-    }
-
-    func replay() {
-        for t in tracks {
-            t.replay()
-        }
-    }
-}
-
-
-extension CLLocation {
-    func bearingToLocationRadian(_ destinationLocation: CLLocation) -> Double {
-        
-        let lat1 = self.coordinate.latitude.degreesToRadians
-        let lon1 = self.coordinate.longitude.degreesToRadians
-        
-        let lat2 = destinationLocation.coordinate.latitude.degreesToRadians
-        let lon2 = destinationLocation.coordinate.longitude.degreesToRadians
-        
-        let dLon = lon2 - lon1
-        
-        let y = sin(dLon) * cos(lat2)
-        let x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(dLon)
-        let radiansBearing = atan2(y, x)
-        
-        return radiansBearing
-    }
-    
-    func bearingToLocationDegrees(_ destinationLocation: CLLocation) -> Double {
-        return bearingToLocationRadian(destinationLocation).radiansToDegrees
-    }
-
-    func toAudioPoint() -> AVAudio3DPoint {
-        let coord = self.coordinate
-        let mult = 1.0
-        return AVAudio3DPoint(
-            x: Float(coord.longitude * mult),
-            y: 0.0,
-            z: -Float(coord.latitude * mult)
-        )
-    }
-    
-    func toAudioPoint(relativeTo other: CLLocation) -> AVAudio3DPoint {
-        let latCoord = CLLocation(latitude: self.coordinate.latitude, longitude: other.coordinate.longitude)
-        let lngCoord = CLLocation(latitude: other.coordinate.latitude, longitude: self.coordinate.longitude)
-        let latDist = latCoord.distance(from: other)
-        let lngDist = lngCoord.distance(from: other)
-        let latDir = (self.coordinate.latitude - other.coordinate.latitude).sign
-        let latMult = latDir == .plus ? -1.0 : 1.0
-        let lngDir = (self.coordinate.longitude - other.coordinate.longitude).sign
-        let lngMult = lngDir == .plus ? 1.0 : -1.0
-        let mult = 0.1
-        return AVAudio3DPoint(
-            x: Float(lngDist * lngMult * mult),
-            y: 0.0,
-            z: Float(latDist * latMult * mult)
-        )
     }
 }
