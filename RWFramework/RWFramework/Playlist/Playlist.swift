@@ -384,23 +384,17 @@ extension Playlist {
         }
         
         let sortedAssets = filteredAssets.sorted { a, b in
-            a.1.rawValue >= b.1.rawValue
+            a.1.rawValue > b.1.rawValue
         }.sorted { a, b in
             // play less played assets first
-            let dataA = userAssetData[a.0.id]
-            let dataB = userAssetData[b.0.id]
-            if let dataA = dataA, let dataB = dataB {
-                return dataA.playCount <= dataB.playCount
-            } else if dataA != nil {
-                return false
-            } else {
-                return true
-            }
-        }.map { (asset, rank) in asset }
+            let playsOfA = userAssetData[a.0.id]?.playCount ?? 0
+            let playsOfB = userAssetData[b.0.id]?.playCount ?? 0
+            return playsOfA < playsOfB
+        }
         
         print("\(sortedAssets.count) filtered assets")
         
-        let next = sortedAssets.first
+        let next = sortedAssets.first?.0
         if let next = next {
             print("picking asset: \(next.id)")
         }
