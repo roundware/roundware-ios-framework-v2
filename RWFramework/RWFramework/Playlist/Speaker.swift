@@ -55,7 +55,7 @@ public class Speaker: Codable {
 }
 
 extension Speaker {
-    private func contains(_ point: CLLocation) -> Bool {
+    func contains(_ point: CLLocation) -> Bool {
         return point.toWaypoint().within(shape)
     }
     
@@ -64,7 +64,12 @@ extension Speaker {
     }
     
     public func distance(to loc: CLLocation) -> Double {
-        return self.shape.distance(geometry: loc.toWaypoint())
+        let pt = loc.toWaypoint()
+        if pt.within(shape) {
+            return 0.0
+        } else {
+            return shape.distance(geometry: pt)
+        }
     }
     
     private func attenuationRatio(at loc: CLLocation) -> Double {
