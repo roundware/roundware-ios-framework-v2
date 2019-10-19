@@ -11,8 +11,8 @@ struct ShapeCollectionData: Codable {
 }
 
 extension CLLocation {
-    func toWaypoint() -> Waypoint {
-        return Waypoint(latitude: coordinate.latitude, longitude: coordinate.longitude)!
+    func toWaypoint() -> Point {
+        return Point(x: coordinate.longitude, y: coordinate.latitude)
     }
 
     func bearingToLocationRadian(_ destinationLocation: CLLocation) -> Double {

@@ -15,27 +15,14 @@ public class Speaker: Codable {
     let id: Int
     let url: String
     let backupUrl: String
-    let attenuationDistance: Int
+    let attenuationDistance: Double
 
     private let minVolume: Float
     private let maxVolume: Float
     var volume: ClosedRange<Float> { return minVolume...maxVolume }
 
-    private let boundaryData: ShapeCollectionData
-    lazy var shape: Geometry = {
-        return GeometryCollection(geometries: boundaryData.coordinates.map { line in
-            Polygon(shell: LinearRing(points: line.map { p in
-                Coordinate(x: p[0], y: p[1])
-            })!, holes: nil)!
-        })!
-    }()
-    
-    private let attenShapeData: ShapeData
-    lazy var attenuationShape: Geometry = {
-        return Polygon(shell: LinearRing(points: attenShapeData.coordinates.map { it in
-            Coordinate(x: it[0], y: it[1])
-        })!, holes: nil)!
-    }()
+    let shape: Geometry
+    let attenuationBorder: Geometry
     
     private var player: AVPlayer? = nil
     private var looper: Any? = nil
@@ -44,40 +31,40 @@ public class Speaker: Codable {
 
     enum CodingKeys: String, CodingKey {
         case id
+        case shape
         case url = "uri"
         case backupUrl = "backupuri"
         case minVolume = "minvolume"
         case maxVolume = "maxvolume"
         case attenuationDistance = "attenuation_distance"
-        case boundaryData = "boundary"
-        case attenShapeData = "attenuation_border"
+        case attenuationBorder = "attenuation_border"
     }
 }
 
 extension Speaker {
     func contains(_ point: CLLocation) -> Bool {
-        return point.toWaypoint().within(shape)
+        return try! point.toWaypoint().isWithin(shape)
     }
     
     private func attenuationShapeContains(_ point: CLLocation) -> Bool {
-        return point.toWaypoint().within(attenuationShape)
+        return try! point.toWaypoint().isWithin(attenuationBorder.convexHull())
     }
     
     public func distance(to loc: CLLocation) -> Double {
         let pt = loc.toWaypoint()
-        if pt.within(shape) {
+        if try! pt.isWithin(shape) {
             return 0.0
         } else {
-            return shape.distance(geometry: pt)
+            return try! pt.distance(to: shape)
         }
     }
     
     private func attenuationRatio(at loc: CLLocation) -> Double {
-        let nearestPoint = attenuationShape.nearestPoint(loc.toWaypoint())
+        let nearestPoint = try! attenuationBorder.nearestPoints(with: loc.toWaypoint())[0]
         let nearestLocation = CLLocation(latitude: nearestPoint.y, longitude: nearestPoint.x)
         let distToInnerShape = nearestLocation.distance(from: loc)
         print("distance to speaker \(id): \(distToInnerShape) m")
-        return 1 - (distToInnerShape / Double(attenuationDistance))
+        return 1 - (distToInnerShape / attenuationDistance)
     }
     
     func volume(at point: CLLocation) -> Float {

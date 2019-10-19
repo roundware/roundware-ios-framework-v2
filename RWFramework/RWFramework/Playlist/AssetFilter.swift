@@ -188,7 +188,7 @@ struct AssetShapeFilter: AssetFilter {
               let shape = asset.shape
             else { return .neutral }
 
-        if shape.contains(params.location.toWaypoint()) {
+        if try! params.location.toWaypoint().isWithin(shape) {
             return .normal
         } else {
             return .discard
