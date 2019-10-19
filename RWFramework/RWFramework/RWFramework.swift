@@ -33,7 +33,6 @@ private lazy var __once: () = { () -> Void in
     
     // Location (see RWFrameworkCoreLocation.swift)
     let locationManager: CLLocationManager = CLLocationManager()
-    var lastRecordedLocation: CLLocation = CLLocation()
     var streamOptions = StreamParams(
         location: CLLocation(),
         minDist: nil,
@@ -41,6 +40,9 @@ private lazy var __once: () = { () -> Void in
         heading: nil,
         angularWidth: nil
     )
+    var lastRecordedLocation: CLLocation {
+        return self.streamOptions.location
+    }
     var letFrameworkRequestWhenInUseAuthorizationForLocation = true
 
     public let playlist = Playlist(filters: [
