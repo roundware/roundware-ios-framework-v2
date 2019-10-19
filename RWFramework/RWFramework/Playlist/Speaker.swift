@@ -75,19 +75,23 @@ extension Speaker {
             return volume.lowerBound
         }
     }
-
+    
     /**
      - returns: whether we're within range of the speaker
     */
     @discardableResult
     func updateVolume(at point: CLLocation) -> Float {
         let vol = self.volume(at: point)
-        
+        return self.updateVolume(vol)
+    }
+    
+    @discardableResult
+    func updateVolume(_ vol: Float) -> Float {
         if vol > 0.05 {
             // definitely want to create the player if it needs volume
             if self.player == nil {
                 player = AVPlayer(url: URL(string: url)!)
-
+                
                 looper = looper ?? NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player!.currentItem, queue: .main) { [weak self] _ in
                     self?.player?.seek(to: CMTime.zero)
                     self?.player?.play()

@@ -297,36 +297,40 @@ extension Playlist {
     */
     private func updateSpeakerVolumes() {
         if let params = self.currentParams, !speakers.isEmpty {
-            for speaker in speakers {
-                // Update all speaker volumes
-                speaker.updateVolume(at: params.location)
-            }
-
             // Only consider playing the demo stream if we're away from all speakers
             let dist = distanceToNearestSpeaker
+            print("dist to nearest speaker: \(dist)")
             if dist > project.out_of_range_distance {
-                print("dist to nearest speaker: \(dist)")
+                // silence all speakers
+                for speaker in speakers {
+                    speaker.updateVolume(0)
+                }
                 self.playDemoStream()
-            } else if let ds = self.demoStream {
-                ds.pause()
-                NotificationCenter.default.removeObserver(demoLooper)
+            } else {
+                // Update all speaker volumes
+                for speaker in speakers {
+                    speaker.updateVolume(at: params.location)
+                }
+                if let ds = self.demoStream, let looper = self.demoLooper {
+                    ds.pause()
+                    NotificationCenter.default.removeObserver(looper)
+                    demoLooper = nil
+                }
             }
         }
     }
 
     private func playDemoStream() {
-        // distance to nearest point on a speaker shape
-        // if we're out of range, start playing from out_of_range_url
-        RWFramework.sharedInstance.rwUpdateStatus("Out of range!")
-
+        // we're out of range, start playing from project.out_of_range_url
         if demoStream == nil, let demoUrl = URL(string: project.out_of_range_url) {
             demoStream = AVPlayer(url: demoUrl)
         }
-
-        // Only play the out-of-range stream if
-        // we're a sufficient distance from all speakers
-        demoStream?.play()
+        
+        // If we weren't playing this before, show the notification.
         if demoLooper == nil {
+            RWFramework.sharedInstance.rwUpdateStatus("Out of range!")
+            demoStream!.play()
+            // Loop the demo stream infinitely
             demoLooper = NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: demoStream!.currentItem, queue: .main) { [weak self] _ in
                 self?.demoStream?.seek(to: CMTime.zero)
                 self?.demoStream?.play()
