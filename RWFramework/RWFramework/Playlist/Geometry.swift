@@ -2,6 +2,14 @@ import CoreLocation
 import GEOSwift
 import AVFoundation
 
+extension Geometry {
+    func distanceInMeters(to loc: CLLocation) -> Double {
+        let nearestPoint = try! self.nearestPoints(with: loc.toWaypoint())[0]
+        let nearestLocation = CLLocation(latitude: nearestPoint.y, longitude: nearestPoint.x)
+        return try! nearestLocation.distance(from: loc)
+    }
+}
+
 extension CLLocation {
     func toWaypoint() -> Point {
         return Point(x: coordinate.longitude, y: coordinate.latitude)

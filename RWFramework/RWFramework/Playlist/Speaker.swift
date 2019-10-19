@@ -55,14 +55,12 @@ extension Speaker {
         if try! pt.isWithin(shape) {
             return 0.0
         } else {
-            return try! pt.distance(to: shape)
+            return shape.distanceInMeters(to: loc)
         }
     }
     
     private func attenuationRatio(at loc: CLLocation) -> Double {
-        let nearestPoint = try! attenuationBorder.nearestPoints(with: loc.toWaypoint())[0]
-        let nearestLocation = CLLocation(latitude: nearestPoint.y, longitude: nearestPoint.x)
-        let distToInnerShape = nearestLocation.distance(from: loc)
+        let distToInnerShape = attenuationBorder.distanceInMeters(to: loc)
         print("distance to speaker \(id): \(distToInnerShape) m")
         return 1 - (distToInnerShape / attenuationDistance)
     }
