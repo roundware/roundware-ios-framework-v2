@@ -2,14 +2,6 @@ import CoreLocation
 import GEOSwift
 import AVFoundation
 
-struct ShapeData: Codable {
-    let coordinates: [[Double]]
-}
-
-struct ShapeCollectionData: Codable {
-    let coordinates: [[[Double]]]
-}
-
 extension CLLocation {
     func toWaypoint() -> Point {
         return Point(x: coordinate.longitude, y: coordinate.latitude)
