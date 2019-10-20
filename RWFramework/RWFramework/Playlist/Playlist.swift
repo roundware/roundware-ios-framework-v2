@@ -296,11 +296,11 @@ extension Playlist {
      If the distance to the nearest speaker > outOfRangeDistance, then play demo stream.
     */
     private func updateSpeakerVolumes() {
-        if let params = self.currentParams, !speakers.isEmpty {
+        if let params = self.currentParams, !speakers.isEmpty, isPlaying {
             // Only consider playing the demo stream if we're away from all speakers
             let dist = distanceToNearestSpeaker
-            print("dist to nearest speaker: \(dist)")
             if dist > project.out_of_range_distance {
+            print("dist to nearest speaker: \(dist)")
                 // silence all speakers
                 for speaker in speakers {
                     speaker.updateVolume(0)
