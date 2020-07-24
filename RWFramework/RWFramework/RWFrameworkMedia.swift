@@ -27,36 +27,30 @@ extension RWFramework {
     }
 
     /// These are the media type names that the server expects
-    enum ServerMediaType: String {
+    enum ServerMediaType: String, CaseIterable {
         case None = "none"
         case Audio = "audio"
         case Text = "text"
         case Photo = "photo"
         case Video = "video"
-
-        static let allValues = [None, Audio, Text, Photo, Video]
     }
 
     /// These are the media type names that make the most sense for the iOS platform
-    enum MediaType: String {
+    enum MediaType: String, CaseIterable {
         case None = "None"
         case Audio = "Audio"
         case Text = "Text"
         case Image = "Image"
         case Movie = "Movie"
-
-        static let allValues = [None, Audio, Text, Image, Movie]
     }
 
-    enum MediaStatus: String {
+    enum MediaStatus: String, CaseIterable {
         case None = "None"
         case Hold = "Hold"
         case Ready = "Ready"
         case Uploading = "Uploading"
         case UploadFailed = "UploadFailed"
         case UploadCompleted = "UploadCompleted"
-
-        static let allValues = [None, Hold, Ready, Uploading, UploadFailed, UploadCompleted]
     }
 
     @objc(RWMedia)class Media: NSObject, NSCoding {
@@ -68,6 +62,7 @@ extension RWFramework {
         var longitude: NSNumber = 0
         var tagIDs: String = ""
         var envelopeID: NSNumber = 0
+        var userID: NSNumber = 0
         var retryCount: NSNumber = 0
 
         init(mediaType: MediaType, string: String, location: CLLocation) {
@@ -88,8 +83,8 @@ extension RWFramework {
         }
 
         required init(coder aDecoder: NSCoder) {
-            mediaType = MediaType.allValues[aDecoder.decodeInteger(forKey: "mediaType")]
-            mediaStatus = MediaStatus.allValues[aDecoder.decodeInteger(forKey: "mediaStatus")]
+            mediaType = MediaType.allCases[aDecoder.decodeInteger(forKey: "mediaType")]
+            mediaStatus = MediaStatus.allCases[aDecoder.decodeInteger(forKey: "mediaStatus")]
             string = aDecoder.decodeObject(forKey: "string") as! String
             desc = aDecoder.decodeObject(forKey: "desc") as! String
             latitude = aDecoder.decodeObject(forKey: "latitude") as! NSNumber
@@ -100,8 +95,8 @@ extension RWFramework {
         }
 
         func encode(with aCoder: NSCoder) {
-            aCoder.encode(MediaType.allValues.index(of: mediaType)!, forKey: "mediaType")
-            aCoder.encode(MediaStatus.allValues.index(of: mediaStatus)!, forKey: "mediaStatus")
+            aCoder.encode(MediaType.allCases.firstIndex(of: mediaType)!, forKey: "mediaType")
+            aCoder.encode(MediaStatus.allCases.firstIndex(of: mediaStatus)!, forKey: "mediaStatus")
             aCoder.encode(string, forKey: "string")
             aCoder.encode(desc, forKey: "desc")
             aCoder.encode(latitude, forKey: "latitude")
@@ -144,19 +139,20 @@ extension RWFramework {
     /// Mark all media on MediaStatus.Hold as MediaStatus.Ready and add current speak tags and envelope ID (called from apiPostEnvelopesSuccess)
     public func uploadAllMedia() {
         if (countMedia() == 0) { return }
-        apiPostEnvelopes({ (envelopeID: Int) -> Void in
+        apiPostEnvelopes().then { (envelopeID: Int) -> Void in
             for media: Media in self.mediaArray {
                 if media.mediaStatus == MediaStatus.Hold {
                     media.envelopeID = NSNumber(value: envelopeID)
+                    media.userID = RWFrameworkConfig.getConfigValueAsNumber("user_id", group: RWFrameworkConfig.ConfigGroup.client)
                     media.tagIDs = self.getSubmittableSpeakIDsSetAsTags() //self.getAllSpeakTagsCurrentAsString() // the old way
                     media.mediaStatus = MediaStatus.Ready
                 }
             }
             // create and store sharing url for current envelope
-            let sharingUrl = RWFrameworkConfig.getConfigValueAsString("sharing_url")
+            let sharingUrl = RWFrameworkConfig.getConfigValueAsString("sharing_url", group: RWFrameworkConfig.ConfigGroup.project)
             let currentSharingUrl = sharingUrl + "?eid=" + String(envelopeID)
             RWFrameworkConfig.setConfigValue("sharing_url_current", value: currentSharingUrl as AnyObject, group: RWFrameworkConfig.ConfigGroup.project)
-        })
+        }
     }
 
     /// Reset any retryCounts for failed uploads, effectively making them try again, can be called at application startup

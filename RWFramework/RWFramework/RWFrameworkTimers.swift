@@ -9,26 +9,6 @@
 import Foundation
 
 extension RWFramework {
-
-// MARK: - Heartbeat
-
-    @objc func heartbeatTimer(_ timer: Timer) {
-        if (requestStreamSucceeded == false) { return }
-
-        let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
-        if (!geo_listen_enabled) ||
-            (geo_listen_enabled && lastRecordedLocation.timestamp.timeIntervalSinceNow < -RWFrameworkConfig.getConfigValueAsNumber("gps_idle_interval_in_seconds").doubleValue) {
-            apiPostStreamsIdHeartbeat()
-        }
-    }
-
-    func startHeartbeatTimer() {
-        DispatchQueue.main.async(execute: { () -> Void in
-            let gps_idle_interval_in_seconds = RWFrameworkConfig.getConfigValueAsNumber("gps_idle_interval_in_seconds").doubleValue
-            self.heartbeatTimer = Timer.scheduledTimer(timeInterval: gps_idle_interval_in_seconds, target:self, selector:#selector(RWFramework.heartbeatTimer(_:)), userInfo:nil, repeats:true)
-        })
-    }
-
 // MARK: - Audio
 
     @objc func audioTimer(_ timer: Timer) {

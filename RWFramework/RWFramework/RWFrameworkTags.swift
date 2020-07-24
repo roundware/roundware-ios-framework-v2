@@ -256,9 +256,8 @@ extension RWFramework {
 // MARK: --
 
     public func submitListenIDsSetAsTags(streamPatchOptions: [String: Any] = [:]) {
-        let tag_ids = getSubmittableListenIDsSetAsTags()
-        // must add streamPatchOptions in order to preserve any settings user already applied
-        apiPatchStreamsIdWithTags(tag_ids, streamPatchOptions: streamPatchOptions)
+        // Tell the playlist that it can check for newly available assets
+        self.updateStreamParams()
     }
     
     public func getListenTagIDFromID(_ id: Int) -> Int {
@@ -287,6 +286,17 @@ extension RWFramework {
         }
         return tag_ids
     }
+    
+    public func getSubmittableListenTagIDsSet() -> Set<Int>? {
+        var tag_ids: Set<Int> = []
+        if let selectedIDs = getListenIDsSet() {
+            for id in selectedIDs {
+                let tag_id = getListenTagIDFromID(id)
+                tag_ids.insert(tag_id)
+            }
+        }
+        return tag_ids
+    }
 
     public func getListenIDsSet() -> Set<Int>? {
         if let array = UserDefaults.standard.object(forKey: "listenIDsSet") as? Array<Int> {
@@ -311,6 +321,30 @@ extension RWFramework {
         UserDefaults.standard.set(Array(ids), forKey: "listenIDsSet")
         UserDefaults.standard.synchronize()
         submitListenIDsSetAsTags(streamPatchOptions: streamPatchOptions)
+    }
+    
+    public func getFilterListenIDsSet() -> Set<Int>? {
+        if let array = UserDefaults.standard.object(forKey: "filterListenIDsSet") as? Array<Int> {
+            return Set(array)
+        } else {
+            if let uiconfig = getUIConfig() {
+                var set = Set<Int>()
+                for listen in uiconfig.listen {
+                    for item in listen.display_items {
+                        if item.default_state == true {
+                            set.insert(item.id)
+                        }
+                    }
+                }
+                return set
+            }
+        }
+        return nil
+    }
+    
+    public func setFilterListenIDsSet(_ ids: Set<Int>) {
+        UserDefaults.standard.set(Array(ids), forKey: "filterListenIDsSet")
+        UserDefaults.standard.synchronize()
     }
 
 // MARK: --

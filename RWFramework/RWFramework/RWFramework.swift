@@ -9,9 +9,11 @@
 import Foundation
 import UIKit
 import CoreLocation
+import CoreMotion
 import WebKit
 import AVFoundation
 import SystemConfiguration
+import Promises
 
 private let _RWFrameworkSharedInstance = RWFramework()
 
@@ -27,34 +29,66 @@ private lazy var __once: () = { () -> Void in
     /// A list of delegates that conform to RWFrameworkProtocol (see RWFrameworkProtocol.swift)
     open var delegates: NSHashTable<AnyObject> = NSHashTable.weakObjects()
 
+    let motionManager = CMMotionManager()
+    
     // Location (see RWFrameworkCoreLocation.swift)
     let locationManager: CLLocationManager = CLLocationManager()
     var lastRecordedLocation: CLLocation = CLLocation()
-    var streamOptions = [String: Any]()
+    var streamOptions = StreamParams(
+        location: CLLocation(),
+        minDist: nil,
+        maxDist: nil,
+        heading: nil,
+        angularWidth: nil
+    )
     var letFrameworkRequestWhenInUseAuthorizationForLocation = true
 
-    // Audio - Stream (see RWFrameworkAudioPlayer.swift)
-    var streamURL: URL? = nil
-    var streamID = 0
-    var player: AVPlayer? = nil {
-        willSet {
-            self.player?.currentItem?.removeObserver(self, forKeyPath: "timedMetadata")
-        }
-        didSet {
-            self.player?.currentItem?.addObserver(self, forKeyPath: "timedMetadata", options: NSKeyValueObservingOptions.new, context: nil)
-        }
-    }
-    /// True if the player (streamer) is currently playing (streaming)
-    open var isPlaying = false
+    public let playlist = Playlist(filters: [
+        // Accept an asset if one of the following conditions is true
+        AnyAssetFilters([
+            // if an asset is scheduled to play right now
+            TimedAssetFilter(),
+            // If an asset has a shape and we AREN'T in it, reject entirely.
+            AssetShapeFilter(),
+            // if it has no shape, consider a fixed distance from it
+            DistanceFixedFilter(),
+            // or a user-specified distance range
+            AllAssetFilters([DistanceRangesFilter(), AngleFilter()]),
+        ]),
+        // only repeat assets if there's no other choice
+        TimedRepeatFilter(),
+        // skip blocked assets and users
+        BlockedAssetsFilter(),
+        // all the tags on an asset must be in our list of tags to listen for
+        AnyTagsFilter(),
+        // if any track-level tag filters exist, apply them
+        TrackTagsFilter(),
+        DynamicTagFilter("_ten_most_recent_days", MostRecentFilter(days: 10))
+    ], sortBy: [
+        SortRandomly(),
+        SortByLikes(),
+    ])
+    
+    static let decoder: JSONDecoder = {
+        let dec = JSONDecoder()
+        dec.dateDecodingStrategy = .flexibleISO
+        return dec
+    }()
+    
+    static let encoder: JSONEncoder = {
+        let enc = JSONEncoder()
+        enc.dateEncodingStrategy = .formatted(.iso8601Full)
+        return enc
+    }()
 
     // Audio - Record (see RWFrameworkAudioRecorder.swift)
     /// RWFrameworkAudioRecorder.swift calls code in RWFrameworkAudioRecorder.m to perform recording when true
-    let useComplexRecordingMechanism = true
-    var soundRecorder: AVAudioRecorder? = nil
+    let useComplexRecordingMechanism = false
+    public var soundRecorder: AVAudioRecorder? = nil
     var soundPlayer: AVAudioPlayer? = nil
 
     // Media - Audio/Text/Image/Movie (see RWFrameworkMedia.swift)
-    var mediaArray: Array<Media> = Array<Media>() {
+    var mediaArray: Array<Media> = [Media]() {
         willSet {
             let data = NSKeyedArchiver.archivedData(withRootObject: newValue)
             RWFrameworkConfig.setConfigValue("mediaArray", value: data as AnyObject, group: RWFrameworkConfig.ConfigGroup.client)
@@ -65,12 +99,10 @@ private lazy var __once: () = { () -> Void in
     }
 
     // Flags
-    var postUsersSucceeded = false
     var postSessionsSucceeded = false
-    var getProjectsIdSucceeded = false
     var getProjectsIdTagsSucceeded = false {
         didSet {
-            if getProjectsIdTagsSucceeded && requestStreamSucceeded {
+            if getProjectsIdTagsSucceeded {
                 timeToSendTheListenTags = true
             }
         }
@@ -78,15 +110,6 @@ private lazy var __once: () = { () -> Void in
     var getProjectsIdUIGroupsSucceeded = false
     var getTagCategoriesSucceeded = false
     var getUIConfigSucceeded = false
-    public var requestStreamInProgress = false
-    public var requestStreamSucceeded = false {
-        didSet {
-            if getProjectsIdTagsSucceeded && requestStreamSucceeded {
-                timeToSendTheListenTags = true
-            }
-        }
-    }
-    var timeToSendTheListenTagsOnceToken: Int = 0
     var timeToSendTheListenTags = false {
         didSet {
             if timeToSendTheListenTags {
@@ -96,7 +119,6 @@ private lazy var __once: () = { () -> Void in
     }
 
     // Timers (see RWFrameworkTimers.swift)
-    var heartbeatTimer: Timer? = nil
     var audioTimer: Timer? = nil
     var uploadTimer: Timer? = nil
 
@@ -124,6 +146,7 @@ private lazy var __once: () = { () -> Void in
         mediaArray = loadMediaArray()
         rwUpdateApplicationIconBadgeNumber(mediaArray.count)
         
+        // setup location updates
         locationManager.delegate = self
         locationManager.distanceFilter = kCLDistanceFilterNone // This is updated later once getProjectsIdSuccess is called
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
@@ -133,22 +156,20 @@ private lazy var __once: () = { () -> Void in
         addAudioInterruptionNotification()
     }
 
-    deinit {
-        self.player?.currentItem?.removeObserver(self, forKeyPath: "timedMetadata")
-    }
-
     /// Start kicks everything else off - call this to start the framework running.
-    /// Pass false for letFrameworkRequestWhenInUseAuthorizationForLocation if the caller would rather call requestWhenInUseAuthorizationForLocation() any time after rwGetProjectsIdSuccess is called.
+    /// - Parameter letFrameworkRequestWhenInUseAuthorizationForLocation: false if the caller would rather call requestWhenInUseAuthorizationForLocation() any time after rwGetProjectsIdSuccess is called.
     open func start(_ letFrameworkRequestWhenInUseAuthorizationForLocation: Bool = true) {
-        if (!compatibleOS()) { println("RWFramework requires iOS 8 or later"); return }
-        if (!hostIsReachable()) { println("RWFramework requires network connectivity"); return }
+        if (!compatibleOS()) {
+            println("RWFramework requires iOS 8 or later")
+        } else if (!hostIsReachable()) {
+            println("RWFramework requires network connectivity")
+        } else {
+            self.letFrameworkRequestWhenInUseAuthorizationForLocation = letFrameworkRequestWhenInUseAuthorizationForLocation
+            
+            self.playlist.start()
 
-        self.letFrameworkRequestWhenInUseAuthorizationForLocation = letFrameworkRequestWhenInUseAuthorizationForLocation
-
-        println("start")
-        apiPostUsers(UIDevice().identifierForVendor!.uuidString, client_type: UIDevice().model, client_system: clientSystem())
-
-        preflightRecording()
+            preflightRecording()
+        }
     }
 
     /// Call this if you know you are done with the framework
@@ -163,19 +184,19 @@ private lazy var __once: () = { () -> Void in
     func addAudioInterruptionNotification() {
         NotificationCenter.default.addObserver(self,
             selector: #selector(RWFramework.handleAudioInterruption(_:)),
-            name: NSNotification.Name.AVAudioSessionInterruption,
+            name: AVAudioSession.interruptionNotification,
             object: nil)
     }
 
     @objc func handleAudioInterruption(_ notification: Notification) {
-        if notification.name != NSNotification.Name.AVAudioSessionInterruption
+        if notification.name != AVAudioSession.interruptionNotification
             || notification.userInfo == nil {
             return
         }
         var info = notification.userInfo!
         var intValue: UInt = 0
         (info[AVAudioSessionInterruptionTypeKey] as! NSValue).getValue(&intValue)
-        if let type = AVAudioSessionInterruptionType(rawValue: intValue) {
+        if let type = AVAudioSession.InterruptionType(rawValue: intValue) {
             switch type {
             case .began:
                 // interruption began
@@ -242,9 +263,9 @@ private lazy var __once: () = { () -> Void in
 
     /// Log to server
     open func logToServer(_ event_type: String, data: String? = "") {
-        apiPostEvents(event_type, data: data, success: { (data) -> Void in
+        apiPostEvents(event_type, data: data).then { data in
             self.println("LOGGED TO SERVER: \(event_type)")
-        }) { (error) -> Void in
+        }.catch { error in
             self.println("ERROR LOGGING TO SERVER \(error)")
         }
     }
@@ -283,5 +304,58 @@ private lazy var __once: () = { () -> Void in
 
         return s
     }
+    
+    /// Block a specific asset from being played again.
+    /// Only works in practice if a `BlockedAssetFilter` is applied.
+    public func block(assetId: Int) -> Promise<Void> {
+        return apiPostAssetsIdVotes(
+            assetId.description,
+            vote_type: "block_asset"
+        ).then { _ in
+            self.playlist.updateFilterData()
+        }
+    }
+    
+    public func blockUser(assetId: Int) -> Promise<Void> {
+        return apiPostAssetsIdVotes(
+            assetId.description,
+            vote_type: "block_user"
+        ).then { _ in
+            self.playlist.updateFilterData()
+        }
+    }
+}
 
+extension DateFormatter {
+    static let iso8601Full: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+        formatter.calendar = Calendar(identifier: .iso8601)
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter
+    }()
+    static let iso8601: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.calendar = Calendar(identifier: .iso8601)
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter
+    }()
+}
+
+extension JSONDecoder.DateDecodingStrategy {
+    /// Attempts to decode dates with fractional seconds, then without.
+    static let flexibleISO = custom {
+        let container = try $0.singleValueContainer()
+        let s = try container.decode(String.self)
+        if let date = DateFormatter.iso8601Full.date(from: s) ?? DateFormatter.iso8601.date(from: s) {
+            return date
+        }
+        throw DecodingError.dataCorruptedError(
+            in: container,
+            debugDescription: "Invalid date: \(s)"
+        )
+    }
 }

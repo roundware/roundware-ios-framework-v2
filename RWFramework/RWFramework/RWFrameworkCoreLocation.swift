@@ -10,13 +10,22 @@ import Foundation
 import CoreLocation
 
 extension RWFramework: CLLocationManagerDelegate {
-
     /// This is called at app startup and also after permission has changed
     public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if status == CLAuthorizationStatus.authorizedAlways || status == CLAuthorizationStatus.authorizedWhenInUse {
             let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
-            if (geo_listen_enabled) {
+            if geo_listen_enabled {
                 locationManager.startUpdatingLocation()
+                if let loc = locationManager.location {
+                    lastRecordedLocation = loc
+                }
+                updateStreamParams()
+            }
+            
+            // Only automatically pan by device heading if enabled in project config
+            let pan_by_heading = RWFrameworkConfig.getConfigValueAsBool("pan_by_heading")
+            if pan_by_heading {
+                locationManager.startUpdatingHeading()
             }
         }
 
@@ -25,22 +34,22 @@ extension RWFramework: CLLocationManagerDelegate {
     
     /// Update parameters to future stream requests
     public func updateStreamParams(
-        range: ClosedRange<Int>?,
-        headingAngle: Float?,
-        angularWidth: Float?
+        location: CLLocation? = nil,
+        range: ClosedRange<Double>? = nil,
+        headingAngle: Double? = nil,
+        angularWidth: Double? = nil
     ) {
-        if let r = range { 
-            streamOptions["listener_range_min"] = r.lowerBound
-            streamOptions["listener_range_max"] = r.upperBound
+        if let loc = location {
+            lastRecordedLocation = loc
         }
-        if let a = headingAngle { streamOptions["listener_heading"] = a }
-        if let w = angularWidth { streamOptions["listener_width"] = w }
-        
-        apiPatchStreamsIdWithLocation(
-            lastRecordedLocation,
-            tagIds: getSubmittableListenIDsSetAsTags(),
-            streamPatchOptions: streamOptions
+        streamOptions = StreamParams(
+            location: location ?? streamOptions.location,
+            minDist: range?.lowerBound ?? streamOptions.minDist,
+            maxDist: range?.upperBound ?? streamOptions.maxDist,
+            heading: headingAngle ?? streamOptions.heading,
+            angularWidth: angularWidth ?? streamOptions.angularWidth
         )
+        playlist.updateParams(streamOptions)
     }
 
     /// Called by the CLLocationManager when location has been updated
@@ -53,22 +62,26 @@ extension RWFramework: CLLocationManagerDelegate {
         let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
         let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
         if (listen_enabled && geo_listen_enabled) {
-            if (!requestStreamInProgress && !requestStreamSucceeded) {
-                apiPostStreams(at: locations[0])
-            } else {
-                // if using range/directional listening, current param values should be inserted here
-                // such that automatic location updates do not turn off range/directional listening by omitting required params
-                apiPatchStreamsIdWithLocation(
-                    locations[0],
-                    tagIds: getSubmittableListenIDsSetAsTags(),
-                    streamPatchOptions: streamOptions
-                )
-            }
+            // Send parameter update with the newly recorded location
+            updateStreamParams()
         }
 
-        // TODO: Set theme
-
         rwLocationManager(manager, didUpdateLocations: locations)
+    }
+    
+    public func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
+        var headingAngle = newHeading.trueHeading
+        
+        // Use 'course' if the device is pitched up or down far enough.
+        if let attitude = motionManager.deviceMotion?.attitude {
+            let limit = 70.0.degreesToRadians
+            if attitude.pitch > limit || attitude.pitch < -limit {
+                headingAngle = lastRecordedLocation.course
+            }
+        }
+        
+        // Update the playlist with this new device heading
+        updateStreamParams(headingAngle: headingAngle)
     }
 
     /// Called by the CLLocationManager when location update has failed
@@ -85,7 +98,8 @@ extension RWFramework: CLLocationManagerDelegate {
         if (shouldMakeTheRequest) {
             locationManager.distanceFilter = RWFrameworkConfig.getConfigValueAsNumber("distance_filter_in_meters").doubleValue
             if CLLocationManager.authorizationStatus() == .notDetermined {
-                locationManager.requestWhenInUseAuthorization()
+//                locationManager.requestWhenInUseAuthorization()
+                locationManager.requestAlwaysAuthorization() // need Always auth for location to update in background
             }
         }
         return shouldMakeTheRequest
