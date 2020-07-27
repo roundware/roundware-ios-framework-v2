@@ -244,26 +244,38 @@ extension Playlist {
 // Offline playback
 extension Playlist {
     /**
-     Save all assets in the current pool to disk.
-     This facilitates offline playback.
+     Save all assets in the current pool to disk. This facilitates offline playback.
      */
-    public func saveAllAssets(onSave: (Asset) -> Void) {
-        do {
-            // Save each asset to the offline folder.
-            for asset in self.assetPool!.assets {
+    public func saveAllAssets(onProgress: (Double) -> Void) throws {
+        // Save each asset to the offline folder.
+        let totalAssets = self.assetPool!.assets.count
+        for (index, asset) in self.assetPool!.assets.enumerated() {
+            let f = self.assetDataFile(for: asset)!
+            // Only download the asset if we don't already have it.
+            if !(try f.checkResourceIsReachable()) {
                 // Download the audio data.
                 let remoteUrl = URL(string: asset.file)!
                 let data = try Data(contentsOf: remoteUrl)
                 
                 // Write the audio data to a file in the cache.
-                let f = self.assetDataFile(for: asset)!
                 try data.write(to: f)
-                
-                // Notify the caller that this asset has been downloaded.
-                onSave(asset)
             }
-        } catch {
-            print(error)
+            
+            // Notify the caller that this asset has been downloaded.
+            onProgress(Double(index + 1) / Double(totalAssets))
+        }
+    }
+
+    /**
+     Remove all saved assets that belong to the current project.
+    */
+    public func purgeSavedAssets(onProgress: (Double) -> Void) throws {
+        let totalAssets = self.assetPool!.assets.count
+        let fm = FileManager.default
+        for (index, asset) in self.assetPool!.assets.enumerated() {
+            let f = self.assetDataFile(for: asset)!
+            try? fm.removeItem(at: f)
+            onProgress(Double(index + 1) / Double(totalAssets))
         }
     }
 
