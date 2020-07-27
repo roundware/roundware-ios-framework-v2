@@ -15,27 +15,14 @@ public class Speaker: Codable {
     let id: Int
     let url: String
     let backupUrl: String
-    let attenuationDistance: Int
+    let attenuationDistance: Double
 
     private let minVolume: Float
     private let maxVolume: Float
     var volume: ClosedRange<Float> { return minVolume...maxVolume }
 
-    private let boundaryData: ShapeCollectionData
-    lazy var shape: Geometry = {
-        return GeometryCollection(geometries: boundaryData.coordinates.map { line in
-            Polygon(shell: LinearRing(points: line.map { p in
-                Coordinate(x: p[0], y: p[1])
-            })!, holes: nil)!
-        })!
-    }()
-    
-    private let attenShapeData: ShapeData
-    lazy var attenuationShape: Geometry = {
-        return Polygon(shell: LinearRing(points: attenShapeData.coordinates.map { it in
-            Coordinate(x: it[0], y: it[1])
-        })!, holes: nil)!
-    }()
+    let shape: Geometry
+    let attenuationBorder: Geometry
     
     private var player: AVPlayer? = nil
     private var looper: Any? = nil
@@ -44,35 +31,38 @@ public class Speaker: Codable {
 
     enum CodingKeys: String, CodingKey {
         case id
+        case shape
         case url = "uri"
         case backupUrl = "backupuri"
         case minVolume = "minvolume"
         case maxVolume = "maxvolume"
         case attenuationDistance = "attenuation_distance"
-        case boundaryData = "boundary"
-        case attenShapeData = "attenuation_border"
+        case attenuationBorder = "attenuation_border"
     }
 }
 
 extension Speaker {
-    private func contains(_ point: CLLocation) -> Bool {
-        return point.toWaypoint().within(shape)
+    func contains(_ point: CLLocation) -> Bool {
+        return try! point.toWaypoint().isWithin(shape)
     }
     
     private func attenuationShapeContains(_ point: CLLocation) -> Bool {
-        return point.toWaypoint().within(attenuationShape)
+        return try! point.toWaypoint().isWithin(attenuationBorder.convexHull())
     }
     
     public func distance(to loc: CLLocation) -> Double {
-        return self.shape.distance(geometry: loc.toWaypoint())
+        let pt = loc.toWaypoint()
+        if try! pt.isWithin(shape) {
+            return 0.0
+        } else {
+            return shape.distanceInMeters(to: loc)
+        }
     }
     
     private func attenuationRatio(at loc: CLLocation) -> Double {
-        let nearestPoint = attenuationShape.nearestPoint(loc.toWaypoint())
-        let nearestLocation = CLLocation(latitude: nearestPoint.y, longitude: nearestPoint.x)
-        let distToInnerShape = nearestLocation.distance(from: loc)
+        let distToInnerShape = attenuationBorder.distanceInMeters(to: loc)
         print("distance to speaker \(id): \(distToInnerShape) m")
-        return 1 - (distToInnerShape / Double(attenuationDistance))
+        return 1 - (distToInnerShape / attenuationDistance)
     }
     
     func volume(at point: CLLocation) -> Float {
@@ -85,19 +75,23 @@ extension Speaker {
             return volume.lowerBound
         }
     }
-
+    
     /**
      - returns: whether we're within range of the speaker
     */
     @discardableResult
     func updateVolume(at point: CLLocation) -> Float {
         let vol = self.volume(at: point)
-        
+        return self.updateVolume(vol)
+    }
+    
+    @discardableResult
+    func updateVolume(_ vol: Float) -> Float {
         if vol > 0.05 {
             // definitely want to create the player if it needs volume
             if self.player == nil {
                 player = AVPlayer(url: URL(string: url)!)
-
+                
                 looper = looper ?? NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player!.currentItem, queue: .main) { [weak self] _ in
                     self?.player?.seek(to: CMTime.zero)
                     self?.player?.play()

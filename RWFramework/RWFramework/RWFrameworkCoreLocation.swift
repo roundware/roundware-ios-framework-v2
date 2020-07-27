@@ -16,10 +16,7 @@ extension RWFramework: CLLocationManagerDelegate {
             let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
             if geo_listen_enabled {
                 locationManager.startUpdatingLocation()
-                if let loc = locationManager.location {
-                    lastRecordedLocation = loc
-                }
-                updateStreamParams()
+                updateStreamParams(location: locationManager.location)
             }
             
             // Only automatically pan by device heading if enabled in project config
@@ -39,9 +36,6 @@ extension RWFramework: CLLocationManagerDelegate {
         headingAngle: Double? = nil,
         angularWidth: Double? = nil
     ) {
-        if let loc = location {
-            lastRecordedLocation = loc
-        }
         streamOptions = StreamParams(
             location: location ?? streamOptions.location,
             minDist: range?.lowerBound ?? streamOptions.minDist,
@@ -57,13 +51,11 @@ extension RWFramework: CLLocationManagerDelegate {
         _ manager: CLLocationManager,
         didUpdateLocations locations: [CLLocation]
     ) {
-        captureLastRecordedLocation()
-
         let listen_enabled = RWFrameworkConfig.getConfigValueAsBool("listen_enabled")
         let geo_listen_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_listen_enabled")
         if (listen_enabled && geo_listen_enabled) {
             // Send parameter update with the newly recorded location
-            updateStreamParams()
+            updateStreamParams(location: locations[0])
         }
 
         rwLocationManager(manager, didUpdateLocations: locations)
@@ -107,6 +99,6 @@ extension RWFramework: CLLocationManagerDelegate {
 
     /// Globally captures the most recent location
     func captureLastRecordedLocation() {
-        lastRecordedLocation = locationManager.location!
+        updateStreamParams(location: locationManager.location)
     }
 }

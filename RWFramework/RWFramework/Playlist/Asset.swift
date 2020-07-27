@@ -18,21 +18,11 @@ public class Asset: Codable {
     let weight: Double
     let description: String
     let submitted: Bool?
+    let shape: Geometry?
     private let longitude: Double?
     private let latitude: Double?
     private let startTime: Double?
     private let endTime: Double?
-    
-    private let shapeData: ShapeData?
-    lazy var shape: Geometry? = {
-        if let coords = shapeData?.coordinates {
-            return Polygon(shell: LinearRing(points: coords.map { p in
-                Coordinate(x: p[0], y: p[1])
-            })!, holes: nil)
-        } else {
-            return nil
-        }
-    }()
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -42,12 +32,12 @@ public class Asset: Codable {
         case weight
         case description
         case submitted
+        case shape
         case startTime = "start_time"
         case endTime = "end_time"
         case length = "audio_length_in_seconds"
         case tags = "tag_ids"
         case createdDate = "created"
-        case shapeData = "shape"
     }
 }
 

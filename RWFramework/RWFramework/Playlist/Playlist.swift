@@ -273,60 +273,68 @@ extension Playlist {
         }
     }
 
+    public var distanceToNearestSpeaker: Double {
+        if let params = self.currentParams {
+            return speakers.lazy.map {
+                $0.distance(to: params.location)
+            }.min() ?? 0.0
+        } else {
+            return 0.0
+        }
+    }
+
+    public var inSpeakerRange: Bool {
+        if let params = self.currentParams {
+            return distanceToNearestSpeaker <= project.out_of_range_distance
+        } else {
+            return false
+        }
+    }
+
     /**
      Update the volumes of all speakers depending on our proximity to each one.
      If the distance to the nearest speaker > outOfRangeDistance, then play demo stream.
     */
     private func updateSpeakerVolumes() {
-        if let params = self.currentParams, !speakers.isEmpty {
-            var playDemo = true
-            for speaker in speakers {
-                let vol = speaker.updateVolume(at: params.location)
-                // Only consider playing the demo stream if all speakers are silent.
-                if vol > 0.001 {
-                    playDemo = false
+        if let params = self.currentParams, !speakers.isEmpty, isPlaying {
+            // Only consider playing the demo stream if we're away from all speakers
+            let dist = distanceToNearestSpeaker
+            if dist > project.out_of_range_distance {
+            print("dist to nearest speaker: \(dist)")
+                // silence all speakers
+                for speaker in speakers {
+                    speaker.updateVolume(0)
                 }
-            }
-
-            if playDemo {
                 self.playDemoStream()
-            } else if let ds = self.demoStream {
-                ds.pause()
-                NotificationCenter.default.removeObserver(demoLooper)
+            } else {
+                // Update all speaker volumes
+                for speaker in speakers {
+                    speaker.updateVolume(at: params.location)
+                }
+                if let ds = self.demoStream, let looper = self.demoLooper {
+                    ds.pause()
+                    NotificationCenter.default.removeObserver(looper)
+                    demoLooper = nil
+                }
             }
         }
     }
 
     private func playDemoStream() {
-        guard let params = self.currentParams
-            else { return }
-
-        // distance to nearest point on a speaker shape
-        let distToSpeaker = speakers.lazy.map {
-            $0.distance(to: params.location)
-        }.min() ?? 0
-
-        print("dist to nearest speaker: \(distToSpeaker)")
-        // if we're out of range, start playing from out_of_range_url
-        if distToSpeaker > project.out_of_range_distance {
-            print("out of range")
+        // we're out of range, start playing from project.out_of_range_url
+        if demoStream == nil, let demoUrl = URL(string: project.out_of_range_url) {
+            demoStream = AVPlayer(url: demoUrl)
+        }
+        
+        // If we weren't playing this before, show the notification.
+        if demoLooper == nil {
             RWFramework.sharedInstance.rwUpdateStatus("Out of range!")
-
-            if demoStream == nil, let demoUrl = URL(string: project.out_of_range_url) {
-                demoStream = AVPlayer(url: demoUrl)
+            demoStream!.play()
+            // Loop the demo stream infinitely
+            demoLooper = NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: demoStream!.currentItem, queue: .main) { [weak self] _ in
+                self?.demoStream?.seek(to: CMTime.zero)
+                self?.demoStream?.play()
             }
-
-            // Only play the out-of-range stream if
-            // we're a sufficient distance from all speakers
-            demoStream?.play()
-            if demoLooper == nil {
-                demoLooper = NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: demoStream!.currentItem, queue: .main) { [weak self] _ in
-                    self?.demoStream?.seek(to: CMTime.zero)
-                    self?.demoStream?.play()
-                }
-            }
-        } else if let demoStream = self.demoStream {
-            demoStream.pause()
         }
     }
 }

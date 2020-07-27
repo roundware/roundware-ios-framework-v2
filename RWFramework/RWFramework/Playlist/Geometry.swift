@@ -2,17 +2,17 @@ import CoreLocation
 import GEOSwift
 import AVFoundation
 
-struct ShapeData: Codable {
-    let coordinates: [[Double]]
-}
-
-struct ShapeCollectionData: Codable {
-    let coordinates: [[[Double]]]
+extension Geometry {
+    func distanceInMeters(to loc: CLLocation) -> Double {
+        let nearestPoint = try! self.nearestPoints(with: loc.toWaypoint())[0]
+        let nearestLocation = CLLocation(latitude: nearestPoint.y, longitude: nearestPoint.x)
+        return try! nearestLocation.distance(from: loc)
+    }
 }
 
 extension CLLocation {
-    func toWaypoint() -> Waypoint {
-        return Waypoint(latitude: coordinate.latitude, longitude: coordinate.longitude)!
+    func toWaypoint() -> Point {
+        return Point(x: coordinate.longitude, y: coordinate.latitude)
     }
 
     func bearingToLocationRadian(_ destinationLocation: CLLocation) -> Double {
