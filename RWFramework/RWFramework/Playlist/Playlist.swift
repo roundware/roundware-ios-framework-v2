@@ -241,6 +241,53 @@ extension Playlist {
     }
 }
 
+// Offline playback
+extension Playlist {
+    /**
+     Save all assets in the current pool to disk.
+     This facilitates offline playback.
+     */
+    public func saveAllAssets(onSave: (Asset) -> Void) {
+        do {
+            // Save each asset to the offline folder.
+            for asset in self.assetPool!.assets {
+                // Download the audio data.
+                let remoteUrl = URL(string: asset.file)!
+                let data = try Data(contentsOf: remoteUrl)
+                
+                // Write the audio data to a file in the cache.
+                let f = self.assetDataFile(for: asset)!
+                try data.write(to: f)
+                
+                // Notify the caller that this asset has been downloaded.
+                onSave(asset)
+            }
+        } catch {
+            print(error)
+        }
+    }
+
+    /** Where to save asset data for offline playback. */
+    internal func assetDataFile(for asset: Asset) -> URL? {
+        do {
+            let parentDir = try FileManager.default.url(
+                // Not backed up to iCloud, but also not deleted by clearing cache.
+                for: .applicationSupportDirectory,
+                in: .userDomainMask,
+                appropriateFor: nil,
+                create: true
+            )
+            // Keep a separate folder for each project
+            return parentDir
+                .appendingPathComponent("assets-\(self.project.id)")
+                .appendingPathComponent(asset.file)
+        } catch {
+            print(error)
+            return nil
+        }
+    }
+}
+
 // Filters functionality
 extension Playlist {
     public func apply(filter: AssetFilter) {

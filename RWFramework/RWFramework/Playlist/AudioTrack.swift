@@ -234,18 +234,8 @@ private class LoadingState: TrackState {
 
     /// Downloads and starts playing the currently selected asset
     private func loadNextAsset(start: Double? = nil, for duration: Double? = nil) throws {
-        // Download asset into memory
-        print("downloading asset")
-        let remoteUrl = URL(string: track.currentAsset!.file)!
-            .deletingPathExtension()
-            .appendingPathExtension("mp3")
-
-        let data = try Data(contentsOf: remoteUrl)
-        print("asset downloaded as \(remoteUrl.lastPathComponent)")
-        // have to write to file...
-        // Write it to the cache folder so we can easily clean up later.
         let documentsDir = try FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-
+        
         // Remove file of last played asset
         if let prev = track.previousAsset {
             let fileName = URL(string: prev.file)!
@@ -257,10 +247,26 @@ private class LoadingState: TrackState {
             try FileManager.default.removeItem(at: prevAssetUrl)
         }
 
-        let url = documentsDir.appendingPathComponent(remoteUrl.lastPathComponent)
-        try data.write(to: url, options: .atomic)
+        // Try to load the asset from cache first.
+        let localUrl = self.track.playlist!.assetDataFile(for: self.asset!)
+        var url = localUrl
+        // If we can't load a local copy, download the asset now.
+        if !(try localUrl?.checkResourceIsReachable() ?? false) {
+            print("downloading asset")
+            let remoteUrl = URL(string: track.currentAsset!.file)!
+                .deletingPathExtension()
+                .appendingPathExtension("mp3")
+            let data = try Data(contentsOf: remoteUrl)
+            print("asset downloaded as \(remoteUrl.lastPathComponent)")
+            // have to write to file...
+            // Write it to the cache folder so we can easily clean up later.
 
-        let file = try AVAudioFile(forReading: url)
+            url = documentsDir.appendingPathComponent(remoteUrl.lastPathComponent)
+            try data.write(to: url!, options: .atomic)
+        }
+
+        // Load the audio data, whether from local or remote source.
+        let file = try AVAudioFile(forReading: url!)
 
         if let start = start, let duration = duration {
             let startFrame = Int64(start * file.processingFormat.sampleRate)
