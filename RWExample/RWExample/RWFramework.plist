@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>project_id</key>
+	<integer>1</integer>
+	<key>reverse_domain</key>
+	<string>org.roundware</string>
+	<key>base_url</key>
+	<string>http://roundware.dyndns.org/</string>
+	<key>reachability_host_name</key>
+	<string>roundware.dyndns.org</string>
+	<key>distance_filter_in_meters</key>
+	<real>5</real>
+	<key>gps_idle_interval_in_seconds</key>
+	<integer>60</integer>
+	<key>recorded_file_name</key>
+	<string>rw.m4a</string>
+	<key>text_file_name</key>
+	<string>rw.txt</string>
+	<key>max_recording_length</key>
+	<integer>10</integer>
+	<key>listen_enabled</key>
+	<true/>
+	<key>geo_listen_enabled</key>
+	<true/>
+	<key>speak_enabled</key>
+	<true/>
+	<key>geo_speak_enabled</key>
+	<true/>
+	<key>listen_questions_dynamic</key>
+	<false/>
+	<key>speak_questions_dynamic</key>
+	<false/>
+	<key>image_minimum_side</key>
+	<integer>512</integer>
+	<key>image_jpeg_compression</key>
+	<real>0.8</real>
+	<key>image_file_name</key>
+	<string>rw.jpg</string>
+	<key>movie_file_name</key>
+	<string>rw.mov</string>
+	<key>add_asset_to_envelope_submitted_flag</key>
+	<string>N</string>
+	<key>webview_navigationbar_hidden</key>
+	<true/>
+	<key>geo_image_enabled</key>
+	<true/>
+	<key>reset_tag_defaults_on_startup</key>
+	<true/>
+</dict>
+</plist>
