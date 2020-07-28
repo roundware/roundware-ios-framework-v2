@@ -243,10 +243,22 @@ extension Playlist {
 
 // Offline playback
 extension Playlist {
+    public enum SaveProgress {
+        case none
+        case partial
+        case complete
+    }
     /** Are all the asset files in this project saved for offline playback? */
-    public var allAssetsSaved: Bool {
-        return self.assetPool!.assets.allSatisfy { asset in
+    public var assetsSavedProgress: SaveProgress {
+        let saved = self.assetPool!.assets.filter { asset in
             (try? self.assetDataFile(for: asset)?.checkResourceIsReachable()) ?? false
+        }
+        if saved.count >= self.assetPool!.assets.count {
+            return .complete
+        } else if saved.count > 0 {
+            return .partial
+        } else {
+            return .none
         }
     }
     
