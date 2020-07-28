@@ -50,6 +50,8 @@ public class Playlist {
     private let audioEngine = AVAudioEngine()
     private let audioMixer = AVAudioEnvironmentNode()
 
+    public let recorder = Recorder()
+
     init(filters: [AssetFilter], sortBy: [SortMethod]) {
         DispatchQueue.promises = .global()
 
