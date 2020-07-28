@@ -243,6 +243,13 @@ extension Playlist {
 
 // Offline playback
 extension Playlist {
+    /** Are all the asset files in this project saved for offline playback? */
+    public var allAssetsSaved: Bool {
+        return self.assetPool!.assets.allSatisfy { asset in
+            (try? self.assetDataFile(for: asset)?.checkResourceIsReachable()) ?? false
+        }
+    }
+    
     /**
      Save all assets in the current pool to disk. This facilitates offline playback.
      */

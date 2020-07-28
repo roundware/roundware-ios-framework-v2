@@ -248,7 +248,7 @@ private class LoadingState: TrackState {
         }
 
         // Try to load the asset from cache first.
-        let localUrl = self.track.playlist!.assetDataFile(for: self.asset!)
+        let localUrl = track.playlist?.assetDataFile(for: track.currentAsset!)
         var url = localUrl
         // If we can't load a local copy, download the asset now.
         if !(try localUrl?.checkResourceIsReachable() ?? false) {
