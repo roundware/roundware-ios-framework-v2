@@ -10,8 +10,12 @@ import Foundation
 import CoreLocation
 
 open class RWFrameworkURLFactory {
+    class var base: String {
+        return RWFrameworkConfig.getConfigValueAsString("base_url")
+    }
+    
     class func api() -> String {
-        return RWFrameworkConfig.getConfigValueAsString("base_url") + "api/2"
+        return base + "api/2"
     }
 
     class func postUsersURL() -> String {

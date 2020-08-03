@@ -6,8 +6,8 @@
 //  Copyright (c) 2015 Roundware. All rights reserved.
 //
 
-import Foundation
 import CoreLocation
+import Foundation
 import Promises
 
 extension RWFramework {
@@ -27,13 +27,14 @@ extension RWFramework {
             }
     }
 
-    /// MARK: POST users
+    // MARK: POST users
+
     private func apiPostUsers(_ device_id: String, client_type: String, client_system: String) -> Promise<Void> {
         let token = RWFrameworkConfig.getConfigValueAsString("token", group: RWFrameworkConfig.ConfigGroup.client)
-        
-        if (token.lengthOfBytes(using: String.Encoding.utf8) > 0) {
+
+        if token.lengthOfBytes(using: String.Encoding.utf8) > 0 {
             // postUsersSucceeded = true
-            print("using token \(token)")
+            print("offline: using token \(token)")
             return Promise(())
         } else {
             return httpPostUsers(
@@ -70,8 +71,8 @@ extension RWFramework {
         // postUsersSucceeded = true
     }
 
+    // MARK: POST sessions
 
-    /// MARK: POST sessions
     private func apiPostSessions() -> Promise<Data> {
         let project_id = RWFrameworkConfig.getConfigValueAsNumber("project_id")
         let client_system = clientSystem()
@@ -97,41 +98,42 @@ extension RWFramework {
     }
 
     private func setupClientSession(_ data: Data) throws -> Promise<Project> {
-        var session_id : NSNumber = 0
+        var session_id: NSNumber = 0
         if let dict = try? RWFramework.decoder.decode(Session.self, from: data) {
             if let _session_id = dict.id {
                 session_id = NSNumber(value: _session_id)
                 RWFrameworkConfig.setConfigValue("session_id", value: session_id, group: RWFrameworkConfig.ConfigGroup.client)
             } // TODO: Handle missing value
-            
+
             if let timeZone = dict.timezone {
                 // timezone format: -0800 => (-|+)(HH)(MM)
                 let sign = timeZone.first! == "+" ? 1 : -1
                 let hoursStart = timeZone.index(after: timeZone.startIndex)
                 let hoursEnd = timeZone.index(hoursStart, offsetBy: 2)
-                let hours = Int(timeZone[hoursStart..<hoursEnd])!
+                let hours = Int(timeZone[hoursStart ..< hoursEnd])!
                 let minutes = Int(timeZone[hoursEnd...])!
-                
+
                 // convert timezone hours to seconds
                 let seconds = (hours * 60 + minutes) * 60 * sign
-                
+
                 RWFrameworkConfig.setConfigValue("session_timezone", value: NSNumber(value: seconds), group: .session)
             }
         }
 
         let project_id = RWFrameworkConfig.getConfigValueAsNumber("project_id")
-        self.apiGetProjectsIdTags(project_id, session_id: session_id)
-        self.apiGetUIConfig(project_id, session_id: session_id)
-        self.apiGetProjectsIdUIGroups(project_id, session_id: session_id)
-        self.apiGetTagCategories()
-        return self.apiGetProjectsId(project_id, session_id: session_id).then { data -> Project in
+        _ = apiGetProjectsIdTags(project_id, session_id: session_id)
+        apiGetUIConfig(project_id, session_id: session_id)
+        _ = apiGetProjectsIdUIGroups(project_id, session_id: session_id)
+        _ = apiGetTagCategories()
+        return apiGetProjectsId(project_id, session_id: session_id).then { data -> Project in
             RWFrameworkConfig.setConfigDataAsDictionary(data, key: "project")
             //self.setupRecording()
             return try RWFramework.decoder.decode(Project.self, from: data)
         }
     }
 
-    /// MARK: GET projects id
+    // MARK: GET projects id
+
     private func apiGetProjectsId(_ project_id: NSNumber, session_id: NSNumber) -> Promise<Data> {
         return httpGetProjectsId(project_id, session_id: session_id).then { data -> Data in
             self.rwGetProjectsIdSuccess(data)
@@ -144,19 +146,20 @@ extension RWFramework {
 
     private func setupRecording() {
         let speak_enabled = RWFrameworkConfig.getConfigValueAsBool("speak_enabled")
-        if (speak_enabled) {
+        if speak_enabled {
             startAudioTimer()
             rwReadyToRecord()
         }
     }
 
-    /// MARK: GET ui config
+    // MARK: GET ui config
+
     private func apiGetUIConfig(_ project_id: NSNumber, session_id: NSNumber) {
         httpGetUIConfig(project_id, session_id: session_id).then { data in
             // Save data to UserDefaults for later access
             UserDefaults.standard.set(data, forKey: "uiconfig")
             self.getUIConfigSucceeded = true
-            
+
             self.rwGetUIConfigSuccess(data)
         }.catch { error in
             self.rwGetUIConfigFailure(error)
@@ -164,14 +167,14 @@ extension RWFramework {
         }
     }
 
+    // MARK: GET projects id tags
 
-    /// MARK: GET projects id tags
     private func apiGetProjectsIdTags(_ project_id: NSNumber, session_id: NSNumber) -> Promise<Data> {
         return httpGetProjectsIdTags(project_id, session_id: session_id).then { data -> Data in
             // Save data to UserDefaults for later access
             UserDefaults.standard.set(data, forKey: "tags")
             self.getProjectsIdTagsSucceeded = true
-            
+
             self.rwGetProjectsIdTagsSuccess(data)
             return data
         }.catch { error in
@@ -180,17 +183,18 @@ extension RWFramework {
         }
     }
 
-    /// MARK: GET projects id uigroups
+    // MARK: GET projects id uigroups
+
     private func apiGetProjectsIdUIGroups(_ project_id: NSNumber, session_id: NSNumber) -> Promise<Data> {
         return httpGetProjectsIdUIGroups(project_id, session_id: session_id).then { data -> Data in
             // Save data to UserDefaults for later access
             UserDefaults.standard.set(data, forKey: "ui_groups")
-            
+
             let reset_tag_defaults_on_startup = RWFrameworkConfig.getConfigValueAsBool("reset_tag_defaults_on_startup")
             self.println("TODO: honor reset_tag_defaults_on_startup = \(reset_tag_defaults_on_startup.description)")
-            
+
             self.getProjectsIdUIGroupsSucceeded = true
-            
+
             self.rwGetProjectsIdUIGroupsSuccess(data)
             return data
         }.catch { error in
@@ -198,8 +202,9 @@ extension RWFramework {
             self.apiProcessError(nil, error: error, caller: "apiGetProjectsIdUIGroups")
         }
     }
-    
-    /// MARK: GET tagcategories
+
+    // MARK: GET tagcategories
+
     private func apiGetTagCategories() -> Promise<Data> {
         return httpGetTagCategories().then { data -> Data in
             UserDefaults.standard.set(data, forKey: "tagcategories")
@@ -212,13 +217,14 @@ extension RWFramework {
         }
     }
 
-    /// MARK: POST envelopes
+    // MARK: POST envelopes
+
     func apiPostEnvelopes() -> Promise<Int> {
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
 
         return httpPostEnvelopes(session_id).then { data -> Int in
             self.rwPostEnvelopesSuccess(data)
-            
+
             // return the id of the created envelope
             let dict = try RWFramework.decoder.decode(Envelope.self, from: data)
             return dict.id
@@ -228,7 +234,8 @@ extension RWFramework {
         }
     }
 
-    /// MARK: PATCH envelopes id
+    // MARK: PATCH envelopes id
+
     func apiPatchEnvelopesId(_ media: Media) -> Promise<Void> {
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
 
@@ -240,31 +247,30 @@ extension RWFramework {
             self.apiProcessError(nil, error: error, caller: "apiPatchEnvelopesId")
         }
     }
-    
+
     private func patchEnvelopesSuccess(_ data: Data) {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
-            
-            if let dict = json as? [String:AnyObject] {
+
+            if let dict = json as? [String: AnyObject] {
                 if let assetId = dict["id"] as? NSNumber {
                     // only set config value for audio assets
                     let assetMediaType = dict["media_type"] as? String
-                    if (assetMediaType == "audio") {
+                    if assetMediaType == "audio" {
                         RWFrameworkConfig.setConfigValue("most_recent_audio_asset_id", value: assetId, group: RWFrameworkConfig.ConfigGroup.client)
                     }
                 }
             }
-        }
-        catch {
+        } catch {
             print(error)
         }
     }
 
-// MARK: POST assets
+    // MARK: POST assets
 
     // Not needed on client - not implementing for now
-    
-    func apiGetAudioTracks(_ dict: [String:String]) -> Promise<[AudioTrack]> {
+
+    func apiGetAudioTracks(_ dict: [String: String]) -> Promise<[AudioTrack]> {
         return httpGetAudioTracks(dict).then { data in
             try RWFramework.decoder.decode([AudioTrack].self, from: data)
         }.catch { error in
@@ -272,8 +278,9 @@ extension RWFramework {
         }
     }
 
-    /// MARK: GET assets PUBLIC
-    func apiGetAssets(_ dict: [String:String]) -> Promise<[Asset]> {
+    // MARK: GET assets PUBLIC
+
+    func apiGetAssets(_ dict: [String: String]) -> Promise<[Asset]> {
         return httpGetAssets(dict).then { data -> [Asset] in
             self.rwGetAssetsSuccess(data)
             return try RWFramework.decoder.decode([Asset].self, from: data)
@@ -282,10 +289,10 @@ extension RWFramework {
             self.apiProcessError(nil, error: error, caller: "apiGetAssets")
         }
     }
-    
-    func apiGetTimedAssets(_ dict: [String:String]) -> Promise<[TimedAsset]> {
+
+    func apiGetTimedAssets(_ dict: [String: String]) -> Promise<[TimedAsset]> {
         return httpGetTimedAssets(dict).then { data -> [TimedAsset] in
-            return try RWFramework.decoder.decode([TimedAsset].self, from: data)
+            try RWFramework.decoder.decode([TimedAsset].self, from: data)
         }.catch { error in
             self.apiProcessError(nil, error: error, caller: "apiGetTimedAssets")
         }
@@ -297,21 +304,21 @@ extension RWFramework {
 
         return httpGetBlockedAssets(project_id, session_id: session_id)
     }
-    
-    /// MARK: PATCH assets id PUBLIC
+
+    // MARK: PATCH assets id PUBLIC
+
     public func apiPatchAssetsId(_ asset_id: String, postData: [String: Any] = [:]) -> Promise<Data> {
-        
         return httpPatchAssetsId(asset_id, postData: postData).then { data -> Data in
             self.rwPatchAssetsIdSuccess(data)
             return data
-            }.catch { error in
-                self.rwPatchAssetsIdFailure(error)
-                self.apiProcessError(nil, error: error, caller: "apiPatchAssetsId")
+        }.catch { error in
+            self.rwPatchAssetsIdFailure(error)
+            self.apiProcessError(nil, error: error, caller: "apiPatchAssetsId")
         }
     }
 
+    // MARK: GET assets id PUBLIC
 
-    /// MARK: GET assets id PUBLIC
     public func apiGetAssetsId(_ asset_id: String) -> Promise<Data> {
         return httpGetAssetsId(asset_id).then { data -> Data in
             self.rwGetAssetsIdSuccess(data)
@@ -322,7 +329,8 @@ extension RWFramework {
         }
     }
 
-    /// MARK: POST assets id votes
+    // MARK: POST assets id votes
+
     public func apiPostAssetsIdVotes(_ asset_id: String, vote_type: String, value: NSNumber = 0) -> Promise<Data> {
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
 
@@ -335,7 +343,8 @@ extension RWFramework {
         }
     }
 
-    /// MARK: GET assets id votes
+    // MARK: GET assets id votes
+
     public func apiGetAssetsIdVotes(_ asset_id: String) -> Promise<Data> {
         return httpGetAssetsIdVotes(asset_id).then { data -> Data in
             self.rwGetAssetsIdVotesSuccess(data)
@@ -349,8 +358,8 @@ extension RWFramework {
     func apiGetVotesSummary(type: String? = nil, projectId: String? = nil, assetId: String? = nil) -> Promise<Data> {
         return httpGetVotesSummary(type: type, projectId: projectId, assetId: assetId)
     }
-    
-    func apiGetSpeakers(_ dict: [String:String]) -> Promise<[Speaker]> {
+
+    func apiGetSpeakers(_ dict: [String: String]) -> Promise<[Speaker]> {
         return httpGetSpeakers(dict).then { data -> [Speaker] in
             self.rwGetSpeakersSuccess(data)
             return try RWFramework.decoder.decode([Speaker].self, from: data)
@@ -360,7 +369,8 @@ extension RWFramework {
         }
     }
 
-    /// MARK: POST events
+    // MARK: POST events
+
     func apiPostEvents(_ event_type: String, data: String?) -> Promise<Data> {
         let session_id = RWFrameworkConfig.getConfigValueAsNumber("session_id", group: RWFrameworkConfig.ConfigGroup.client)
         let latitude = doubleToStringWithZeroAsEmptyString(lastRecordedLocation.coordinate.latitude)
@@ -377,22 +387,24 @@ extension RWFramework {
         }.catch { error in
             self.rwPostEventsFailure(error)
             self.apiProcessError(nil, error: error, caller: "apiPostEvents")
-            
         }
     }
 
     // MARK: GET events id
+
     // Not needed on client - not implementing for now
 
     // MARK: GET listenevents
+
     // Not needed on client - not implementing for now
 
     // MARK: GET listenevents id
+
     // Not needed on client - not implementing for now
 
     // MARK: utilities
 
-    private func apiProcessError(_ data: Data?, error: Error, caller: String) {
+    private func apiProcessError(_: Data?, error: Error, caller: String) {
         let error = error as NSError
         let detailStringValue = ""
 //        if (data != nil) {
@@ -401,7 +413,7 @@ extension RWFramework {
 //            detailStringValue = detail.stringValue
 //            self.println("API ERROR: \(caller): \(detailStringValue) NSError = \(error.code) \(error.description)")
 //        }
-        if (caller != "apiPostEvents") { // Don't log errors that occur while reporting errors
+        if caller != "apiPostEvents" { // Don't log errors that occur while reporting errors
             logToServer("client_error", data: "\(caller): \(detailStringValue) NSError = \(error.code) \(error.description)")
         }
     }

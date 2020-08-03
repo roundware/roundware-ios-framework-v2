@@ -248,12 +248,13 @@ extension Playlist {
         case partial
         case complete
     }
+
     /** Are all the asset files in this project saved for offline playback? */
     public var assetsSavedProgress: SaveProgress {
-        let saved = self.assetPool!.assets.filter { asset in
+        let saved = assetPool!.assets.filter { asset in
             (try? self.assetDataFile(for: asset)?.checkResourceIsReachable()) ?? false
         }
-        if saved.count >= self.assetPool!.assets.count {
+        if saved.count >= assetPool!.assets.count {
             return .complete
         } else if saved.count > 0 {
             return .partial
@@ -261,47 +262,53 @@ extension Playlist {
             return .none
         }
     }
-    
+
     /**
      Save all assets in the current pool to disk. This facilitates offline playback.
      */
-    public func saveAllAssets(onProgress: (Double) -> Void) throws {
-        // Save each asset to the offline folder.
-        let totalAssets = self.assetPool!.assets.count
-        for (index, asset) in self.assetPool!.assets.enumerated() {
-            let f = self.assetDataFile(for: asset)!
-            // Only download the asset if we don't already have it.
-            if !(try f.checkResourceIsReachable()) {
-                // Download the audio data.
-                let remoteUrl = URL(string: asset.file)!
-                let data = try Data(contentsOf: remoteUrl)
-                
-                // Write the audio data to a file in the cache.
-                try data.write(to: f)
+    public func saveAllAssets() -> Promise<Void> {
+        return Promise<Void>(on: .global()) {
+            // Save each asset to the offline folder.
+            let totalAssets = Double(self.assetPool!.assets.count)
+            for (index, asset) in self.assetPool!.assets.enumerated() {
+                let f = self.assetDataFile(for: asset)!
+                // Only download the asset if we don't already have it.
+                if !((try? f.checkResourceIsReachable()) ?? false) {
+                    // Download the audio data.
+                    let remoteUrl = asset.mp3Url
+                    print("offline: downloading \(remoteUrl)")
+                    let data = try Data(contentsOf: remoteUrl)
+
+                    // Write the audio data to a file in the cache.
+                    try data.write(to: f)
+                }
+
+                // Notify the caller that this asset has been downloaded.
+                RWFramework.sharedInstance.rwAssetDownloadProgress(Double(index + 1) / totalAssets)
             }
-            
-            // Notify the caller that this asset has been downloaded.
-            onProgress(Double(index + 1) / Double(totalAssets))
         }
     }
 
     /**
-     Remove all saved assets that belong to the current project.
-    */
-    public func purgeSavedAssets(onProgress: (Double) -> Void) throws {
-        let totalAssets = self.assetPool!.assets.count
-        let fm = FileManager.default
-        for (index, asset) in self.assetPool!.assets.enumerated() {
-            let f = self.assetDataFile(for: asset)!
-            try? fm.removeItem(at: f)
-            onProgress(Double(index + 1) / Double(totalAssets))
+      Remove all saved assets that belong to the current project.
+     */
+    public func purgeSavedAssets() -> Promise<Void> {
+        return Promise<Void>(on: .global()) {
+            let totalAssets = Double(self.assetPool!.assets.count)
+            let fm = FileManager.default
+            for (index, asset) in self.assetPool!.assets.enumerated() {
+                let f = self.assetDataFile(for: asset)!
+                try? fm.removeItem(at: f)
+                RWFramework.sharedInstance.rwAssetDeleteProgress(Double(index + 1) / totalAssets)
+            }
         }
     }
 
     /** Where to save asset data for offline playback. */
     internal func assetDataFile(for asset: Asset) -> URL? {
         do {
-            let parentDir = try FileManager.default.url(
+            let fm = FileManager.default
+            let parentDir = try fm.url(
                 // Not backed up to iCloud, but also not deleted by clearing cache.
                 for: .applicationSupportDirectory,
                 in: .userDomainMask,
@@ -309,9 +316,11 @@ extension Playlist {
                 create: true
             )
             // Keep a separate folder for each project
-            return parentDir
-                .appendingPathComponent("assets-\(self.project.id)")
-                .appendingPathComponent(asset.file)
+            let assetsDir = parentDir.appendingPathComponent("assets-\(project.id)")
+            // Make sure it exists.
+            _ = try? fm.createDirectory(at: assetsDir, withIntermediateDirectories: true, attributes: nil)
+            // Convert the remote URL to a local one.
+            return assetsDir.appendingPathComponent(asset.mp3Url.lastPathComponent)
         } catch {
             print(error)
             return nil
