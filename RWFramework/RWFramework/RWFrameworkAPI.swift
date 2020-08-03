@@ -120,7 +120,7 @@ extension RWFramework {
         self.apiGetTagCategories()
         return self.apiGetProjectsId(project_id, session_id: session_id).then { data -> Project in
             RWFrameworkConfig.setConfigDataAsDictionary(data, key: "project")
-            self.setupRecording()
+            //self.setupRecording()
             return try RWFramework.decoder.decode(Project.self, from: data)
         }
     }

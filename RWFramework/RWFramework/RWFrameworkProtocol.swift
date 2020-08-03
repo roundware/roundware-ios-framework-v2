@@ -193,7 +193,10 @@ import CoreLocation
 
     /// Called when location authorization changes
     @objc optional func rwLocationManager(_ manager: CLLocationManager!, didChangeAuthorizationStatus status: CLAuthorizationStatus)
-
+    
+    @objc optional func rwRecordedOffline()
+    @objc optional func rwUploadProgress(_ progress: Double)
+    @objc optional func rwUploadResumed()
 }
 
 /// The framework calls these methods to call thru to the delegate protocol in order to keep the calling code clean of respondsToSelector checks
@@ -683,6 +686,25 @@ extension RWFramework {
             self.dam { rwfp.rwPlayingBackProgress?(percentage, duration: duration, peakPower: peakPower, averagePower: averagePower) }
         }
     }
+    
+    func rwRecordedOffline() {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwRecordedOffline?() }
+        }
+    }
+    
+    func rwUploadProgress(_ progress: Double) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwUploadProgress?(progress) }
+        }
+    }
+    
+    func rwUploadResumed() {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwUploadResumed?() }
+        }
+    }
+
 
     func rwAudioRecorderDidFinishRecording() {
         protocaller { (rwfp, _) -> Void in

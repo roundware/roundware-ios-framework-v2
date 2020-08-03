@@ -85,20 +85,20 @@ private lazy var __once: () = { () -> Void in
 
     // Audio - Record (see RWFrameworkAudioRecorder.swift)
     /// RWFrameworkAudioRecorder.swift calls code in RWFrameworkAudioRecorder.m to perform recording when true
-    let useComplexRecordingMechanism = false
+    // let useComplexRecordingMechanism = false
     public var soundRecorder: AVAudioRecorder? = nil
     var soundPlayer: AVAudioPlayer? = nil
 
     // Media - Audio/Text/Image/Movie (see RWFrameworkMedia.swift)
-    var mediaArray: Array<Media> = [Media]() {
-        willSet {
-            let data = NSKeyedArchiver.archivedData(withRootObject: newValue)
-            RWFrameworkConfig.setConfigValue("mediaArray", value: data as AnyObject, group: RWFrameworkConfig.ConfigGroup.client)
-        }
-        didSet {
-            rwUpdateApplicationIconBadgeNumber(mediaArray.count)
-        }
-    }
+    // var mediaArray: Array<Media> = [Media]() {
+    //     willSet {
+    //         let data = NSKeyedArchiver.archivedData(withRootObject: newValue)
+    //         RWFrameworkConfig.setConfigValue("mediaArray", value: data as AnyObject, group: RWFrameworkConfig.ConfigGroup.client)
+    //     }
+    //     didSet {
+    //         rwUpdateApplicationIconBadgeNumber(mediaArray.count)
+    //     }
+    // }
 
     // Flags
     var postSessionsSucceeded = false
@@ -145,8 +145,8 @@ private lazy var __once: () = { () -> Void in
             println("RWFramework is running in debug mode")
         #endif
 
-        mediaArray = loadMediaArray()
-        rwUpdateApplicationIconBadgeNumber(mediaArray.count)
+//        mediaArray = loadMediaArray()
+//        rwUpdateApplicationIconBadgeNumber(mediaArray.count)
         
         // setup location updates
         locationManager.delegate = self
@@ -300,7 +300,7 @@ private lazy var __once: () = { () -> Void in
         s += "session_id = \(session_id)\n"
         s += "latitude = \(latitude)\n"
         s += "longitude = \(longitude)\n"
-        s += "queue items = \(mediaArray.count)\n"
+//        s += "queue items = \(mediaArray.count)\n"
         s += "uploaderActive = \(uploaderActive)\n"
         s += "uploaderUploading = \(uploaderUploading)\n"
 

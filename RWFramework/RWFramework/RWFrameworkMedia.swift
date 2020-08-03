@@ -6,23 +6,22 @@
 //  Copyright (c) 2015 Roundware. All rights reserved.
 //
 
-import Foundation
 import CoreLocation
+import Foundation
 
 extension RWFramework {
-
     func mapMediaTypeToServerMediaType(_ mediaType: MediaType) -> ServerMediaType {
         switch mediaType {
-            case .Audio:
-                return ServerMediaType.Audio
-            case .Text:
-                return ServerMediaType.Text
-            case .Image:
-                return ServerMediaType.Photo
-            case .Movie:
-                return ServerMediaType.Video
-            case .None:
-                return ServerMediaType.None
+        case .Audio:
+            return ServerMediaType.Audio
+        case .Text:
+            return ServerMediaType.Text
+        case .Image:
+            return ServerMediaType.Photo
+        case .Movie:
+            return ServerMediaType.Video
+        case .None:
+            return ServerMediaType.None
         }
     }
 
@@ -36,83 +35,62 @@ extension RWFramework {
     }
 
     /// These are the media type names that make the most sense for the iOS platform
-    enum MediaType: String, CaseIterable {
-        case None = "None"
-        case Audio = "Audio"
-        case Text = "Text"
-        case Image = "Image"
-        case Movie = "Movie"
+    enum MediaType: String, CaseIterable, Codable {
+        case None
+        case Audio
+        case Text
+        case Image
+        case Movie
     }
 
-    enum MediaStatus: String, CaseIterable {
-        case None = "None"
-        case Hold = "Hold"
-        case Ready = "Ready"
-        case Uploading = "Uploading"
-        case UploadFailed = "UploadFailed"
-        case UploadCompleted = "UploadCompleted"
+    enum MediaStatus: String, CaseIterable, Codable {
+        case None
+        case Hold
+        case Ready
+        case Uploading
+        case UploadFailed
+        case UploadCompleted
     }
 
-    @objc(RWMedia)class Media: NSObject, NSCoding {
-        var mediaType: MediaType = MediaType.None
-        var mediaStatus: MediaStatus = MediaStatus.None
-        var string: String = ""     // plain text for MediaType.Text, file path for MediaType.Audio, MediaType.Image and MediaType.Movie
-        var desc: String = ""
-        var latitude: NSNumber = 0
-        var longitude: NSNumber = 0
-        var tagIDs: String = ""
-        var envelopeID: NSNumber = 0
-        var userID: NSNumber = 0
-        var retryCount: NSNumber = 0
-
-        init(mediaType: MediaType, string: String, location: CLLocation) {
-            self.mediaType = mediaType
-            self.mediaStatus = MediaStatus.Hold
-            self.string = string
-            self.latitude = NSNumber(value: location.coordinate.latitude)
-            self.longitude = NSNumber(value: location.coordinate.longitude)
+    class Media: Codable {
+        let mediaType: MediaType
+        var mediaStatus: MediaStatus
+        /**
+         Plain text for MediaType.Text, file path for MediaType.Audio,
+         MediaType.Image and MediaType.Movie
+         */
+        let string: String
+        var desc: String
+        let latitude: Double
+        let longitude: Double
+        var tagIDs: String
+        var userID: Int
+        var envelopeID: Int = 0
+        var retryCount: Int = 0
+        
+        enum CodingKeys: String, CodingKey {
+            // Don't persist retry count between launches
+            case mediaType, mediaStatus, string, desc, latitude, longitude, tagIDs, userID, envelopeID
         }
 
-        init(mediaType: MediaType, string: String, description: String, location: CLLocation) {
-            self.mediaType = mediaType
-            self.mediaStatus = MediaStatus.Hold
-            self.string = string
-            self.desc = description
-            self.latitude = NSNumber(value: location.coordinate.latitude)
-            self.longitude = NSNumber(value: location.coordinate.longitude)
-        }
-
-        required init(coder aDecoder: NSCoder) {
-            mediaType = MediaType.allCases[aDecoder.decodeInteger(forKey: "mediaType")]
-            mediaStatus = MediaStatus.allCases[aDecoder.decodeInteger(forKey: "mediaStatus")]
-            string = aDecoder.decodeObject(forKey: "string") as! String
-            desc = aDecoder.decodeObject(forKey: "desc") as! String
-            latitude = aDecoder.decodeObject(forKey: "latitude") as! NSNumber
-            longitude = aDecoder.decodeObject(forKey: "longitude") as! NSNumber
-            tagIDs = aDecoder.decodeObject(forKey: "tagIDs") as! String
-            envelopeID = aDecoder.decodeObject(forKey: "envelopeID") as! NSNumber
-            retryCount = aDecoder.decodeObject(forKey: "retryCount") as! NSNumber
-        }
-
-        func encode(with aCoder: NSCoder) {
-            aCoder.encode(MediaType.allCases.firstIndex(of: mediaType)!, forKey: "mediaType")
-            aCoder.encode(MediaStatus.allCases.firstIndex(of: mediaStatus)!, forKey: "mediaStatus")
-            aCoder.encode(string, forKey: "string")
-            aCoder.encode(desc, forKey: "desc")
-            aCoder.encode(latitude, forKey: "latitude")
-            aCoder.encode(longitude, forKey: "longitude")
-            aCoder.encode(tagIDs, forKey: "tagIDs")
-            aCoder.encode(envelopeID, forKey: "envelopeID")
-            aCoder.encode(retryCount, forKey: "retryCount")
-        }
+        init(mediaType: MediaType, string: String, description: String, location: CLLocation, tagIDs: String, userID: Int) {
+             self.mediaType = mediaType
+             mediaStatus = MediaStatus.Hold
+             self.string = string
+             desc = description
+             latitude = location.coordinate.latitude
+             longitude = location.coordinate.longitude
+            self.tagIDs = tagIDs
+            self.userID = userID
+         }
     }
 
     /// Loads the array of media from NSUserDefaults during framework initialization.
     /// The array is stored to NSUserDefaults via its willSet
-    func loadMediaArray() -> Array<Media> {
+    func loadMediaArray() -> [Media] {
         if let mediaArrayData: Data = RWFrameworkConfig.getConfigValue("mediaArray", group: RWFrameworkConfig.ConfigGroup.client) as? Data {
             if let a = NSKeyedUnarchiver.unarchiveObject(with: mediaArrayData) {
-                var b = a as! Array<Media>
+                var b = a as! [Media]
                 for item in b {
                     // validate existence of file at path and delete if doesn't exist
                     var n = 0
@@ -130,141 +108,133 @@ extension RWFramework {
                 return b
             }
         }
-        return Array<Media>()
+        return [Media]()
     }
 
-// MARK: media upload management
+    // MARK: media upload management
 
     /// Called to take all media on hold and prepare it for upload by enveloping, etc.
     /// Mark all media on MediaStatus.Hold as MediaStatus.Ready and add current speak tags and envelope ID (called from apiPostEnvelopesSuccess)
     public func uploadAllMedia() {
-        if (countMedia() == 0) { return }
-        apiPostEnvelopes().then { (envelopeID: Int) -> Void in
-            for media: Media in self.mediaArray {
-                if media.mediaStatus == MediaStatus.Hold {
-                    media.envelopeID = NSNumber(value: envelopeID)
-                    media.userID = RWFrameworkConfig.getConfigValueAsNumber("user_id", group: RWFrameworkConfig.ConfigGroup.client)
-                    media.tagIDs = self.getSubmittableSpeakIDsSetAsTags() //self.getAllSpeakTagsCurrentAsString() // the old way
-                    media.mediaStatus = MediaStatus.Ready
-                }
-            }
-            // create and store sharing url for current envelope
-            let sharingUrl = RWFrameworkConfig.getConfigValueAsString("sharing_url", group: RWFrameworkConfig.ConfigGroup.project)
-            let currentSharingUrl = sharingUrl + "?eid=" + String(envelopeID)
-            RWFrameworkConfig.setConfigValue("sharing_url_current", value: currentSharingUrl as AnyObject, group: RWFrameworkConfig.ConfigGroup.project)
-        }
+        self.playlist.recorder!.submitEnvelopeForUpload()
     }
 
     /// Reset any retryCounts for failed uploads, effectively making them try again, can be called at application startup
     public func resetAllRetryCounts() {
-        for media: Media in self.mediaArray {
-            if media.mediaStatus == MediaStatus.UploadFailed {
-                media.retryCount = 0
-            }
-        }
+        // NOTE Should not be needed anymore.
+//        for media: Media in mediaArray {
+//            if media.mediaStatus == MediaStatus.UploadFailed {
+//                media.retryCount = 0
+//            }
+//        }
     }
 
-// MARK: failed
+    // MARK: failed
 
     /// Return a count of all media that has failed to upload at least once
     public func countUploadFailedMedia() -> Int {
-        let found = mediaArray.filter({m in m.mediaStatus == MediaStatus.UploadFailed})
-        return found.count
+//        let found = mediaArray.filter { m in m.mediaStatus == MediaStatus.UploadFailed }
+//        return found.count
+        print("recorder: count failed media")
+        return 0
     }
 
     /// Purge all media that has failed to upload at least once
     public func purgeUploadFailedMedia() {
-        let newArray = mediaArray.filter() {$0.mediaStatus != MediaStatus.UploadFailed}
-        self.mediaArray = newArray
-        println("purgeUploadFailedMedia: ITEMS: \(mediaArray.count)")
+//        let newArray = mediaArray.filter { $0.mediaStatus != MediaStatus.UploadFailed }
+//        mediaArray = newArray
+        println("recorder purgeUploadFailedMedia")
     }
 
-// MARK: add
+    // MARK: add
 
     /// Add a MediaType to the array
     func addMedia(_ mediaType: MediaType, string: String) {
-        if mediaExists(mediaType, string: string) { return }
-        let media = Media(mediaType: mediaType, string: string, location: lastRecordedLocation)
-        self.mediaArray.append(media)
-        println("addMedia: \(mediaType.rawValue) \(string) ITEMS: \(mediaArray.count)")
+//        if mediaExists(mediaType, string: string) { return }
+//        let media = Media(mediaType: mediaType, string: string, description: "", location: lastRecordedLocation, tagIDs: "", userID: 0)
+//        mediaArray.append(media)
+        println("recorder addMedia: \(mediaType.rawValue) \(string)")
     }
 
     /// Add a MediaType to the array with description
     func addMedia(_ mediaType: MediaType, string: String, description: String) {
-        if mediaExists(mediaType, string: string) { return }
-        let media = Media(mediaType: mediaType, string: string, description: description, location: lastRecordedLocation)
-        self.mediaArray.append(media)
-        println("addMedia: \(mediaType.rawValue) \(string) ITEMS: \(mediaArray.count)")
+//        if mediaExists(mediaType, string: string) { return }
+//        let media = Media(mediaType: mediaType, string: string, description: description, location: lastRecordedLocation, tagIDs: "", userID: 0)
+//        mediaArray.append(media)
+        println("recorder addMedia: \(mediaType.rawValue) \(string)")
     }
 
-// MARK: exists
+    // MARK: exists
 
     /// Return true if media is already in the array based on type and string
-    func mediaExists(_ mediaType: MediaType, string: String) -> Bool {
-        let found = mediaArray.filter({m in m.mediaType == mediaType && m.string == string})
-        return found.count>0
-    }
+//    func mediaExists(_ mediaType: MediaType, string: String) -> Bool {
+//        let found = mediaArray.filter { m in m.mediaType == mediaType && m.string == string }
+//        return found.count > 0
+//    }
 
     /// Return true if media is already in the array based on type and string
-    func mediaExists(_ mediaType: MediaType) -> Bool {
-        let found = mediaArray.filter({m in m.mediaType == mediaType})
-        return found.count>0
-    }
+//    func mediaExists(_ mediaType: MediaType) -> Bool {
+//        let found = mediaArray.filter { m in m.mediaType == mediaType }
+//        return found.count > 0
+//    }
 
-// MARK: edit
+    // MARK: edit
 
     /// Set a description on an existing media item
     func setMediaDescription(_ mediaType: MediaType, string: String, description: String) {
-        for media in mediaArray {
-            if media.mediaType == mediaType && media.string == string {
-                media.desc = description
-                return
-            }
-        }
+        print("recorder: set media desc")
+//        for media in mediaArray {
+//            if media.mediaType == mediaType, media.string == string {
+//                media.desc = description
+//                return
+//            }
+//        }
     }
 
-// MARK: remove
+    // MARK: remove
 
     // TODO: Do not remove media.mediaStatus if currently being pre-processed or uploaded
 
     /// Remove the specific piece of media from the mediaArray
     func removeMedia(_ media: Media) {
-        let newArray = mediaArray.filter() {"\($0.description)" != "\(media.description)"}
-        self.mediaArray = newArray
-        println("removeMedia: \(media) ITEMS: \(mediaArray.count)")
+//        let newArray = mediaArray.filter { "\($0.desc)" != "\(media.desc)" }
+//        mediaArray = newArray
+        print("recorder removeMedia: \(media)")
     }
 
     /// Remove a MediaType by type and string
     func removeMedia(_ mediaType: MediaType, string: String) {
-        if (!mediaExists(mediaType, string: string)) { return }
-        let newArray = mediaArray.filter() {"\($0.mediaType.rawValue)\($0.string)" != "\(mediaType.rawValue)\(string)"}
-        self.mediaArray = newArray
-        println("removeMedia: \(mediaType.rawValue) \(string) ITEMS: \(mediaArray.count)")
+//        if !mediaExists(mediaType, string: string) { return }
+//        let newArray = mediaArray.filter { "\($0.mediaType.rawValue)\($0.string)" != "\(mediaType.rawValue)\(string)" }
+//        mediaArray = newArray
+        print("recorder removeMedia: \(mediaType.rawValue) \(string)")
     }
 
     /// Remove a MediaType by type
     func removeMedia(_ mediaType: MediaType) {
-        if (!mediaExists(mediaType)) { return }
-        let newArray = mediaArray.filter() {$0.mediaType.rawValue != mediaType.rawValue}
-        self.mediaArray = newArray
-        println("removeMedia: \(mediaType.rawValue) ITEMS: \(mediaArray.count)")
+//        if !mediaExists(mediaType) { return }
+//        let newArray = mediaArray.filter { $0.mediaType.rawValue != mediaType.rawValue }
+//        mediaArray = newArray
+        println("recorder removeMedia: \(mediaType.rawValue)")
     }
 
-// MARK: count
+    // MARK: count
 
     /// Return the number of media in the array
     public func countMedia() -> Int {
-        return mediaArray.count
+        return playlist.recorder!.currentMedia.count
     }
 
     /// Return the number of types of media in the array of a specific type
     func countMedia(_ mediaType: MediaType) -> Int {
-        var count = 0
-        for media: Media in mediaArray {
-            if media.mediaType == mediaType {
-                count += 1
-            }
-        }
-        return count
+//        var count = 0
+//        for media: Media in mediaArray {
+//            if media.mediaType == mediaType {
+//                count += 1
+//            }
+//        }
+//        return count
+        print("recorder: count media")
+        return 0
     }
 }

@@ -73,13 +73,13 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         let serverMediaType = mapMediaTypeToServerMediaType(media.mediaType)
         let postData = ["session_id": session_id,
                         "media_type": serverMediaType.rawValue,
-                        "latitude": media.latitude.stringValue,
-                        "longitude": media.longitude.stringValue,
+                        "latitude": media.latitude,
+                        "longitude": media.longitude,
                         "tag_ids": media.tagIDs,
                         "user_id": media.userID,
                         "description": media.desc] as [String : Any]
         return patchFileAndData(
-            to: RWFrameworkURLFactory.patchEnvelopesIdURL(media.envelopeID.stringValue),
+            to: RWFrameworkURLFactory.patchEnvelopesIdURL(String(media.envelopeID)),
             filePath: media.string,
             postData: postData)
     }
