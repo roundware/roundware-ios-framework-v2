@@ -40,6 +40,8 @@ public class Recorder: Codable {
 
     /** Launches a background task to upload any pending recordings. */
     func uploadPending() -> Promise<Void> {
+        // Update the badge in case it needs it.
+        RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(pendingEnvelopes.count)
         if reachability.connection == .unavailable {
             RWFramework.sharedInstance.rwRecordedOffline()
             return Promise(())

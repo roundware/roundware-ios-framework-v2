@@ -122,8 +122,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     public func deleteRecording() {
         print("recorder: delete last")
         if hasRecording() == false { return }
-        let filePathToDelete: String
-        filePathToDelete = soundFilePath()
+        let filePathToDelete = playlist.recorder!.lastRecordingPath.path
 
         do {
             _ = try FileManager.default.removeItem(atPath: filePathToDelete)

@@ -566,7 +566,9 @@ extension Playlist {
         recorder?.cleanUp()
         // Try to upload any pending recordings.
         recorder?.setupReachability()
-        
+        // Start recording timer.
+        RWFramework.sharedInstance.startAudioTimer()
+        // Let the app know it can record now.
         RWFramework.sharedInstance.rwReadyToRecord()
     }
     
