@@ -256,7 +256,7 @@ extension Playlist {
         }
         if saved.count >= assetPool!.assets.count {
             return .complete
-        } else if saved.count > 0 {
+        } else if saved.count > 0 || assetPool!.cached {
             return .partial
         } else {
             return .none
@@ -267,6 +267,9 @@ extension Playlist {
      Save all assets in the current pool to disk. This facilitates offline playback.
      */
     public func saveAllAssets() -> Promise<Void> {
+        if !assetPool!.cached {
+            assetPool = AssetPool(assets: assetPool!.assets, date: assetPool!.date, cached: true)
+        }
         return Promise<Void>(on: .global()) {
             // Sort assets by nearness to download closer assets first.
             var allAssets = self.assetPool!.assets
@@ -279,7 +282,7 @@ extension Playlist {
                     }
                 }
             }
-            
+
             // Save each asset to the offline folder.
             let totalAssets = Double(allAssets.count)
             for (index, asset) in allAssets.enumerated() {
@@ -305,6 +308,9 @@ extension Playlist {
       Remove all saved assets that belong to the current project.
      */
     public func purgeSavedAssets() -> Promise<Void> {
+        if assetPool!.cached {
+            assetPool = AssetPool(assets: assetPool!.assets, date: assetPool!.date, cached: false)
+        }
         return Promise<Void>(on: .global()) {
             let totalAssets = Double(self.assetPool!.assets.count)
             let fm = FileManager.default
@@ -568,7 +574,7 @@ extension Playlist {
             }
 
             // Update this project's asset pool
-            self.assetPool = AssetPool(assets: assets, date: Date())
+            self.assetPool = AssetPool(assets: assets, date: Date(), cached: self.assetPool?.cached ?? false)
 
             print("\(updatedAssets.count) updated assets, total is \(assets.count)")
 

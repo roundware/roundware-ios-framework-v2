@@ -65,4 +65,5 @@ extension Asset {
 public struct AssetPool: Codable {
     let assets: [Asset]
     let date: Date
+    let cached: Bool
 }
