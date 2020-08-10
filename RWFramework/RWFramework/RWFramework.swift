@@ -45,6 +45,11 @@ private lazy var __once: () = { () -> Void in
     }
     var letFrameworkRequestWhenInUseAuthorizationForLocation = true
 
+    /** Static project id that can be checked even offline. */
+    internal static var projectId: Int {
+        return RWFrameworkConfig.getConfigValueAsNumber("project_id").intValue
+    }
+
     public let playlist = Playlist(filters: [
         // Accept an asset if one of the following conditions is true
         AnyAssetFilters([
@@ -70,6 +75,8 @@ private lazy var __once: () = { () -> Void in
         SortRandomly(),
         SortByLikes(),
     ])
+
+    public let recorder = Recorder.load()
     
     static let decoder: JSONDecoder = {
         let dec = JSONDecoder()

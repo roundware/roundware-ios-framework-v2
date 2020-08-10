@@ -6,6 +6,42 @@ public class Recorder: Codable {
     private var reachability: Reachability!
     private var uploaderTask: Promise<Void>? = nil
 
+    private static var recorderFile: URL {
+        return try! FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+        ).appendingPathComponent("recorder-\(RWFramework.projectId).json")
+    }
+
+    static func load() -> Recorder {
+        var recorder: Recorder!
+        if let recData = try? Data(contentsOf: Recorder.recorderFile),
+            let rec = try? RWFramework.decoder.decode(Recorder.self, from: recData) {
+            recorder = rec
+        } else {
+            recorder = Recorder()
+        }
+        // Remove any old dangling recording files.
+        recorder.cleanUp()
+        // Try to upload any pending recordings.
+        recorder.setupReachability()
+        // Start recording timer.
+        RWFramework.sharedInstance.startAudioTimer()
+        // Let the app know it can record now.
+        RWFramework.sharedInstance.rwReadyToRecord()
+        return recorder
+    }
+
+    internal func save() {
+        do {
+            try (try RWFramework.encoder.encode(self)).write(to: Recorder.recorderFile)
+        } catch {
+            print(error)
+        }
+    }
+
     internal func setupReachability() {
         do {
             reachability = try Reachability()
@@ -114,7 +150,7 @@ public class Recorder: Codable {
             appropriateFor: nil,
             create: true
         )
-        return parent.appendingPathComponent("recordings-\(Playlist.projectId)")
+        return parent.appendingPathComponent("recordings-\(RWFramework.projectId)")
     }
 
     /** Path of the given recording name as saved on disk. */
@@ -205,12 +241,53 @@ public class Recorder: Codable {
             string: recordedFilePath.path,
             description: description,
             location: loc,
-            tagIDs: RWFramework.sharedInstance.getSubmittableSpeakIDsSetAsTags(),
-            userID: RWFrameworkConfig.getConfigValueAsNumber("user_id", group: RWFrameworkConfig.ConfigGroup.client).intValue
+            tagIDs: RWFramework.sharedInstance.getSubmittableSpeakIDsSetAsTags()
         ))
         print("recorder: added media with tags \(currentMedia.last!.tagIDs.description)")
 
         return recordedFilePath
+    }
+
+    internal func addMedia(_ media: RWFramework.Media) {
+        if !hasMedia(type: media.mediaType, text: media.string) {
+            currentMedia.append(media)
+        }
+    }
+
+    internal func hasMedia(type: RWFramework.MediaType, text: String? = nil) -> Bool {
+        return currentMedia.contains { m in
+            m.mediaType == type && (text == nil || m.string == text!)
+        }
+    }
+
+    internal func setMediaDescription(_ type: RWFramework.MediaType, _ string: String, _ description: String) {
+        for media in currentMedia {
+            if media.mediaType == type, media.string == string {
+                media.desc = description
+                return
+            }
+        }
+    }
+
+    /// Remove the specific piece of media from the mediaArray
+    func removeMedia(_ media: RWFramework.Media) {
+        currentMedia = currentMedia.filter { $0.desc != media.desc }
+    }
+
+    /// Remove a MediaType by type and string
+    func removeMedia(_ mediaType: RWFramework.MediaType, string: String) {
+        if hasMedia(type: mediaType, text: string) {
+            currentMedia = currentMedia.filter {
+                "\($0.mediaType.rawValue)\($0.string)" != "\(mediaType.rawValue)\(string)"
+            }
+        }
+    }
+
+    /// Remove a MediaType by type
+    func removeMedia(_ mediaType: RWFramework.MediaType) {
+        if hasMedia(type: mediaType) {
+            currentMedia = currentMedia.filter { $0.mediaType != mediaType }
+        }
     }
 
     public var lastRecordingPath: URL {

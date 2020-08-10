@@ -15,7 +15,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     /// Add the current audio recording with optional description, returns a path (key) to the file that will ultimately be uploaded.
     /// NOTE: The audio recording is now queued for upload and can no longer be played back by the framework
     public func addRecording(_ description: String = "") -> URL? {
-        return playlist.recorder!.addRecording(description)
+        return recorder.addRecording(description)
     }
 
     /// Set a description on an already added recording, pass the path returned from addRecording as the string parameter
@@ -67,12 +67,12 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
             locationManager.startUpdatingLocation()
         }
 
-        playlist.recorder!.startRecording()
+        recorder.startRecording()
     }
 
     /// Stop recording audio
     public func stopRecording() {
-        playlist.recorder!.stopRecording()
+        recorder.stopRecording()
     }
 
     /// Playback the most recent audio recording
@@ -81,7 +81,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
         stopPlayback()
         soundPlayer = nil
 
-        let soundFileURL = playlist.recorder!.lastRecordingPath
+        let soundFileURL = recorder.lastRecordingPath
 
         do {
             soundPlayer = try AVAudioPlayer(contentsOf: soundFileURL)
@@ -110,19 +110,19 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
 
     /// Returns true if currently recording, false otherwise
     public func isRecording() -> Bool {
-        return playlist.recorder?.isRecording ?? false
+        return recorder.isRecording
     }
 
     /// Returns true if there is a most recent recording, false otherwise
     public func hasRecording() -> Bool {
-        return playlist.recorder?.hasRecording ?? false
+        return recorder.hasRecording
     }
 
     /// Deletes the most recent recording
     public func deleteRecording() {
         print("recorder: delete last")
         if hasRecording() == false { return }
-        let filePathToDelete = playlist.recorder!.lastRecordingPath.path
+        let filePathToDelete = recorder.lastRecordingPath.path
 
         do {
             _ = try FileManager.default.removeItem(atPath: filePathToDelete)

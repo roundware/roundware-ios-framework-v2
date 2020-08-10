@@ -50,8 +50,6 @@ public class Playlist {
     private let audioEngine = AVAudioEngine()
     private let audioMixer = AVAudioEnvironmentNode()
 
-    public var recorder: Recorder?
-
     init(filters: [AssetFilter], sortBy: [SortMethod]) {
         DispatchQueue.promises = .global()
 
@@ -142,22 +140,12 @@ extension Playlist {
         return tracks.compactMap { $0.currentAsset }
     }
 
-    
-    /** Static project id that can be checked even offline. */
-    internal static var projectId: Int {
-        return RWFrameworkConfig.getConfigValueAsNumber("project_id").intValue
-    }
-
     // Internal
     private var assetPoolFile: URL {
         // Keep a separate asset pool file for each project
-        return documentsDir.appendingPathComponent("asset-pool-\(Playlist.projectId).json")
+        return documentsDir.appendingPathComponent("asset-pool-\(RWFramework.projectId).json")
     }
 
-    private var recorderFile: URL {
-        return documentsDir.appendingPathComponent("recorder-\(Playlist.projectId).json")
-    }
-    
     private var documentsDir: URL {
         return try! FileManager.default.url(
             for: .applicationSupportDirectory,
@@ -168,8 +156,6 @@ extension Playlist {
     }
 
     func start() {
-        loadRecorder()
-        
         // Starts a session and retrieves project-wide config.
         RWFramework.sharedInstance.apiStartForClientMixing().then { project in
             self.project = project
@@ -549,32 +535,6 @@ extension Playlist {
         do {
             let data = try Data(contentsOf: assetPoolFile)
             assetPool = try RWFramework.decoder.decode(AssetPool.self, from: data)
-        } catch {
-            print(error)
-        }
-    }
-    
-    private func loadRecorder() {
-        if let recData = try? Data(contentsOf: recorderFile),
-            let rec = try? RWFramework.decoder.decode(Recorder.self, from: recData) {
-            recorder = rec
-        } else {
-            recorder = Recorder()
-        }
-        
-        // Remove any old dangling recording files.
-        recorder?.cleanUp()
-        // Try to upload any pending recordings.
-        recorder?.setupReachability()
-        // Start recording timer.
-        RWFramework.sharedInstance.startAudioTimer()
-        // Let the app know it can record now.
-        RWFramework.sharedInstance.rwReadyToRecord()
-    }
-    
-    private func saveRecorder() {
-        do {
-            try (try RWFramework.encoder.encode(recorder)).write(to: recorderFile)
         } catch {
             print(error)
         }

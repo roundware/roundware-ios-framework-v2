@@ -15,34 +15,34 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 
     /// Add an image path with optional description, returns a path (key) to the file that will ultimately be uploaded
     public func addImage(_ string: String, description: String = "") -> String? {
-        addMedia(MediaType.Image, string: string, description: description)
+        recorder.addMedia(Media(mediaType: .Image, string: string, description: description, location: lastRecordedLocation))
         return string
     }
 
     /// Set a description on an already added image, pass the path returned from addImage or rwImagePickerControllerDidFinishPickingMedia as the string parameter
     public func setImageDescription(_ string: String, description: String) {
-        setMediaDescription(MediaType.Image, string: string, description: description)
+        recorder.setMediaDescription(MediaType.Image, string, description)
     }
 
     /// Remove an image path, pass the path returned from addImage or rwImagePickerControllerDidFinishPickingMedia as the string parameter
     public func removeImage(_ string: String) {
-        removeMedia(MediaType.Image, string: string)
+        recorder.removeMedia(MediaType.Image, string: string)
     }
 
     /// Add a movie path with optional description, returns a path (key) to the file that will ultimately be uploaded
     public func addMovie(_ string: String, description: String = "") -> String? {
-        addMedia(MediaType.Movie, string: string, description: description)
+        recorder.addMedia(Media(mediaType: .Movie, string: string, description: description))
         return string
     }
 
     /// Set a description on an already added movie, pass the path returned from addMovie or rwImagePickerControllerDidFinishPickingMedia as the string parameter
     public func setMovieDescription(_ string: String, description: String) {
-        setMediaDescription(MediaType.Movie, string: string, description: description)
+        recorder.setMediaDescription(MediaType.Movie, string, description)
     }
 
     /// Remove a movie path, pass the path returned from addMovie or rwImagePickerControllerDidFinishPickingMedia as the string parameter
     public func removeMovie(_ string: String) {
-        removeMedia(MediaType.Movie, string: string)
+        recorder.removeMedia(MediaType.Movie, string: string)
     }
 
 // MARK: - Convenience methods
