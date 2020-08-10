@@ -19,6 +19,12 @@ extension RWFramework {
             // start a session
             .then { _ in self.apiPostSessions() }
             .then { data in try self.setupClientSession(data) }
+            .recover { _ -> Project in
+                // If offline, just fall back to saved project data.
+                let dict = RWFrameworkConfig.getConfigDataFromGroup(.project) as! [String: AnyObject]
+                let json = try JSONSerialization.data(withJSONObject: dict, options: [])
+                return try RWFramework.decoder.decode(Project.self, from: json)
+            }
     }
 
     /// MARK: POST users
