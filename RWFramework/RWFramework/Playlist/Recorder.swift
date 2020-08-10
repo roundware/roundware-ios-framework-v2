@@ -44,17 +44,20 @@ public class Recorder: Codable {
             RWFramework.sharedInstance.rwRecordedOffline()
             return Promise(())
         } else if uploaderTask != nil || pendingEnvelopes.count == 0 {
+            // We've already got an upload going.
             return Promise(())
         } else {
             print("recorder: uploading pending, \(pendingEnvelopes.debugDescription)")
             uploaderTask = Promise<Void>(on: .global()) {
                 let totalCount = self.pendingEnvelopes.count
-                for (index, e) in self.pendingEnvelopes.enumerated() {
+                while !self.pendingEnvelopes.isEmpty {
                     // Upload this envelope.
-                    _ = try await(self.upload(envelope: e))
+                    _ = try await(self.upload(envelope: self.pendingEnvelopes[0]))
                     // Remove it from the queue.
-                    self.pendingEnvelopes.remove(at: index)
-                    RWFramework.sharedInstance.rwUploadProgress(Double((index + 1) / totalCount))
+                    self.pendingEnvelopes.remove(at: 0)
+                    // Show progress update.
+                    let uploadedCount = totalCount - self.pendingEnvelopes.count
+                    RWFramework.sharedInstance.rwUploadProgress(Double(uploadedCount) / Double(totalCount))
                 }
             }.always {
                 self.uploaderTask = nil
