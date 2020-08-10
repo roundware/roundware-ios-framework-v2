@@ -268,9 +268,21 @@ extension Playlist {
      */
     public func saveAllAssets() -> Promise<Void> {
         return Promise<Void>(on: .global()) {
+            // Sort assets by nearness to download closer assets first.
+            var allAssets = self.assetPool!.assets
+            if let loc = self.currentParams?.location {
+                allAssets = allAssets.sorted { a, b in
+                    if let aLoc = a.location, let bLoc = b.location {
+                        return aLoc.distance(from: loc) < bLoc.distance(from: loc)
+                    } else {
+                        return a.location != nil
+                    }
+                }
+            }
+            
             // Save each asset to the offline folder.
-            let totalAssets = Double(self.assetPool!.assets.count)
-            for (index, asset) in self.assetPool!.assets.enumerated() {
+            let totalAssets = Double(allAssets.count)
+            for (index, asset) in allAssets.enumerated() {
                 let f = self.assetDataFile(for: asset)!
                 // Only download the asset if we don't already have it.
                 if !((try? f.checkResourceIsReachable()) ?? false) {
