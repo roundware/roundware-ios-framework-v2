@@ -76,7 +76,7 @@ private lazy var __once: () = { () -> Void in
         SortByLikes(),
     ])
 
-    public let recorder = Recorder.load()
+    public lazy var recorder = Recorder.load()
     
     static let decoder: JSONDecoder = {
         let dec = JSONDecoder()
