@@ -285,8 +285,6 @@ extension RWFramework {
         protocaller { (rwfp, _) -> Void in
             if rwfp.rwPostSessionsFailure != nil {
                 self.dam { rwfp.rwPostSessionsFailure?(error) }
-            } else {
-                self.alertOK(self.LS("RWFramework - rwPostSessionsFailure"), message: error.localizedDescription)
             }
         }
     }
@@ -541,8 +539,6 @@ extension RWFramework {
         protocaller { (rwfp, _) -> Void in
             if rwfp.rwGetAssetsFailure != nil {
                 self.dam { rwfp.rwGetAssetsFailure?(error) }
-            } else {
-                self.alertOK(self.LS("RWFramework - rwGetAssetsFailure"), message: error.localizedDescription)
             }
         }
     }
@@ -621,8 +617,6 @@ extension RWFramework {
         protocaller { (rwfp, _) -> Void in
             if rwfp.rwGetSpeakersFailure != nil {
                 self.dam { rwfp.rwGetSpeakersFailure?(error) }
-            } else {
-                self.alertOK(self.LS("RWFramework - rwGetAssetsFailure"), message: error.localizedDescription)
             }
         }
     }
@@ -637,8 +631,6 @@ extension RWFramework {
         protocaller { (rwfp, _) -> Void in
             if rwfp.rwPostEventsFailure != nil {
                 self.dam { rwfp.rwPostEventsFailure?(error) }
-            } else {
-                self.alertOK(self.LS("RWFramework - rwPostEventsFailure"), message: error.localizedDescription)
             }
         }
     }
