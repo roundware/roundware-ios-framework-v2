@@ -5,13 +5,13 @@ import Reachability
 public class Recorder: Codable {
     private var reachability: Reachability!
     private var uploaderTask: Promise<Void>? = nil
-    
+
     internal func setupReachability() {
         do {
             reachability = try Reachability()
             NotificationCenter.default.addObserver(
                 self,
-                selector: #selector(self.reachabilityChanged(_:)),
+                selector: #selector(reachabilityChanged(_:)),
                 name: Notification.Name.reachabilityChanged,
                 object: reachability
             )
@@ -20,7 +20,7 @@ public class Recorder: Codable {
             print("recorder: \(error)")
         }
     }
-    
+
     @objc func reachabilityChanged(_ note: NSNotification) {
         let reachability = note.object as! Reachability
         if reachability.connection != .unavailable {
@@ -40,8 +40,6 @@ public class Recorder: Codable {
 
     /** Launches a background task to upload any pending recordings. */
     func uploadPending() -> Promise<Void> {
-        // Update the badge in case it needs it.
-        RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(pendingEnvelopes.count)
         if reachability.connection == .unavailable {
             RWFramework.sharedInstance.rwRecordedOffline()
             return Promise(())
@@ -60,6 +58,8 @@ public class Recorder: Codable {
                     // Show progress update.
                     let uploadedCount = totalCount - self.pendingEnvelopes.count
                     RWFramework.sharedInstance.rwUploadProgress(Double(uploadedCount) / Double(totalCount))
+                    // Update the badge.
+                    RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(self.pendingEnvelopes.count)
                 }
             }.always {
                 self.uploaderTask = nil
@@ -70,7 +70,7 @@ public class Recorder: Codable {
 
     func stopUpload() {
         if let task = uploaderTask {
-            //task.reject("Stopped" as! Error)
+            // task.reject("Stopped" as! Error)
         }
     }
 
@@ -106,7 +106,7 @@ public class Recorder: Codable {
             print("recorder: \(error)")
         }
     }
-    
+
     private var recordingsDir: URL {
         let parent = try! FileManager.default.url(
             for: .documentDirectory,
@@ -124,11 +124,7 @@ public class Recorder: Codable {
 
     private var recordingIndex: Int = 0
     /** List of recorded audio files to upload as assets. */
-    private var pendingEnvelopes = [Envelope]() {
-        didSet {
-            RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(pendingEnvelopes.count)
-        }
-    }
+    private var pendingEnvelopes = [Envelope]()
     internal var currentMedia = [RWFramework.Media]()
     internal var soundRecorder: AVAudioRecorder? = nil
     private enum CodingKeys: String, CodingKey {
@@ -141,7 +137,7 @@ public class Recorder: Codable {
         // let key: String
         let media: [RWFramework.Media]
 
-        init(/*key: String,*/ media: [RWFramework.Media]) {
+        init( /* key: String, */ media: [RWFramework.Media]) {
             // self.key = key
             self.media = media
         }
@@ -155,7 +151,7 @@ public class Recorder: Codable {
         recordingIndex += 1
         return currentRecordingName
     }
-    
+
     internal var hasRecording: Bool {
         return (try? recordingPath(for: currentRecordingName).checkResourceIsReachable()) ?? false
     }
@@ -224,14 +220,17 @@ public class Recorder: Codable {
     public var isRecording: Bool {
         return soundRecorder != nil
     }
-    
-    public func submitEnvelopeForUpload(/*_ key: String*/) {
+
+    public func submitEnvelopeForUpload( /* _ key: String */ ) {
         print("recorder: submit envelope")
-        self.pendingEnvelopes.append(Envelope(/*key: key,*/ media: self.currentMedia))
-        self.currentMedia = []
+        pendingEnvelopes.append(Envelope( /* key: key, */ media: currentMedia))
+        // Update the badge.
+        RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(pendingEnvelopes.count)
+        // Try uploading any pending recordings.
+        currentMedia = []
         _ = uploadPending()
     }
-    
+
     /** Delete local recordings that have been uploaded or discarded. */
     internal func cleanUp() {
         // We never, ever want to delete a file being written to.
@@ -245,7 +244,7 @@ public class Recorder: Codable {
                 let path = dir.appendingPathComponent(file).path
                 let inCurrent = currentMedia.contains { m in m.string.contains(file) }
                 let inPending = pendingEnvelopes.contains { e in e.media.contains { m in m.string.contains(file) } }
-                if !inCurrent && !inPending {
+                if !inCurrent, !inPending {
                     print("recorder: Removing \(file)")
                     try FileManager.default.removeItem(atPath: path)
                 }
