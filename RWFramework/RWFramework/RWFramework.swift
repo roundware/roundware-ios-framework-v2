@@ -93,7 +93,7 @@ private lazy var __once: () = { () -> Void in
     // Audio - Record (see RWFrameworkAudioRecorder.swift)
     /// RWFrameworkAudioRecorder.swift calls code in RWFrameworkAudioRecorder.m to perform recording when true
     // let useComplexRecordingMechanism = false
-    public var soundRecorder: AVAudioRecorder? = nil
+//    public var soundRecorder: AVAudioRecorder? = nil
     var soundPlayer: AVAudioPlayer? = nil
 
     // Media - Audio/Text/Image/Movie (see RWFrameworkMedia.swift)

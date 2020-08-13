@@ -58,9 +58,9 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     public func preflightRecording() {}
 
     /// Start recording audio
-    public func startRecording() {
+    public func startRecording() -> URL? {
         let speak_enabled = RWFrameworkConfig.getConfigValueAsBool("speak_enabled")
-        if !speak_enabled { return }
+        if !speak_enabled { return nil }
 
         let geo_speak_enabled = RWFrameworkConfig.getConfigValueAsBool("geo_speak_enabled")
         if geo_speak_enabled {
@@ -68,6 +68,7 @@ extension RWFramework: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
         }
 
         recorder.startRecording()
+        return recorder.recordingPath(for: recorder.currentRecordingName)
     }
 
     /// Stop recording audio

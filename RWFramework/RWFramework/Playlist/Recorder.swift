@@ -88,14 +88,20 @@ public class Recorder: Codable {
                 while !self.pendingEnvelopes.isEmpty, currentAttempts < 3 {
                     // Give every envelope a few chances to upload.
                     for (i, envelope) in self.pendingEnvelopes.enumerated() {
-                        // Upload this envelope.
-                        do {
-                            _ = try await(self.upload(envelope: envelope))
-                            // Remove it from the queue.
+                        if self.isReachable(envelope: envelope) {
+                            // Upload this envelope.
+                            do {
+                                _ = try await(self.upload(envelope: envelope))
+                                // Remove it from the queue.
+                                self.pendingEnvelopes.remove(at: i)
+                                self.save()
+                            } catch {
+                                print(error)
+                            }
+                        } else {
+                            // TODO Hook for alert that the file is missing.
                             self.pendingEnvelopes.remove(at: i)
                             self.save()
-                        } catch {
-                            print(error)
                         }
                         // Show progress update.
                         let uploadedCount = totalCount - self.pendingEnvelopes.count
@@ -142,6 +148,12 @@ public class Recorder: Codable {
             _ = try await(RWFramework.sharedInstance.playlist.refreshAssetPool())
         }
     }
+    
+    private func isReachable(envelope: Envelope) -> Bool {
+        return envelope.media.contains { m in
+            (try? recordingPath(for: m.string).checkResourceIsReachable()) ?? false
+        }
+    }
 
     internal var recordingsDir: URL {
         return try! FileManager.default.url(
@@ -161,7 +173,7 @@ public class Recorder: Codable {
     /** List of recorded audio files to upload as assets. */
     private var pendingEnvelopes = [Envelope]()
     internal var currentMedia = [RWFramework.Media]()
-    internal var soundRecorder: AVAudioRecorder? = nil
+    public private(set) var soundRecorder: AVAudioRecorder? = nil
     private enum CodingKeys: String, CodingKey {
         case recordingIndex, pendingEnvelopes, currentMedia
     }
@@ -178,14 +190,8 @@ public class Recorder: Codable {
         }
     }
 
-    private var currentRecordingName: String {
+    internal var currentRecordingName: String {
         return "recording-\(RWFramework.projectId)-\(recordingIndex ?? 0).m4a"
-    }
-
-    private var nextRecordingName: String {
-        recordingIndex = (recordingIndex ?? 0) + 1
-        save()
-        return currentRecordingName
     }
 
     internal var hasRecording: Bool {
@@ -194,7 +200,9 @@ public class Recorder: Codable {
 
     /** Start recording audio. */
     public func startRecording() {
-        let soundFileUrl = recordingPath(for: nextRecordingName)
+        recordingIndex = (recordingIndex ?? 0) + 1
+        save()
+        let soundFileUrl = recordingPath(for: currentRecordingName)
         print("recorder: start recording for \(soundFileUrl.description)")
         let recordSettings =
             [AVSampleRateKey: 22050,
@@ -230,7 +238,7 @@ public class Recorder: Codable {
      Add the most recent recording to the next envelope to upload.
      */
     public func addRecording(_ description: String = "") -> URL? {
-        // if (hasRecording() == false) { return key }
+        if !hasRecording { return nil }
 
         let recordedFilePath = recordingPath(for: currentRecordingName)
         print("addRecording path: \(recordedFilePath)")
