@@ -32,20 +32,4 @@ extension RWFramework {
             self.audioTimer = Timer.scheduledTimer(timeInterval: 0.1, target:self, selector:#selector(RWFramework.audioTimer(_:)), userInfo:nil, repeats:true)
         })
     }
-
-// MARK: - Upload
-
-    @objc func uploadTimer(_ timer: Timer) {
-        // TODO Use the promise and progress
-//        recorder?.onProgress { progress in
-//            print("recorder: upload progress = \(progress)")
-//        }
-    }
-
-    func startUploadTimer() {
-        DispatchQueue.main.async(execute: { () -> Void in
-            self.uploadTimer = Timer.scheduledTimer(timeInterval: 5.0, target:self, selector:#selector(RWFramework.uploadTimer(_:)), userInfo:nil, repeats:true)
-        })
-    }
-
 }

@@ -73,15 +73,15 @@ extension RWFramework {
             case mediaType, mediaStatus, string, desc, latitude, longitude, tagIDs, userID, envelopeID
         }
 
-        init(mediaType: MediaType, string: String, description: String, location: CLLocation = RWFramework.sharedInstance.lastRecordedLocation, tagIDs: String = "") {
+        init(mediaType: MediaType, string: String, description: String, location: CLLocation = RWFramework.sharedInstance.lastRecordedLocation, tagIDs: String? = nil) {
             self.mediaType = mediaType
-            mediaStatus = MediaStatus.Hold
+            mediaStatus = MediaStatus.Ready
             self.string = string
             desc = description
             latitude = location.coordinate.latitude
             longitude = location.coordinate.longitude
             userID = RWFrameworkConfig.getConfigValueAsNumber("user_id", group: RWFrameworkConfig.ConfigGroup.client).intValue
-            self.tagIDs = tagIDs
+            self.tagIDs = tagIDs ?? RWFramework.sharedInstance.getSubmittableSpeakIDsSetAsTags()
         }
     }
 

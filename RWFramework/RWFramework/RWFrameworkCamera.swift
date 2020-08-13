@@ -15,7 +15,7 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 
     /// Add an image path with optional description, returns a path (key) to the file that will ultimately be uploaded
     public func addImage(_ string: String, description: String = "") -> String? {
-        recorder.addMedia(Media(mediaType: .Image, string: string, description: description, location: lastRecordedLocation))
+        recorder.addMedia(Media(mediaType: .Image, string: string, description: description))
         return string
     }
 

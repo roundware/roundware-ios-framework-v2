@@ -341,7 +341,7 @@ public class Recorder: Codable {
     func upload(media: RWFramework.Media) -> Promise<Void> {
         print("recorder: upload media")
         let rw = RWFramework.sharedInstance
-        // media.mediaStatus = MediaStatus.Uploading
+        media.mediaStatus = RWFramework.MediaStatus.Uploading
 
         let bti = UIApplication.shared.beginBackgroundTask(withName: "RWFramework_uploadMedia", expirationHandler: { () -> Void in
             // last ditch effort
@@ -352,10 +352,14 @@ public class Recorder: Codable {
         // Upload the asset by patching the envelope.x
         return rw.apiPatchEnvelopesId(media).then { () -> Void in
             print("recorder apiPatchEnvelopesId success")
-            // media.mediaStatus = MediaStatus.UploadCompleted
+            media.mediaStatus = RWFramework.MediaStatus.UploadCompleted
             UIApplication.shared.endBackgroundTask(bti)
             // Remove the local file.
-            try? FileManager.default.removeItem(at: self.recordingPath(for: media.string))
+            let fm = FileManager.default
+            if let _ = try? fm.removeItem(at: self.recordingPath(for: media.string)) {
+            } else {
+                _ = try? fm.removeItem(atPath: media.string)
+            }
         }.catch { (error: Error) -> Void in
             let error = error as NSError
             print("recorder apiPatchEnvelopesId failure \(error)")
@@ -363,7 +367,7 @@ public class Recorder: Codable {
                 // self.deleteMediaFile(media)
                 // self.removeMedia(media)
             } else {
-                // media.mediaStatus = MediaStatus.UploadFailed
+                media.mediaStatus = RWFramework.MediaStatus.UploadFailed
                 media.retryCount += 1
             }
             UIApplication.shared.endBackgroundTask(bti)

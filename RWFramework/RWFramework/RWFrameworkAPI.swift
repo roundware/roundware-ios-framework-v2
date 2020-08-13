@@ -146,7 +146,6 @@ extension RWFramework {
         let speak_enabled = RWFrameworkConfig.getConfigValueAsBool("speak_enabled")
         if (speak_enabled) {
             startAudioTimer()
-            startUploadTimer()
             rwReadyToRecord()
         }
     }

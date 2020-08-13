@@ -129,7 +129,6 @@ private lazy var __once: () = { () -> Void in
 
     // Timers (see RWFrameworkTimers.swift)
     var audioTimer: Timer? = nil
-    var uploadTimer: Timer? = nil
 
     // Media - Upload (see RWFrameworkMediaUploader.swift)
     var uploaderActive: Bool = true
