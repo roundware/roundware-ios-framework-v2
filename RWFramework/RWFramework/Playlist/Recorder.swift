@@ -84,10 +84,9 @@ public class Recorder: Codable {
         } else {
             uploaderTask = Promise<Void>(on: .global()) {
                 let totalCount = self.pendingEnvelopes.count
-                let maxAttempts = totalCount * 3
                 var currentAttempts = 0
-                while !self.pendingEnvelopes.isEmpty && currentAttempts < maxAttempts {
-                    // Give every envelope a chance to upload.
+                while !self.pendingEnvelopes.isEmpty, currentAttempts < 3 {
+                    // Give every envelope a few chances to upload.
                     for (i, envelope) in self.pendingEnvelopes.enumerated() {
                         // Upload this envelope.
                         do {
@@ -102,7 +101,7 @@ public class Recorder: Codable {
                         let uploadedCount = totalCount - self.pendingEnvelopes.count
                         RWFramework.sharedInstance.rwUploadProgress(Double(uploadedCount) / Double(totalCount))
                         // Update the badge.
-                    RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(self.pendingEnvelopes.count)
+                        RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(self.pendingEnvelopes.count)
                     }
                     currentAttempts += 1
                 }
@@ -185,7 +184,7 @@ public class Recorder: Codable {
 
     private var nextRecordingName: String {
         recordingIndex = (recordingIndex ?? 0) + 1
-        self.save()
+        save()
         return currentRecordingName
     }
 
