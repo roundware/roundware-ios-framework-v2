@@ -347,7 +347,7 @@ public class Recorder: Codable {
             // media.mediaStatus = MediaStatus.UploadCompleted
             UIApplication.shared.endBackgroundTask(bti)
             // Remove the local file.
-            try FileManager.default.removeItem(at: self.recordingPath(for: media.string))
+            try? FileManager.default.removeItem(at: self.recordingPath(for: media.string))
         }.catch { (error: Error) -> Void in
             let error = error as NSError
             print("recorder apiPatchEnvelopesId failure \(error)")
