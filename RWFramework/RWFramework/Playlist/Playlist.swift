@@ -148,7 +148,7 @@ extension Playlist {
 
     private var documentsDir: URL {
         return try! FileManager.default.url(
-            for: .applicationSupportDirectory,
+            for: .documentDirectory,
             in: .userDomainMask,
             appropriateFor: nil,
             create: true

@@ -8,7 +8,7 @@ public class Recorder: Codable {
 
     private static var recorderFile: URL {
         return try! FileManager.default.url(
-            for: .applicationSupportDirectory,
+            for: .documentDirectory,
             in: .userDomainMask,
             appropriateFor: nil,
             create: true
@@ -145,7 +145,7 @@ public class Recorder: Codable {
 
     internal var recordingsDir: URL {
         return try! FileManager.default.url(
-            for: .applicationSupportDirectory,
+            for: .documentDirectory,
             in: .userDomainMask,
             appropriateFor: nil,
             create: true
