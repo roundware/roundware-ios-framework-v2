@@ -176,8 +176,9 @@ private lazy var __once: () = { () -> Void in
             self.letFrameworkRequestWhenInUseAuthorizationForLocation = letFrameworkRequestWhenInUseAuthorizationForLocation
             
             self.playlist.start()
-
-            preflightRecording()
+            
+            // Upload any pending recordings if online.
+            self.recorder.setupReachability()
         }
     }
 

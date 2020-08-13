@@ -24,9 +24,7 @@ public class Recorder: Codable {
             recorder = Recorder()
         }
         // Remove any old dangling recording files.
-        recorder.cleanUp()
-        // Try to upload any pending recordings.
-        recorder.setupReachability()
+//        recorder.cleanUp()
         // Start recording timer.
         RWFramework.sharedInstance.startAudioTimer()
         // Let the app know it can record now.
@@ -76,6 +74,7 @@ public class Recorder: Codable {
 
     /** Launches a background task to upload any pending recordings. */
     func uploadPending() -> Promise<Void> {
+        print("recorder: uploading pending, \(pendingEnvelopes.debugDescription)")
         if reachability.connection == .unavailable {
             RWFramework.sharedInstance.rwRecordedOffline()
             return Promise(())
@@ -83,19 +82,29 @@ public class Recorder: Codable {
             // We've already got an upload going.
             return Promise(())
         } else {
-            print("recorder: uploading pending, \(pendingEnvelopes.debugDescription)")
             uploaderTask = Promise<Void>(on: .global()) {
                 let totalCount = self.pendingEnvelopes.count
-                while !self.pendingEnvelopes.isEmpty {
-                    // Upload this envelope.
-                    _ = try await(self.upload(envelope: self.pendingEnvelopes[0]))
-                    // Remove it from the queue.
-                    self.pendingEnvelopes.remove(at: 0)
-                    // Show progress update.
-                    let uploadedCount = totalCount - self.pendingEnvelopes.count
-                    RWFramework.sharedInstance.rwUploadProgress(Double(uploadedCount) / Double(totalCount))
-                    // Update the badge.
+                let maxAttempts = totalCount * 3
+                var currentAttempts = 0
+                while !self.pendingEnvelopes.isEmpty && currentAttempts < maxAttempts {
+                    // Give every envelope a chance to upload.
+                    for (i, envelope) in self.pendingEnvelopes.enumerated() {
+                        // Upload this envelope.
+                        do {
+                            _ = try await(self.upload(envelope: envelope))
+                            // Remove it from the queue.
+                            self.pendingEnvelopes.remove(at: i)
+                            self.save()
+                        } catch {
+                            print(error)
+                        }
+                        // Show progress update.
+                        let uploadedCount = totalCount - self.pendingEnvelopes.count
+                        RWFramework.sharedInstance.rwUploadProgress(Double(uploadedCount) / Double(totalCount))
+                        // Update the badge.
                     RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(self.pendingEnvelopes.count)
+                    }
+                    currentAttempts += 1
                 }
             }.always {
                 self.uploaderTask = nil
@@ -122,12 +131,6 @@ public class Recorder: Codable {
                     m.envelopeID = envelope.id!
                 }
             }
-            // FIXME: each media needs the envelope id
-            // for media in envelope.media {
-            //     if media.mediaStatus == RWFramework.MediaStatus.Hold {
-            //         media.envelopeID = envelopeID
-            //     }
-            // }
             // create and store sharing url for current envelope
             // FIXME: Not sure what this sharing url is used for!
             let sharingUrl = RWFrameworkConfig.getConfigValueAsString("sharing_url", group: RWFrameworkConfig.ConfigGroup.project)
@@ -138,27 +141,24 @@ public class Recorder: Codable {
             _ = try await(all(envelope.media.map { m in self.upload(media: m) }))
             // Refresh the asset pool to pull in this new asset.
             _ = try await(RWFramework.sharedInstance.playlist.refreshAssetPool())
-        }.recover { error in
-            print("recorder: \(error)")
         }
     }
 
-    private var recordingsDir: URL {
-        let parent = try! FileManager.default.url(
-            for: .documentDirectory,
+    internal var recordingsDir: URL {
+        return try! FileManager.default.url(
+            for: .applicationSupportDirectory,
             in: .userDomainMask,
             appropriateFor: nil,
             create: true
         )
-        return parent.appendingPathComponent("recordings-\(RWFramework.projectId)")
     }
 
     /** Path of the given recording name as saved on disk. */
-    private func recordingPath(for name: String) -> URL {
+    internal func recordingPath(for name: String) -> URL {
         return recordingsDir.appendingPathComponent(name)
     }
 
-    private var recordingIndex: Int = 0
+    private var recordingIndex: Int?
     /** List of recorded audio files to upload as assets. */
     private var pendingEnvelopes = [Envelope]()
     internal var currentMedia = [RWFramework.Media]()
@@ -180,11 +180,12 @@ public class Recorder: Codable {
     }
 
     private var currentRecordingName: String {
-        return "recording-\(recordingIndex).m4a"
+        return "recording-\(RWFramework.projectId)-\(recordingIndex ?? 0).m4a"
     }
 
     private var nextRecordingName: String {
-        recordingIndex += 1
+        recordingIndex = (recordingIndex ?? 0) + 1
+        self.save()
         return currentRecordingName
     }
 
@@ -203,8 +204,8 @@ public class Recorder: Codable {
              AVEncoderAudioQualityKey: AVAudioQuality.max.rawValue] as [String: Any]
 
         do {
-            try FileManager.default.createDirectory(at: soundFileUrl.deletingLastPathComponent(), withIntermediateDirectories: true, attributes: nil)
-            FileManager.default.createFile(atPath: soundFileUrl.absoluteString, contents: nil, attributes: nil)
+//            try FileManager.default.createDirectory(at: soundFileUrl.deletingLastPathComponent(), withIntermediateDirectories: true, attributes: nil)
+//            FileManager.default.createFile(atPath: soundFileUrl.absoluteString, contents: nil, attributes: nil)
             soundRecorder = try AVAudioRecorder(url: soundFileUrl, settings: recordSettings)
             soundRecorder!.delegate = RWFramework.sharedInstance
             let prepSuccess = soundRecorder!.prepareToRecord()
@@ -238,11 +239,12 @@ public class Recorder: Codable {
 
         currentMedia.append(RWFramework.Media(
             mediaType: RWFramework.MediaType.Audio,
-            string: recordedFilePath.path,
+            string: currentRecordingName,
             description: description,
             location: loc,
             tagIDs: RWFramework.sharedInstance.getSubmittableSpeakIDsSetAsTags()
         ))
+        save()
         print("recorder: added media with tags \(currentMedia.last!.tagIDs.description)")
 
         return recordedFilePath
@@ -305,26 +307,23 @@ public class Recorder: Codable {
         RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(pendingEnvelopes.count)
         // Try uploading any pending recordings.
         currentMedia = []
+        save()
         _ = uploadPending()
     }
 
     /** Delete local recordings that have been uploaded or discarded. */
     internal func cleanUp() {
         // We never, ever want to delete a file being written to.
-        if isRecording {
+        if isRecording || !currentMedia.isEmpty || !pendingEnvelopes.isEmpty {
             return
         }
         do {
             let dir = recordingsDir
             let items = try FileManager.default.contentsOfDirectory(atPath: dir.path)
             for file in items {
+                print("recorder: Removing \(file)")
                 let path = dir.appendingPathComponent(file).path
-                let inCurrent = currentMedia.contains { m in m.string.contains(file) }
-                let inPending = pendingEnvelopes.contains { e in e.media.contains { m in m.string.contains(file) } }
-                if !inCurrent, !inPending {
-                    print("recorder: Removing \(file)")
-                    try FileManager.default.removeItem(atPath: path)
-                }
+                try FileManager.default.removeItem(atPath: path)
             }
         } catch {
             print("recorder: \(error)")
@@ -348,6 +347,8 @@ public class Recorder: Codable {
             print("recorder apiPatchEnvelopesId success")
             // media.mediaStatus = MediaStatus.UploadCompleted
             UIApplication.shared.endBackgroundTask(bti)
+            // Remove the local file.
+            try FileManager.default.removeItem(at: self.recordingPath(for: media.string))
         }.catch { (error: Error) -> Void in
             let error = error as NSError
             print("recorder apiPatchEnvelopesId failure \(error)")
