@@ -189,10 +189,8 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
                     let image_file_name = RWFrameworkConfig.getConfigValueAsString("image_file_name")
                     let imageFileName = "\(r)_\(image_file_name)"
                     do {
-                        let fileURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-                        let imageFilePathURL = fileURL.appendingPathComponent(imageFileName)
-                        try imageData.write(to: imageFilePathURL)
-                        let keyPath = self.addImage(imageFilePathURL.path)
+                        try imageData.write(to: self.recorder.recordingPath(for: imageFileName))
+                        let keyPath = self.addImage(imageFileName)
                         self._rwImagePickerControllerDidFinishPickingMedia(info, path: keyPath!)
                     } catch {
                         print(error)
@@ -214,11 +212,10 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
             let r = arc4random()
             let movie_file_name = RWFrameworkConfig.getConfigValueAsString("movie_file_name")
             let movieFileName = "\(r)_\(movie_file_name)"
-            let movieFilePath = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(movieFileName).absoluteString
 
             do {
-                try FileManager.default.moveItem(atPath: originalMoviePath, toPath: movieFilePath)
-                let keyPath = addMovie(movieFilePath)
+                try FileManager.default.moveItem(at: originalMovieURL, to: recorder.recordingPath(for: movieFileName))
+                let keyPath = addMovie(movieFileName)
                 _rwImagePickerControllerDidFinishPickingMedia(info, path: keyPath!)
             }
             catch {
