@@ -15,34 +15,34 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
 
     /// Add an image path with optional description, returns a path (key) to the file that will ultimately be uploaded
     public func addImage(_ string: String, description: String = "") -> String? {
-        addMedia(MediaType.Image, string: string, description: description)
+        recorder.addMedia(Media(mediaType: .Image, string: string, description: description))
         return string
     }
 
     /// Set a description on an already added image, pass the path returned from addImage or rwImagePickerControllerDidFinishPickingMedia as the string parameter
     public func setImageDescription(_ string: String, description: String) {
-        setMediaDescription(MediaType.Image, string: string, description: description)
+        recorder.setMediaDescription(MediaType.Image, string, description)
     }
 
     /// Remove an image path, pass the path returned from addImage or rwImagePickerControllerDidFinishPickingMedia as the string parameter
     public func removeImage(_ string: String) {
-        removeMedia(MediaType.Image, string: string)
+        recorder.removeMedia(MediaType.Image, string: string)
     }
 
     /// Add a movie path with optional description, returns a path (key) to the file that will ultimately be uploaded
     public func addMovie(_ string: String, description: String = "") -> String? {
-        addMedia(MediaType.Movie, string: string, description: description)
+        recorder.addMedia(Media(mediaType: .Movie, string: string, description: description))
         return string
     }
 
     /// Set a description on an already added movie, pass the path returned from addMovie or rwImagePickerControllerDidFinishPickingMedia as the string parameter
     public func setMovieDescription(_ string: String, description: String) {
-        setMediaDescription(MediaType.Movie, string: string, description: description)
+        recorder.setMediaDescription(MediaType.Movie, string, description)
     }
 
     /// Remove a movie path, pass the path returned from addMovie or rwImagePickerControllerDidFinishPickingMedia as the string parameter
     public func removeMovie(_ string: String) {
-        removeMedia(MediaType.Movie, string: string)
+        recorder.removeMedia(MediaType.Movie, string: string)
     }
 
 // MARK: - Convenience methods
@@ -189,10 +189,8 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
                     let image_file_name = RWFrameworkConfig.getConfigValueAsString("image_file_name")
                     let imageFileName = "\(r)_\(image_file_name)"
                     do {
-                        let fileURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-                        let imageFilePathURL = fileURL.appendingPathComponent(imageFileName)
-                        try imageData.write(to: imageFilePathURL)
-                        let keyPath = self.addImage(imageFilePathURL.path)
+                        try imageData.write(to: self.recorder.recordingPath(for: imageFileName))
+                        let keyPath = self.addImage(imageFileName)
                         self._rwImagePickerControllerDidFinishPickingMedia(info, path: keyPath!)
                     } catch {
                         print(error)
@@ -214,11 +212,10 @@ extension RWFramework: UIImagePickerControllerDelegate, UINavigationControllerDe
             let r = arc4random()
             let movie_file_name = RWFrameworkConfig.getConfigValueAsString("movie_file_name")
             let movieFileName = "\(r)_\(movie_file_name)"
-            let movieFilePath = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(movieFileName).absoluteString
 
             do {
-                try FileManager.default.moveItem(atPath: originalMoviePath, toPath: movieFilePath)
-                let keyPath = addMovie(movieFilePath)
+                try FileManager.default.moveItem(at: originalMovieURL, to: recorder.recordingPath(for: movieFileName))
+                let keyPath = addMovie(movieFileName)
                 _rwImagePickerControllerDidFinishPickingMedia(info, path: keyPath!)
             }
             catch {

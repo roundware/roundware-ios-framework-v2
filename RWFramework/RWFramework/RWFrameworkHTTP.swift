@@ -73,14 +73,15 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         let serverMediaType = mapMediaTypeToServerMediaType(media.mediaType)
         let postData = ["session_id": session_id,
                         "media_type": serverMediaType.rawValue,
-                        "latitude": media.latitude.stringValue,
-                        "longitude": media.longitude.stringValue,
+                        "latitude": media.latitude,
+                        "longitude": media.longitude,
                         "tag_ids": media.tagIDs,
                         "user_id": media.userID,
                         "description": media.desc] as [String : Any]
+        // Use the current app directory at runtime, because this may change between boots.
         return patchFileAndData(
-            to: RWFrameworkURLFactory.patchEnvelopesIdURL(media.envelopeID.stringValue),
-            filePath: media.string,
+            to: RWFrameworkURLFactory.patchEnvelopesIdURL(String(media.envelopeID)),
+            filePath: recorder.recordingPath(for: media.string),
             postData: postData)
     }
     
@@ -144,9 +145,9 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
 // MARK: - Generic functions
 
     // Upload file and load data via PATCH and return in completion with or without error
-    func patchFileAndData(to urlPath: String, filePath: String, postData: Dictionary<String,Any>) -> Promise<Data> {
+    func patchFileAndData(to urlPath: String, filePath: URL, postData: Dictionary<String,Any>) -> Promise<Data> {
         let url = URL(string: urlPath)!
-        println("patchFileAndDataToURL: " + url.absoluteString + " filePath = " + filePath + " postData = " + postData.description)
+        println("patchFileAndDataToURL: " + url.absoluteString + " filePath = " + filePath.path + " postData = " + postData.description)
 
         // Multipart/form-data boundary
         func makeBoundary() -> String {
@@ -158,7 +159,7 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         // Mime type
         var mimeType: String {
             get {
-                let pathExtension = URL(fileURLWithPath: filePath).pathExtension
+                let pathExtension = filePath.pathExtension
                 let UTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, pathExtension as CFString, nil)
                 let str = UTTypeCopyPreferredTagWithClass(UTI!.takeRetainedValue(), kUTTagClassMIMEType)
                 if (str == nil) {
@@ -184,7 +185,7 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
 
         var fileData: Data
         do {
-            fileData = try Data(contentsOf: URL(fileURLWithPath: filePath), options: NSData.ReadingOptions.alwaysMapped)
+            fileData = try Data(contentsOf: filePath, options: NSData.ReadingOptions.alwaysMapped)
         }
         catch {
             print(error)
@@ -194,7 +195,7 @@ extension RWFramework: URLSessionDelegate, URLSessionTaskDelegate, URLSessionDat
         // The actual Multipart/form-data content
         let data = NSMutableData()
         data.append("--\(boundary)\r\n".data(using: String.Encoding.utf8, allowLossyConversion: false)!)
-        let fileName = URL(fileURLWithPath: filePath).lastPathComponent
+        let fileName = filePath.lastPathComponent
 
         data.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName)\"\r\n".data(using: String.Encoding.utf8, allowLossyConversion: false)!)
         data.append("Content-Type: \(mimeType)\r\n".data(using: String.Encoding.utf8, allowLossyConversion: false)!)

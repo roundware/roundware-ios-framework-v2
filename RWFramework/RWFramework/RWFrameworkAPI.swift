@@ -19,6 +19,12 @@ extension RWFramework {
             // start a session
             .then { _ in self.apiPostSessions() }
             .then { data in try self.setupClientSession(data) }
+            .recover { _ -> Project in
+                // If offline, just fall back to saved project data.
+                let dict = RWFrameworkConfig.getConfigDataFromGroup(.project) as! [String: AnyObject]
+                let json = try JSONSerialization.data(withJSONObject: dict, options: [])
+                return try RWFramework.decoder.decode(Project.self, from: json)
+            }
     }
 
     /// MARK: POST users
@@ -120,7 +126,7 @@ extension RWFramework {
         self.apiGetTagCategories()
         return self.apiGetProjectsId(project_id, session_id: session_id).then { data -> Project in
             RWFrameworkConfig.setConfigDataAsDictionary(data, key: "project")
-            self.setupRecording()
+            //self.setupRecording()
             return try RWFramework.decoder.decode(Project.self, from: data)
         }
     }
@@ -140,7 +146,6 @@ extension RWFramework {
         let speak_enabled = RWFrameworkConfig.getConfigValueAsBool("speak_enabled")
         if (speak_enabled) {
             startAudioTimer()
-            startUploadTimer()
             rwReadyToRecord()
         }
     }

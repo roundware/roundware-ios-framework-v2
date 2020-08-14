@@ -21,10 +21,9 @@ extension RWFramework {
         let textFileName = "\(r)_\(text_file_name)"
 
         do {
-            let fileURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-            let textFilePathURL = fileURL.appendingPathComponent(textFileName)
+            let textFilePathURL = self.recorder.recordingPath(for: textFileName)
             try string.write(to: textFilePathURL, atomically: true, encoding: String.Encoding.utf8)
-            addMedia(MediaType.Text, string: textFilePathURL.path, description: description)
+            recorder.addMedia(Media(mediaType: .Text, string: textFileName, description: description))
             key = textFilePathURL.path
         } catch {
             print(error)
@@ -35,12 +34,12 @@ extension RWFramework {
 
     /// Set a description on an already added text, pass the path returned from addText as the string parameter
     public func setTextDescription(_ string: String, description: String) {
-        setMediaDescription(MediaType.Text, string: string, description: description)
+        recorder.setMediaDescription(MediaType.Text, string, description)
     }
 
     /// Remove a string of text, pass the path returned from addText as the string parameter
     public func removeText(_ string: String) {
-        removeMedia(MediaType.Text, string: string)
+        recorder.removeMedia(MediaType.Text, string: string)
     }
 
 }
