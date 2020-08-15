@@ -14,6 +14,7 @@ import WebKit
 import AVFoundation
 import SystemConfiguration
 import Promises
+import Reachability
 
 private let _RWFrameworkSharedInstance = RWFramework()
 
@@ -77,6 +78,8 @@ private lazy var __once: () = { () -> Void in
     ])
 
     public lazy var recorder = Recorder.load()
+    
+    public private(set) var reachability: Reachability!
     
     static let decoder: JSONDecoder = {
         let dec = JSONDecoder()
@@ -177,7 +180,7 @@ private lazy var __once: () = { () -> Void in
             self.playlist.start()
             
             // Upload any pending recordings if online.
-            self.recorder.setupReachability()
+            self.setupReachability()
         }
     }
 
@@ -186,6 +189,37 @@ private lazy var __once: () = { () -> Void in
         removeAllDelegates()
         println("end")
     }
+    
+    private func setupReachability() {
+        do {
+            reachability = try Reachability()
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(reachabilityChanged(_:)),
+                name: Notification.Name.reachabilityChanged,
+                object: reachability
+            )
+            try reachability.startNotifier()
+        } catch {
+            print("recorder: \(error)")
+        }
+    }
+    
+    @objc func reachabilityChanged(_ note: NSNotification) {
+        let reachability = note.object as! Reachability
+        if reachability.connection != .unavailable {
+            _ = recorder.uploadPending()
+            _ = playlist.ensureAssetsSaved()
+            if reachability.connection == .wifi {
+                print("recorder: Reachable via WiFi")
+            } else {
+                print("recorder: Reachable via Cellular")
+            }
+        } else {
+            print("recorder: Not reachable")
+        }
+    }
+
 
 
 // MARK: - AVAudioSession

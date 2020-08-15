@@ -1,9 +1,7 @@
 import AVFoundation
 import Promises
-import Reachability
 
 public class Recorder: Codable {
-    private var reachability: Reachability!
     private var uploaderTask: Promise<Void>? = nil
 
     private static var recorderFile: URL {
@@ -40,48 +38,18 @@ public class Recorder: Codable {
         }
     }
 
-    internal func setupReachability() {
-        do {
-            reachability = try Reachability()
-            NotificationCenter.default.addObserver(
-                self,
-                selector: #selector(reachabilityChanged(_:)),
-                name: Notification.Name.reachabilityChanged,
-                object: reachability
-            )
-            try reachability.startNotifier()
-        } catch {
-            print("recorder: \(error)")
-        }
-    }
-
-    @objc func reachabilityChanged(_ note: NSNotification) {
-        let reachability = note.object as! Reachability
-        if reachability.connection != .unavailable {
-            if pendingEnvelopes.count > 0 {
-                RWFramework.sharedInstance.rwUploadResumed()
-            }
-            _ = uploadPending()
-            if reachability.connection == .wifi {
-                print("recorder: Reachable via WiFi")
-            } else {
-                print("recorder: Reachable via Cellular")
-            }
-        } else {
-            print("recorder: Not reachable")
-        }
-    }
-
     /** Launches a background task to upload any pending recordings. */
     func uploadPending() -> Promise<Void> {
+        let rwf = RWFramework.sharedInstance
         print("recorder: uploading pending, \(pendingEnvelopes.debugDescription)")
-        if reachability.connection == .unavailable {
-            RWFramework.sharedInstance.rwRecordedOffline()
+        if rwf.reachability.connection == .unavailable {
+            rwf.rwRecordedOffline()
             return Promise(())
         } else if uploaderTask != nil || pendingEnvelopes.count == 0 {
             // We've already got an upload going.
             return Promise(())
         } else {
+            rwf.rwUploadResumed()
             uploaderTask = Promise<Void>(on: .global()) {
                 let totalCount = self.pendingEnvelopes.count
                 var currentAttempts = 0
@@ -311,7 +279,8 @@ public class Recorder: Codable {
         print("recorder: submit envelope")
         pendingEnvelopes.append(Envelope( /* key: key, */ media: currentMedia))
         // Update the badge.
-        RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(pendingEnvelopes.count)
+        let assetCount = pendingEnvelopes.reduce(0) { sum, e in sum + e.media.count }
+        RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(assetCount)
         // Try uploading any pending recordings.
         currentMedia = []
         save()

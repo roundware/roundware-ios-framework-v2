@@ -45,7 +45,7 @@ public class Playlist {
     private var demoStream: AVPlayer?
     private var demoLooper: Any?
 
-    private(set) var project: Project!
+    public private(set) var project: Project!
 
     private let audioEngine = AVAudioEngine()
     private let audioMixer = AVAudioEnvironmentNode()
@@ -198,7 +198,7 @@ extension Playlist {
         // Initial grab of assets and speakers.
         let assetsUpdate = refreshAssetPool()
 
-        all(speakerUpdate, trackUpdate, assetsUpdate).then { _ in
+        all(speakerUpdate, trackUpdate, assetsUpdate).always {
             RWFramework.sharedInstance.rwStartedSuccessfully()
         }
 
@@ -251,15 +251,25 @@ extension Playlist {
 
     /** Are all the asset files in this project saved for offline playback? */
     public var assetsSavedProgress: SaveProgress {
-        let saved = assetPool!.assets.filter { asset in
+        guard let assetPool = self.assetPool else { return .none }
+        
+        let saved = assetPool.assets.filter { asset in
             (try? self.assetDataFile(for: asset)?.checkResourceIsReachable()) ?? false
-        }
-        if saved.count >= assetPool!.assets.count {
+        }.count
+        if saved >= assetPool.assets.count {
             return .complete
-        } else if saved.count > 0 || assetPool!.cached {
+        } else if saved > 0 || assetPool.cached {
             return .partial
         } else {
             return .none
+        }
+    }
+    
+    internal func ensureAssetsSaved() -> Promise<Void> {
+        if assetsSavedProgress == .partial {
+            return saveAllAssets()
+        } else {
+            return Promise(())
         }
     }
 
@@ -267,6 +277,7 @@ extension Playlist {
      Save all assets in the current pool to disk. This facilitates offline playback.
      */
     public func saveAllAssets() -> Promise<Void> {
+        // If offline, make sure we download next time we come online.
         if !assetPool!.cached {
             assetPool = AssetPool(assets: assetPool!.assets, date: assetPool!.date, cached: true)
         }
@@ -522,7 +533,7 @@ extension Playlist {
 
             let locRequested = RWFramework.sharedInstance.requestWhenInUseAuthorizationForLocation()
             print("location requested? \(locRequested)")
-        }
+        }.then(self.ensureAssetsSaved)
     }
 
     /// Retrieve audio assets stored on the server.
