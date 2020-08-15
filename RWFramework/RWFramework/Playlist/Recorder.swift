@@ -55,28 +55,31 @@ public class Recorder: Codable {
                 var currentAttempts = 0
                 while !self.pendingEnvelopes.isEmpty, currentAttempts < 3 {
                     // Give every envelope a few chances to upload.
+                    var toRemove = [Int]()
                     for (i, envelope) in self.pendingEnvelopes.enumerated() {
                         if self.isReachable(envelope: envelope) {
                             // Upload this envelope.
                             do {
                                 _ = try await(self.upload(envelope: envelope))
                                 // Remove it from the queue.
-                                self.pendingEnvelopes.remove(at: i)
-                                self.save()
+                                toRemove.append(i)
                             } catch {
                                 print(error)
                             }
                         } else {
                             // TODO Hook for alert that the file is missing.
-                            self.pendingEnvelopes.remove(at: i)
-                            self.save()
+                            toRemove.append(i)
                         }
                         // Show progress update.
-                        let uploadedCount = totalCount - self.pendingEnvelopes.count
+                        let uploadedCount = totalCount - (self.pendingEnvelopes.count - toRemove.count)
                         RWFramework.sharedInstance.rwUploadProgress(Double(uploadedCount) / Double(totalCount))
                         // Update the badge.
-                        RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(self.pendingEnvelopes.count)
+                        self.updateBadge()
                     }
+                    for i in toRemove {
+                        self.pendingEnvelopes.remove(at: i)
+                    }
+                    self.save()
                     currentAttempts += 1
                 }
             }.always {
@@ -274,13 +277,17 @@ public class Recorder: Codable {
     public var isRecording: Bool {
         return soundRecorder != nil
     }
+    
+    private func updateBadge() {
+        let assetCount = pendingEnvelopes.reduce(0) { sum, e in sum + e.media.count }
+        RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(assetCount)
+    }
 
     public func submitEnvelopeForUpload( /* _ key: String */ ) {
         print("recorder: submit envelope")
         pendingEnvelopes.append(Envelope( /* key: key, */ media: currentMedia))
         // Update the badge.
-        let assetCount = pendingEnvelopes.reduce(0) { sum, e in sum + e.media.count }
-        RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(assetCount)
+        updateBadge()
         // Try uploading any pending recordings.
         currentMedia = []
         save()
