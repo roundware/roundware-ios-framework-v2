@@ -206,6 +206,9 @@ private lazy var __once: () = { () -> Void in
     }
     
     @objc func reachabilityChanged(_ note: NSNotification) {
+        // Update the badge just in case it's out of sync.
+        recorder.updateBadge()
+
         let reachability = note.object as! Reachability
         if reachability.connection != .unavailable {
             _ = recorder.uploadPending()

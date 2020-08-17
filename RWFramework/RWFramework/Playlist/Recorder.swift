@@ -40,6 +40,9 @@ public class Recorder: Codable {
 
     /** Launches a background task to upload any pending recordings. */
     func uploadPending() -> Promise<Void> {
+        // Update the badge just in case it's out of sync.
+        updateBadge()
+        
         let rwf = RWFramework.sharedInstance
         print("recorder: uploading pending, \(pendingEnvelopes.debugDescription)")
         if rwf.reachability.connection == .unavailable {
@@ -67,7 +70,7 @@ public class Recorder: Codable {
                                 print(error)
                             }
                         } else {
-                            // TODO Hook for alert that the file is missing.
+                            // TODO: Hook for alert that the file is missing.
                             toRemove.append(i)
                         }
                         // Show progress update.
@@ -119,7 +122,7 @@ public class Recorder: Codable {
             _ = try await(RWFramework.sharedInstance.playlist.refreshAssetPool())
         }
     }
-    
+
     private func isReachable(envelope: Envelope) -> Bool {
         return envelope.media.contains { m in
             (try? recordingPath(for: m.string).checkResourceIsReachable()) ?? false
@@ -277,10 +280,13 @@ public class Recorder: Codable {
     public var isRecording: Bool {
         return soundRecorder != nil
     }
-    
-    private func updateBadge() {
-        let assetCount = pendingEnvelopes.reduce(0) { sum, e in sum + e.media.count }
-        RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(assetCount)
+
+    internal func updateBadge() {
+        // Only need badge permission when we're offline.
+        if RWFramework.sharedInstance.reachability.connection == .unavailable {
+            let assetCount = pendingEnvelopes.reduce(0) { sum, e in sum + e.media.count }
+            RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(assetCount)
+        }
     }
 
     public func submitEnvelopeForUpload( /* _ key: String */ ) {
