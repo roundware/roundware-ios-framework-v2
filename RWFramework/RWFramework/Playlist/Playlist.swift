@@ -252,7 +252,7 @@ extension Playlist {
     /** Are all the asset files in this project saved for offline playback? */
     public var assetsSavedProgress: SaveProgress {
         guard let assetPool = self.assetPool else { return .none }
-        
+
         let saved = assetPool.assets.filter { asset in
             (try? self.assetDataFile(for: asset)?.checkResourceIsReachable()) ?? false
         }.count
@@ -264,7 +264,7 @@ extension Playlist {
             return .none
         }
     }
-    
+
     internal func ensureAssetsSaved() -> Promise<Void> {
         if assetsSavedProgress == .partial {
             return saveAllAssets()
@@ -325,9 +325,17 @@ extension Playlist {
         return Promise<Void>(on: .global()) {
             let totalAssets = Double(self.assetPool!.assets.count)
             let fm = FileManager.default
-            for (index, asset) in self.assetPool!.assets.enumerated() {
-                let f = self.assetDataFile(for: asset)!
-                try? fm.removeItem(at: f)
+            let parentDir = try fm.url(
+                // Not backed up to iCloud, but also not deleted by clearing cache.
+                for: .applicationSupportDirectory,
+                in: .userDomainMask,
+                appropriateFor: nil,
+                create: true
+            ).appendingPathComponent("assets-\(RWFramework.projectId)")
+
+            for (index, fileName) in try fm.contentsOfDirectory(atPath: parentDir.path).enumerated() {
+                let f = parentDir.appendingPathComponent(fileName)
+                try fm.removeItem(at: f)
                 RWFramework.sharedInstance.rwAssetDeleteProgress(Double(index + 1) / totalAssets)
             }
         }
@@ -533,7 +541,7 @@ extension Playlist {
 
             let locRequested = RWFramework.sharedInstance.requestWhenInUseAuthorizationForLocation()
             print("location requested? \(locRequested)")
-        }.then(self.ensureAssetsSaved)
+        }.then(ensureAssetsSaved)
     }
 
     /// Retrieve audio assets stored on the server.

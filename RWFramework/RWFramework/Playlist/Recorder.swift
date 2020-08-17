@@ -58,31 +58,27 @@ public class Recorder: Codable {
                 var currentAttempts = 0
                 while !self.pendingEnvelopes.isEmpty, currentAttempts < 3 {
                     // Give every envelope a few chances to upload.
-                    var toRemove = [Int]()
-                    for (i, envelope) in self.pendingEnvelopes.enumerated() {
+                    for envelope in self.pendingEnvelopes {
                         if self.isReachable(envelope: envelope) {
                             // Upload this envelope.
                             do {
                                 _ = try await(self.upload(envelope: envelope))
                                 // Remove it from the queue.
-                                toRemove.append(i)
+                                self.pendingEnvelopes = self.pendingEnvelopes.filter { $0 !== envelope }
                             } catch {
                                 print(error)
                             }
                         } else {
                             // TODO: Hook for alert that the file is missing.
-                            toRemove.append(i)
+                            self.pendingEnvelopes = self.pendingEnvelopes.filter { $0 !== envelope }
                         }
+                        self.save()
                         // Show progress update.
-                        let uploadedCount = totalCount - (self.pendingEnvelopes.count - toRemove.count)
+                        let uploadedCount = totalCount - self.pendingEnvelopes.count
                         RWFramework.sharedInstance.rwUploadProgress(Double(uploadedCount) / Double(totalCount))
                         // Update the badge.
                         self.updateBadge()
                     }
-                    for i in toRemove {
-                        self.pendingEnvelopes.remove(at: i)
-                    }
-                    self.save()
                     currentAttempts += 1
                 }
             }.always {
@@ -311,8 +307,8 @@ public class Recorder: Codable {
             let items = try FileManager.default.contentsOfDirectory(atPath: dir.path)
             for file in items {
                 print("recorder: Removing \(file)")
-                let path = dir.appendingPathComponent(file).path
-                try FileManager.default.removeItem(atPath: path)
+                let path = dir.appendingPathComponent(file)
+                try FileManager.default.removeItem(at: path)
             }
         } catch {
             print("recorder: \(error)")
