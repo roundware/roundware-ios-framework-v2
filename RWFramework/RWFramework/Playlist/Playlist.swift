@@ -38,6 +38,8 @@ public class Playlist {
      */
     private var assetPool: AssetPool?
 
+    var filteredAssets: [Int: [Asset]] = [:]
+
     // audio tracks, background and foreground
     public private(set) var speakers: [Speaker] = []
     public private(set) var tracks: [AudioTrack] = []
@@ -231,6 +233,18 @@ extension Playlist {
         // Fade out the currently playing assets on all tracks.
         for t in tracks {
             t.playNext()
+        }
+    }
+
+    func skip(to assetId: Int, onTrack trackId: Int? = nil) {
+        if let track = tracks.first(where: { $0.id == trackId }) ?? tracks.first,
+            let asset = assetPool?.assets.first(where: { $0.id == assetId }) {
+            // Play the given asset on a particular track.
+            track.playNext(asset: asset)
+            // All other tracks fade to silence.
+            for other in tracks.filter({ $0 !== track }) {
+                other.holdSilence()
+            }
         }
     }
 
@@ -519,15 +533,12 @@ extension Playlist {
             let playsOfA = userAssetData[a.0.id]?.playCount ?? 0
             let playsOfB = userAssetData[b.0.id]?.playCount ?? 0
             return playsOfA < playsOfB
-        }
+        }.map { $0.0 }
+
+        self.filteredAssets[track.id] = sortedAssets
 
         print("\(sortedAssets.count) filtered assets")
-
-        let next = sortedAssets.first?.0
-        if let next = next {
-            print("picking asset: \(next.id)")
-        }
-        return next
+        return sortedAssets.first
     }
 }
 

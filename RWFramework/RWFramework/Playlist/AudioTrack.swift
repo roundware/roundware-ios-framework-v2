@@ -484,13 +484,14 @@ private class PlayingAsset: TimedTrackState {
     override func resume() {
         super.resume()
         track.player.play()
-        print("playing for another \(timeLeft)s")
+        // Notify the app of which asset is playing.
+        RWFramework.sharedInstance.rwPlayingAsset(asset, onTrack: track.id)
     }
     
     override func goToNextState() {
-        // Tell the playlist we've finished the asset
+        // Tell the playlist we've finished the asset,
         track.playlist?.recordFinishedPlaying(asset: asset)
-        // and fade into the next one
+        // and fade into the next one.
         track.transition(to: FadingOut(
             track: track,
             asset: asset,

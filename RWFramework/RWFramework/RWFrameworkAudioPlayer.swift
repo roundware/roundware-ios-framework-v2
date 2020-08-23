@@ -45,6 +45,10 @@ extension RWFramework {
         playlist.skip()
     }
 
+    public func skip(to assetId: Int, onTrack trackId: Int? = nil) {
+        playlist.skip(to: assetId, onTrack: trackId)
+    }
+
     /// Replay audio
     public func replay() {
         playlist.replay()

@@ -40,6 +40,12 @@ struct SortByWeight: SortMethod {
     }
 }
 
+struct SortByDate: SortMethod {
+    func sortRanking(for asset: Asset, in playlist: Playlist) -> Double {
+        return -asset.createdDate.timeIntervalSince1970
+    }
+}
+
 /**
  Sort assets in descending order of current number of likes.
  */
