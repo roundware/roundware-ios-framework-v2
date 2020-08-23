@@ -399,13 +399,14 @@ class MostRecentCountFilter: AssetFilter {
         maxCount = count
     }
 
-    func keep(_ asset: Asset, playlist: Playlist, track _: AudioTrack) -> AssetPriority {
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         // Figure out the most recent X assets.
-        let assets = playlist.allAssets.sorted { a, b in
+	// FIXME Maybe use allAssets?
+        let assets = playlist.filteredAssets[track.id]?.sorted { a, b in
             a.createdDate > b.createdDate
         }[0 ..< maxCount]
         // Only play the given asset if it's one of those.
-        if assets.contains(where: { $0 === asset }) {
+        if assets?.contains(where: { $0 === asset }) ?? false {
             return .normal
         } else {
             return .discard

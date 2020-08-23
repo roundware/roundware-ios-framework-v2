@@ -537,6 +537,8 @@ extension Playlist {
             rank != .discard
         }
 
+        self.filteredAssets[track.id] = filteredAssets
+
         let asset = filteredAssets.min { a, b in
             // play less played assets first
             let playsOfA = userAssetData[a.0.id]?.playCount ?? 0
