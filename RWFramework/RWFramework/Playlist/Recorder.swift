@@ -1,9 +1,7 @@
 import AVFoundation
 import Promises
-import Reachability
 
 public class Recorder: Codable {
-    private var reachability: Reachability!
     private var uploaderTask: Promise<Void>? = nil
 
     private static var recorderFile: URL {
@@ -40,74 +38,46 @@ public class Recorder: Codable {
         }
     }
 
-    internal func setupReachability() {
-        do {
-            reachability = try Reachability()
-            NotificationCenter.default.addObserver(
-                self,
-                selector: #selector(reachabilityChanged(_:)),
-                name: Notification.Name.reachabilityChanged,
-                object: reachability
-            )
-            try reachability.startNotifier()
-        } catch {
-            print("recorder: \(error)")
-        }
-    }
-
-    @objc func reachabilityChanged(_ note: NSNotification) {
-        let reachability = note.object as! Reachability
-        if reachability.connection != .unavailable {
-            if pendingEnvelopes.count > 0 {
-                RWFramework.sharedInstance.rwUploadResumed()
-            }
-            _ = uploadPending()
-            if reachability.connection == .wifi {
-                print("recorder: Reachable via WiFi")
-            } else {
-                print("recorder: Reachable via Cellular")
-            }
-        } else {
-            print("recorder: Not reachable")
-        }
-    }
-
     /** Launches a background task to upload any pending recordings. */
     func uploadPending() -> Promise<Void> {
+        // Update the badge just in case it's out of sync.
+        updateBadge()
+        
+        let rwf = RWFramework.sharedInstance
         print("recorder: uploading pending, \(pendingEnvelopes.debugDescription)")
-        if reachability.connection == .unavailable {
-            RWFramework.sharedInstance.rwRecordedOffline()
+        if rwf.reachability.connection == .unavailable {
+            rwf.rwRecordedOffline()
             return Promise(())
         } else if uploaderTask != nil || pendingEnvelopes.count == 0 {
             // We've already got an upload going.
             return Promise(())
         } else {
+            rwf.rwUploadResumed()
             uploaderTask = Promise<Void>(on: .global()) {
                 let totalCount = self.pendingEnvelopes.count
                 var currentAttempts = 0
                 while !self.pendingEnvelopes.isEmpty, currentAttempts < 3 {
                     // Give every envelope a few chances to upload.
-                    for (i, envelope) in self.pendingEnvelopes.enumerated() {
+                    for envelope in self.pendingEnvelopes {
                         if self.isReachable(envelope: envelope) {
                             // Upload this envelope.
                             do {
                                 _ = try await(self.upload(envelope: envelope))
                                 // Remove it from the queue.
-                                self.pendingEnvelopes.remove(at: i)
-                                self.save()
+                                self.pendingEnvelopes = self.pendingEnvelopes.filter { $0 !== envelope }
                             } catch {
                                 print(error)
                             }
                         } else {
-                            // TODO Hook for alert that the file is missing.
-                            self.pendingEnvelopes.remove(at: i)
-                            self.save()
+                            // TODO: Hook for alert that the file is missing.
+                            self.pendingEnvelopes = self.pendingEnvelopes.filter { $0 !== envelope }
                         }
+                        self.save()
                         // Show progress update.
                         let uploadedCount = totalCount - self.pendingEnvelopes.count
                         RWFramework.sharedInstance.rwUploadProgress(Double(uploadedCount) / Double(totalCount))
                         // Update the badge.
-                        RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(self.pendingEnvelopes.count)
+                        self.updateBadge()
                     }
                     currentAttempts += 1
                 }
@@ -148,7 +118,7 @@ public class Recorder: Codable {
             _ = try await(RWFramework.sharedInstance.playlist.refreshAssetPool())
         }
     }
-    
+
     private func isReachable(envelope: Envelope) -> Bool {
         return envelope.media.contains { m in
             (try? recordingPath(for: m.string).checkResourceIsReachable()) ?? false
@@ -307,11 +277,19 @@ public class Recorder: Codable {
         return soundRecorder != nil
     }
 
+    internal func updateBadge() {
+        // Only need badge permission when we're offline.
+        if RWFramework.sharedInstance.reachability.connection == .unavailable {
+            let assetCount = pendingEnvelopes.reduce(0) { sum, e in sum + e.media.count }
+            RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(assetCount)
+        }
+    }
+
     public func submitEnvelopeForUpload( /* _ key: String */ ) {
         print("recorder: submit envelope")
         pendingEnvelopes.append(Envelope( /* key: key, */ media: currentMedia))
         // Update the badge.
-        RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(pendingEnvelopes.count)
+        updateBadge()
         // Try uploading any pending recordings.
         currentMedia = []
         save()
@@ -329,8 +307,8 @@ public class Recorder: Codable {
             let items = try FileManager.default.contentsOfDirectory(atPath: dir.path)
             for file in items {
                 print("recorder: Removing \(file)")
-                let path = dir.appendingPathComponent(file).path
-                try FileManager.default.removeItem(atPath: path)
+                let path = dir.appendingPathComponent(file)
+                try FileManager.default.removeItem(at: path)
             }
         } catch {
             print("recorder: \(error)")

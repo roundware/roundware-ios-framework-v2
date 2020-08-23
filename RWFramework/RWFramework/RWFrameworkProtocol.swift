@@ -6,8 +6,8 @@
 //  Copyright (c) 2015 Roundware. All rights reserved.
 //
 
-import Foundation
 import CoreLocation
+import Foundation
 
 // TODO: Consider making this multiple protocols instead of using @objc in order to get optional capabilities
 // see http://ashfurrow.com/blog/protocols-and-swift/
@@ -15,8 +15,8 @@ import CoreLocation
 // NOTE: These methods are called on the main queue unless otherwise noted
 
 // MARK: RWFrameworkProtocol
-@objc public protocol RWFrameworkProtocol: class {
 
+@objc public protocol RWFrameworkProtocol: class {
     /// Sent when the framework CSM components are initialized and ready
     @objc optional func rwStartedSuccessfully()
 
@@ -51,12 +51,12 @@ import CoreLocation
     @objc optional func rwGetProjectsIdTagsSuccess(_ data: Data)
     /// Sent when the server fails to send project tags
     @objc optional func rwGetProjectsIdTagsFailure(_ error: Error)
-    
+
     /// Sent when tag categories have been received from the server
     @objc optional func rwGetTagCategoriesSuccess(_ data: Data)
     /// Sent when the server fails to send tag categories
     @objc optional func rwGetTagCategoriesFailure(_ error: Error)
-    
+
     /// Sent when a stream has been acquired and can be played. Clients should enable their Play buttons.
     @objc optional func rwPostStreamsSuccess(_ data: Data)
     /// Sent when a stream could not be acquired and therefore can not be played. Clients should disable their Play buttons.
@@ -86,17 +86,17 @@ import CoreLocation
     @objc optional func rwGetStreamsIdCurrentSuccess(_ data: Data)
     /// Sent in the case that getting the current assed ID in the stream fails
     @objc optional func rwGetStreamsIdCurrentFailure(_ error: Error)
-    
+
     /// Sent to the server when user pauses stream playback locally
     @objc optional func rwPostStreamsIdPauseSuccess(_ data: Data)
     /// Sent in the case that sending the pause request failed
     @objc optional func rwPostStreamsIdPauseFailure(_ error: Error)
-    
+
     /// Sent to the server when user un-pauses stream playback locally
     @objc optional func rwPostStreamsIdResumeSuccess(_ data: Data)
     /// Sent in the case that sending the resume request failed
     @objc optional func rwPostStreamsIdResumeFailure(_ error: Error)
-    
+
     /// Sent to the server when user checks if stream is active
     @objc optional func rwGetStreamsIdIsActiveSuccess(_ data: Data)
     /// Sent in the case that the isactive request failed
@@ -126,7 +126,7 @@ import CoreLocation
     @objc optional func rwPatchAssetsIdSuccess(_ data: Data?)
     /// Sent in the case that the server cannot patch asset
     @objc optional func rwPatchAssetsIdFailure(_ error: Error)
-    
+
     /// Sent after the server successfully posts a vote
     @objc optional func rwPostAssetsIdVotesSuccess(_ data: Data)
     /// Sent in the case that the server can not post a vote
@@ -136,7 +136,7 @@ import CoreLocation
     @objc optional func rwGetAssetsIdVotesSuccess(_ data: Data)
     /// Sent in the case that the server can not get vote info for an asset
     @objc optional func rwGetAssetsIdVotesFailure(_ error: Error)
-    
+
     /// Sent after the server successfully gets speaker info
     @objc optional func rwGetSpeakersSuccess(_ data: Data)
     /// Sent in the case that the server can not get speaker info
@@ -147,19 +147,19 @@ import CoreLocation
     /// Sent in the case that the server can not post an event
     @objc optional func rwPostEventsFailure(_ error: Error)
 
-// MARK: metadata
+    // MARK: metadata
 
     /// Sent when metadata (and all other observed values) are found, sent synchronously on main thread
-    @objc optional func rwObserveValueForKeyPath(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?)
+    @objc optional func rwObserveValueForKeyPath(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?, context: UnsafeMutableRawPointer?)
 
-// MARK: Image Picker
+    // MARK: Image Picker
 
     /// Sent when the imagePickerController is dismissed after picking media
     @objc optional func rwImagePickerControllerDidFinishPickingMedia(_ info: [AnyHashable: Any], path: String)
     /// Sent when the imagePickerController is dismissed after cancelling
     @objc optional func rwImagePickerControllerDidCancel()
 
-// MARK: Record
+    // MARK: Record
 
     /// Sent when the framework determines that recording is possible (via config)
     @objc optional func rwReadyToRecord()
@@ -174,7 +174,7 @@ import CoreLocation
     /// Sent when the audio player finishes playing
     @objc optional func rwAudioPlayerDidFinishPlaying()
 
-// MARK: UI/Status
+    // MARK: UI/Status
 
     /// A user-readable message that can be passed on as status information. This will always be called on the main thread
     @objc optional func rwUpdateStatus(_ message: String)
@@ -183,26 +183,28 @@ import CoreLocation
     @objc optional func rwUpdateApplicationIconBadgeNumber(_ count: Int)
 
     /// Called when the framework needs the current view controller in order to display the tag editor.
-	/// If this method is not implemented then it is assumed that the delegate is a view controller.
+    /// If this method is not implemented then it is assumed that the delegate is a view controller.
     @objc optional func rwGetCurrentViewController() -> UIViewController
 
-// MARK: Location
+    // MARK: Location
 
     /// Called when location updates
     @objc optional func rwLocationManager(_ manager: CLLocationManager!, didUpdateLocations locations: [AnyObject]!)
 
     /// Called when location authorization changes
     @objc optional func rwLocationManager(_ manager: CLLocationManager!, didChangeAuthorizationStatus status: CLAuthorizationStatus)
-    
+
     @objc optional func rwRecordedOffline()
     @objc optional func rwUploadProgress(_ progress: Double)
     @objc optional func rwUploadResumed()
+
+    @objc optional func rwAssetDownloadProgress(_ progress: Double)
+    @objc optional func rwAssetDeleteProgress(_ progress: Double)
 }
 
 /// The framework calls these methods to call thru to the delegate protocol in order to keep the calling code clean of respondsToSelector checks
 extension RWFramework {
-
-// MARK: public delegate management
+    // MARK: public delegate management
 
     /// Add a delegate to the list of delegates
     public func addDelegate(_ object: AnyObject) {
@@ -228,19 +230,19 @@ extension RWFramework {
         return delegates.contains(object)
     }
 
-// MARK: dam
+    // MARK: dam
 
     /// dam = dispatch_async on the main queue
     func dam(_ f: @escaping () -> Void) {
-        DispatchQueue.main.async(execute: { () -> Void in
+        DispatchQueue.main.async { () -> Void in
             f()
-        })
+        }
     }
 
-// MARK: protocaller
+    // MARK: protocaller
 
     /// Utility function to call method with AnyObject param on valid delegates
-    func protocaller(_ param: AnyObject? = nil, completion:(_ rwfp: RWFrameworkProtocol, _ param: AnyObject?) -> Void) {
+    func protocaller(_ param: AnyObject? = nil, completion: (_ rwfp: RWFrameworkProtocol, _ param: AnyObject?) -> Void) {
         let enumerator = delegates.objectEnumerator()
         while let d = enumerator.nextObject() {
             if let dd = d as? RWFrameworkProtocol {
@@ -249,7 +251,7 @@ extension RWFramework {
         }
     }
 
-// MARK: callers
+    // MARK: callers
 
     func rwStartedSuccessfully() {
         protocaller { (rwfp, _) -> Void in
@@ -265,7 +267,7 @@ extension RWFramework {
 
     func rwPostUsersFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwPostUsersFailure != nil) {
+            if rwfp.rwPostUsersFailure != nil {
                 self.dam { rwfp.rwPostUsersFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwPostUsersFailure"), message: error.localizedDescription)
@@ -281,10 +283,8 @@ extension RWFramework {
 
     func rwPostSessionsFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwPostSessionsFailure != nil) {
+            if rwfp.rwPostSessionsFailure != nil {
                 self.dam { rwfp.rwPostSessionsFailure?(error) }
-            } else {
-                self.alertOK(self.LS("RWFramework - rwPostSessionsFailure"), message: error.localizedDescription)
             }
         }
     }
@@ -294,42 +294,42 @@ extension RWFramework {
             self.dam { rwfp.rwGetProjectsIdSuccess?(data) }
         }
     }
-    
+
     func rwGetProjectsIdFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwGetProjectsIdFailure != nil) {
+            if rwfp.rwGetProjectsIdFailure != nil {
                 self.dam { rwfp.rwGetProjectsIdFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwGetProjectsIdFailure"), message: error.localizedDescription)
             }
         }
     }
-    
+
     func rwGetUIConfigSuccess(_ data: Data) {
         protocaller { (rwfp, _) -> Void in
             self.dam { rwfp.rwGetUIConfigSuccess?(data) }
         }
     }
-    
+
     func rwGetUIConfigFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwGetUIConfigFailure != nil) {
+            if rwfp.rwGetUIConfigFailure != nil {
                 self.dam { rwfp.rwGetUIConfigFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwGetUIConfigFailure"), message: error.localizedDescription)
             }
         }
     }
-    
+
     func rwGetProjectsIdUIGroupsSuccess(_ data: Data) {
         protocaller { (rwfp, _) -> Void in
             self.dam { rwfp.rwGetProjectsIdUIGroupsSuccess?(data) }
         }
     }
-    
+
     func rwGetProjectsIdUIGroupsFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwGetProjectsIdUIGroupsFailure != nil) {
+            if rwfp.rwGetProjectsIdUIGroupsFailure != nil {
                 self.dam { rwfp.rwGetProjectsIdUIGroupsFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwGetProjectsIdUIGroupsFailure"), message: error.localizedDescription)
@@ -345,7 +345,7 @@ extension RWFramework {
 
     func rwGetProjectsIdTagsFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwGetProjectsIdTagsFailure != nil) {
+            if rwfp.rwGetProjectsIdTagsFailure != nil {
                 self.dam { rwfp.rwGetProjectsIdTagsFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwGetProjectsIdTagsFailure"), message: error.localizedDescription)
@@ -358,10 +358,10 @@ extension RWFramework {
             self.dam { rwfp.rwGetTagCategoriesSuccess?(data) }
         }
     }
-    
+
     func rwGetTagCategoriesFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwGetTagCategoriesFailure != nil) {
+            if rwfp.rwGetTagCategoriesFailure != nil {
                 self.dam { rwfp.rwGetTagCategoriesFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwGetTagCategoriesFailure"), message: error.localizedDescription)
@@ -377,7 +377,7 @@ extension RWFramework {
 
     func rwPostStreamsFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwPostStreamsFailure != nil) {
+            if rwfp.rwPostStreamsFailure != nil {
                 self.dam { rwfp.rwPostStreamsFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwPostStreamsFailure"), message: error.localizedDescription)
@@ -393,7 +393,7 @@ extension RWFramework {
 
     func rwPatchStreamsIdFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwPatchStreamsIdFailure != nil) {
+            if rwfp.rwPatchStreamsIdFailure != nil {
                 self.dam { rwfp.rwPatchStreamsIdFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwPatchStreamsIdFailure"), message: error.localizedDescription)
@@ -409,7 +409,7 @@ extension RWFramework {
 
     func rwPostStreamsIdHeartbeatFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwPostStreamsIdHeartbeatFailure != nil) {
+            if rwfp.rwPostStreamsIdHeartbeatFailure != nil {
                 self.dam { rwfp.rwPostStreamsIdHeartbeatFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwPostStreamsIdHeartbeatFailure"), message: error.localizedDescription)
@@ -422,10 +422,10 @@ extension RWFramework {
             self.dam { rwfp.rwPostStreamsIdReplaySuccess?(data) }
         }
     }
-    
+
     func rwPostStreamsIdReplayFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwPostStreamsIdReplayFailure != nil) {
+            if rwfp.rwPostStreamsIdReplayFailure != nil {
                 self.dam { rwfp.rwPostStreamsIdReplayFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwPostStreamsIdReplayFailure"), message: error.localizedDescription)
@@ -441,55 +441,55 @@ extension RWFramework {
 
     func rwPostStreamsIdSkipFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwPostStreamsIdSkipFailure != nil) {
+            if rwfp.rwPostStreamsIdSkipFailure != nil {
                 self.dam { rwfp.rwPostStreamsIdSkipFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwPostStreamsIdSkipFailure"), message: error.localizedDescription)
             }
         }
     }
-    
+
     func rwPostStreamsIdPauseSuccess(_ data: Data) {
         protocaller { (rwfp, _) -> Void in
             self.dam { rwfp.rwPostStreamsIdPauseSuccess?(data) }
         }
     }
-    
+
     func rwPostStreamsIdPauseFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwPostStreamsIdPauseFailure != nil) {
+            if rwfp.rwPostStreamsIdPauseFailure != nil {
                 self.dam { rwfp.rwPostStreamsIdPauseFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwPostStreamsIdPauseFailure"), message: error.localizedDescription)
             }
         }
     }
-    
+
     func rwGetStreamsIdIsActiveSuccess(_ data: Data) {
         protocaller { (rwfp, _) -> Void in
             self.dam { rwfp.rwGetStreamsIdIsActiveSuccess?(data) }
         }
     }
-    
+
     func rwGetStreamsIdIsActiveFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwGetStreamsIdIsActiveFailure != nil) {
+            if rwfp.rwGetStreamsIdIsActiveFailure != nil {
                 self.dam { rwfp.rwGetStreamsIdIsActiveFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwGetStreamsIdIsActiveFailure"), message: error.localizedDescription)
             }
         }
     }
-    
+
     func rwPostStreamsIdResumeSuccess(_ data: Data) {
         protocaller { (rwfp, _) -> Void in
             self.dam { rwfp.rwPostStreamsIdResumeSuccess?(data) }
         }
     }
-    
+
     func rwPostStreamsIdResumeFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwPostStreamsIdResumeFailure != nil) {
+            if rwfp.rwPostStreamsIdResumeFailure != nil {
                 self.dam { rwfp.rwPostStreamsIdResumeFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwPostStreamsIdResumeFailure"), message: error.localizedDescription)
@@ -505,7 +505,7 @@ extension RWFramework {
 
     func rwPostEnvelopesFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwPostEnvelopesFailure != nil) {
+            if rwfp.rwPostEnvelopesFailure != nil {
                 self.dam { rwfp.rwPostEnvelopesFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwPostEnvelopesFailure"), message: error.localizedDescription)
@@ -521,7 +521,7 @@ extension RWFramework {
 
     func rwPatchEnvelopesIdFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwPatchEnvelopesIdFailure != nil) {
+            if rwfp.rwPatchEnvelopesIdFailure != nil {
                 self.dam { rwfp.rwPatchEnvelopesIdFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwPatchEnvelopesIdFailure"), message: error.localizedDescription)
@@ -537,10 +537,8 @@ extension RWFramework {
 
     func rwGetAssetsFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwGetAssetsFailure != nil) {
+            if rwfp.rwGetAssetsFailure != nil {
                 self.dam { rwfp.rwGetAssetsFailure?(error) }
-            } else {
-                self.alertOK(self.LS("RWFramework - rwGetAssetsFailure"), message: error.localizedDescription)
             }
         }
     }
@@ -553,23 +551,23 @@ extension RWFramework {
 
     func rwGetAssetsIdFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwGetAssetsIdFailure != nil) {
+            if rwfp.rwGetAssetsIdFailure != nil {
                 self.dam { rwfp.rwGetAssetsIdFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwGetAssetsIdFailure"), message: error.localizedDescription)
             }
         }
     }
-    
+
     func rwPatchAssetsIdSuccess(_ data: Data?) {
         protocaller { (rwfp, _) -> Void in
             self.dam { rwfp.rwPatchAssetsIdSuccess?(data) }
         }
     }
-    
+
     func rwPatchAssetsIdFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwPatchAssetsIdFailure != nil) {
+            if rwfp.rwPatchAssetsIdFailure != nil {
                 self.dam { rwfp.rwPatchAssetsIdFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwPatchAssetsIdFailure"), message: error.localizedDescription)
@@ -585,7 +583,7 @@ extension RWFramework {
 
     func rwPostAssetsIdVotesFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwPostAssetsIdVotesFailure != nil) {
+            if rwfp.rwPostAssetsIdVotesFailure != nil {
                 self.dam { rwfp.rwPostAssetsIdVotesFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwPostAssetsIdVotesFailure"), message: error.localizedDescription)
@@ -601,32 +599,27 @@ extension RWFramework {
 
     func rwGetAssetsIdVotesFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwGetAssetsIdVotesFailure != nil) {
+            if rwfp.rwGetAssetsIdVotesFailure != nil {
                 self.dam { rwfp.rwGetAssetsIdVotesFailure?(error) }
             } else {
                 self.alertOK(self.LS("RWFramework - rwGetAssetsIdVotesFailure"), message: error.localizedDescription)
             }
         }
     }
-    
-    
+
     func rwGetSpeakersSuccess(_ data: Data) {
         protocaller { (rwfp, _) -> Void in
             self.dam { rwfp.rwGetSpeakersSuccess?(data) }
         }
     }
-    
+
     func rwGetSpeakersFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwGetSpeakersFailure != nil) {
+            if rwfp.rwGetSpeakersFailure != nil {
                 self.dam { rwfp.rwGetSpeakersFailure?(error) }
-            } else {
-                self.alertOK(self.LS("RWFramework - rwGetAssetsFailure"), message: error.localizedDescription)
             }
         }
     }
-    
-    
 
     func rwPostEventsSuccess(_ data: Data) {
         protocaller { (rwfp, _) -> Void in
@@ -636,24 +629,21 @@ extension RWFramework {
 
     func rwPostEventsFailure(_ error: Error) {
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwPostEventsFailure != nil) {
+            if rwfp.rwPostEventsFailure != nil {
                 self.dam { rwfp.rwPostEventsFailure?(error) }
-            } else {
-                self.alertOK(self.LS("RWFramework - rwPostEventsFailure"), message: error.localizedDescription)
             }
         }
     }
 
+    // MARK: metadata
 
-// MARK: metadata
-
-    func rwObserveValueForKeyPath(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+    func rwObserveValueForKeyPath(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?, context: UnsafeMutableRawPointer?) {
         protocaller { (rwfp, _) -> Void in
             self.dam { rwfp.rwObserveValueForKeyPath?(forKeyPath: keyPath, of: object, change: change, context: context) }
         }
     }
 
-// MARK: Image Picker
+    // MARK: Image Picker
 
     func rwImagePickerControllerDidFinishPickingMedia(_ info: [AnyHashable: Any], path: String) {
         protocaller { (rwfp, _) -> Void in
@@ -667,7 +657,7 @@ extension RWFramework {
         }
     }
 
-// MARK: Record
+    // MARK: Record
 
     func rwReadyToRecord() {
         protocaller { (rwfp, _) -> Void in
@@ -718,18 +708,18 @@ extension RWFramework {
         }
     }
 
-// MARK: UI/Status
+    // MARK: UI/Status
 
     func rwUpdateStatus(_ message: String, title: String? = "Roundware Notification") {
         var showedAlert = false
         protocaller { (rwfp, _) -> Void in
-            if (rwfp.rwUpdateStatus != nil) {
+            if rwfp.rwUpdateStatus != nil {
                 self.dam { rwfp.rwUpdateStatus?(message) }
-            } else if (showedAlert == false) {
+            } else if showedAlert == false {
                 showedAlert = true // Only show the alert once per call
                 self.dam {
                     let alert = UIAlertController(title: self.LS(title!), message: message, preferredStyle: UIAlertController.Style.alert)
-                    let OKAction = UIAlertAction(title: self.LS("OK"), style: .default) { (action) in }
+                    let OKAction = UIAlertAction(title: self.LS("OK"), style: .default) { _ in }
                     alert.addAction(OKAction)
                     if let currentViewController = rwfp.rwGetCurrentViewController?() {
                         currentViewController.present(alert, animated: true, completion: { () -> Void in
@@ -750,7 +740,7 @@ extension RWFramework {
         }
     }
 
-// MARK: Location
+    // MARK: Location
 
     func rwLocationManager(_ manager: CLLocationManager!, didUpdateLocations locations: [AnyObject]!) {
         protocaller { (rwfp, _) -> Void in
@@ -764,4 +754,15 @@ extension RWFramework {
         }
     }
 
+    func rwAssetDownloadProgress(_ progress: Double) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwAssetDownloadProgress?(progress) }
+        }
+    }
+
+    func rwAssetDeleteProgress(_ progress: Double) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwAssetDeleteProgress?(progress) }
+        }
+    }
 }

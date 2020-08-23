@@ -45,7 +45,7 @@ public class Playlist {
     private var demoStream: AVPlayer?
     private var demoLooper: Any?
 
-    private(set) var project: Project!
+    public private(set) var project: Project!
 
     private let audioEngine = AVAudioEngine()
     private let audioMixer = AVAudioEnvironmentNode()
@@ -198,7 +198,7 @@ extension Playlist {
         // Initial grab of assets and speakers.
         let assetsUpdate = refreshAssetPool()
 
-        all(speakerUpdate, trackUpdate, assetsUpdate).then { _ in
+        all(speakerUpdate, trackUpdate, assetsUpdate).always {
             RWFramework.sharedInstance.rwStartedSuccessfully()
         }
 
@@ -237,6 +237,130 @@ extension Playlist {
     func replay() {
         for t in tracks {
             t.replay()
+        }
+    }
+}
+
+// Offline playback
+extension Playlist {
+    public enum SaveProgress {
+        case none
+        case partial
+        case complete
+    }
+
+    /** Are all the asset files in this project saved for offline playback? */
+    public var assetsSavedProgress: SaveProgress {
+        guard let assetPool = self.assetPool else { return .none }
+
+        let saved = assetPool.assets.filter { asset in
+            (try? self.assetDataFile(for: asset)?.checkResourceIsReachable()) ?? false
+        }.count
+        if saved >= assetPool.assets.count {
+            return .complete
+        } else if saved > 0 || assetPool.cached {
+            return .partial
+        } else {
+            return .none
+        }
+    }
+
+    internal func ensureAssetsSaved() -> Promise<Void> {
+        if assetsSavedProgress == .partial {
+            return saveAllAssets()
+        } else {
+            return Promise(())
+        }
+    }
+
+    /**
+     Save all assets in the current pool to disk. This facilitates offline playback.
+     */
+    public func saveAllAssets() -> Promise<Void> {
+        // If offline, make sure we download next time we come online.
+        if !assetPool!.cached {
+            assetPool = AssetPool(assets: assetPool!.assets, date: assetPool!.date, cached: true)
+        }
+        return Promise<Void>(on: .global()) {
+            // Sort assets by nearness to download closer assets first.
+            var allAssets = self.assetPool!.assets
+            if let loc = self.currentParams?.location {
+                allAssets = allAssets.sorted { a, b in
+                    if let aLoc = a.location, let bLoc = b.location {
+                        return aLoc.distance(from: loc) < bLoc.distance(from: loc)
+                    } else {
+                        return a.location != nil
+                    }
+                }
+            }
+
+            // Save each asset to the offline folder.
+            let totalAssets = Double(allAssets.count)
+            for (index, asset) in allAssets.enumerated() {
+                let f = self.assetDataFile(for: asset)!
+                // Only download the asset if we don't already have it.
+                if !((try? f.checkResourceIsReachable()) ?? false) {
+                    // Download the audio data.
+                    let remoteUrl = asset.mp3Url
+                    print("offline: downloading \(remoteUrl)")
+                    let data = try Data(contentsOf: remoteUrl)
+
+                    // Write the audio data to a file in the cache.
+                    try data.write(to: f)
+                }
+
+                // Notify the caller that this asset has been downloaded.
+                RWFramework.sharedInstance.rwAssetDownloadProgress(Double(index + 1) / totalAssets)
+            }
+        }
+    }
+
+    /**
+      Remove all saved assets that belong to the current project.
+     */
+    public func purgeSavedAssets() -> Promise<Void> {
+        if assetPool!.cached {
+            assetPool = AssetPool(assets: assetPool!.assets, date: assetPool!.date, cached: false)
+        }
+        return Promise<Void>(on: .global()) {
+            let totalAssets = Double(self.assetPool!.assets.count)
+            let fm = FileManager.default
+            let parentDir = try fm.url(
+                // Not backed up to iCloud, but also not deleted by clearing cache.
+                for: .applicationSupportDirectory,
+                in: .userDomainMask,
+                appropriateFor: nil,
+                create: true
+            ).appendingPathComponent("assets-\(RWFramework.projectId)")
+
+            for (index, fileName) in try fm.contentsOfDirectory(atPath: parentDir.path).enumerated() {
+                let f = parentDir.appendingPathComponent(fileName)
+                try fm.removeItem(at: f)
+                RWFramework.sharedInstance.rwAssetDeleteProgress(Double(index + 1) / totalAssets)
+            }
+        }
+    }
+
+    /** Where to save asset data for offline playback. */
+    internal func assetDataFile(for asset: Asset) -> URL? {
+        do {
+            let fm = FileManager.default
+            let parentDir = try fm.url(
+                // Not backed up to iCloud, but also not deleted by clearing cache.
+                for: .applicationSupportDirectory,
+                in: .userDomainMask,
+                appropriateFor: nil,
+                create: true
+            )
+            // Keep a separate folder for each project
+            let assetsDir = parentDir.appendingPathComponent("assets-\(project.id)")
+            // Make sure it exists.
+            _ = try? fm.createDirectory(at: assetsDir, withIntermediateDirectories: true, attributes: nil)
+            // Convert the remote URL to a local one.
+            return assetsDir.appendingPathComponent(asset.mp3Url.lastPathComponent)
+        } catch {
+            print(error)
+            return nil
         }
     }
 }
@@ -417,7 +541,7 @@ extension Playlist {
 
             let locRequested = RWFramework.sharedInstance.requestWhenInUseAuthorizationForLocation()
             print("location requested? \(locRequested)")
-        }
+        }.then(ensureAssetsSaved)
     }
 
     /// Retrieve audio assets stored on the server.
@@ -469,7 +593,7 @@ extension Playlist {
             }
 
             // Update this project's asset pool
-            self.assetPool = AssetPool(assets: assets, date: Date())
+            self.assetPool = AssetPool(assets: assets, date: Date(), cached: self.assetPool?.cached ?? false)
 
             print("\(updatedAssets.count) updated assets, total is \(assets.count)")
 

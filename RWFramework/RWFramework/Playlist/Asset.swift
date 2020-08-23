@@ -1,6 +1,6 @@
 
-import Foundation
 import CoreLocation
+import Foundation
 import GEOSwift
 
 /**
@@ -23,7 +23,7 @@ public class Asset: Codable {
     private let latitude: Double?
     private let startTime: Double?
     private let endTime: Double?
-    
+
     enum CodingKeys: String, CodingKey {
         case id
         case longitude
@@ -44,19 +44,26 @@ public class Asset: Codable {
 extension Asset {
     /// Range of time within the associated file that this asset represents.
     var activeRegion: ClosedRange<Double> {
-        return (startTime ?? 0)...(endTime ?? length ?? 0)
+        return (startTime ?? 0) ... (endTime ?? length ?? 0)
     }
-    
+
     public var location: CLLocation? {
-        if let lat = self.latitude, let lng = self.longitude {
+        if let lat = latitude, let lng = longitude {
             return CLLocation(latitude: lat, longitude: lng)
         } else {
             return nil
         }
+    }
+
+    public var mp3Url: URL {
+        return URL(string: file)!
+            .deletingPathExtension()
+            .appendingPathExtension("mp3")
     }
 }
 
 public struct AssetPool: Codable {
     let assets: [Asset]
     let date: Date
+    let cached: Bool
 }

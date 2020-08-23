@@ -2,7 +2,7 @@
 import Foundation
 import CoreLocation
 
-struct Project: Codable {
+public struct Project: Codable {
     let id: Int
     let name: String
 
@@ -17,6 +17,9 @@ struct Project: Codable {
 
     /// Should assets be filtered by their location?
     let geo_listen_enabled: Bool
+    
+    public let listen_enabled: Bool
+    public let speak_enabled: Bool
 
     let repeat_mode: String
     let ordering: String
