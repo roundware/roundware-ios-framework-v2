@@ -51,29 +51,36 @@ open class RWFramework: NSObject {
         return RWFrameworkConfig.getConfigValueAsNumber("project_id").intValue
     }
 
-    public let playlist = Playlist(filters: [
-        // DynamicTagFilter("_ten_most_recent_days", MostRecentFilter(days: 10)),
-        DynamicTagFilter("_ten_most_recent_days", MostRecentCountFilter(count: 20)),
-        // Accept an asset if one of the following conditions is true
-        AnyAssetFilters([
-            // if an asset is scheduled to play right now
-            TimedAssetFilter(),
-            // If an asset has a shape and we AREN'T in it, reject entirely.
-            AssetShapeFilter(),
-            // if it has no shape, consider a fixed distance from it
-            DistanceFixedFilter(),
-            // or a user-specified distance range
-            AllAssetFilters([DistanceRangesFilter(), AngleFilter()]),
+    public let playlist = Playlist(filters: AllAssetFilters([
+        // Use the first filter that definitively accepts or rejects an asset.
+        FirstEagerFilter([
+            // Either we're playing a playlist,
+            // DynamicTagFilter("_ten_most_recent_days", MostRecentFilter(days: 10)),
+            DynamicTagFilter("_ten_most_recent_days", MostRecentCountFilter(count: 20)),
+            // Or we should follow normal playback rules.
+            AllAssetFilters([
+                // all the tags on an asset must be in our list of tags to listen for
+                AnyTagsFilter(),
+                // if any track-level tag filters exist, apply them
+                TrackTagsFilter(),
+                // Accept an asset if it fits one nearness criteria.
+                AnyAssetFilters([
+                    // if an asset is scheduled to play right now
+                    TimedAssetFilter(),
+                    // If an asset has a shape and we AREN'T in it, reject entirely.
+                    AssetShapeFilter(),
+                    // if it has no shape, consider a fixed distance from it
+                    DistanceFixedFilter(),
+                    // or a user-specified distance range
+                    AllAssetFilters([DistanceRangesFilter(), AngleFilter()]),
+                ]),
+            ]),
         ]),
         // only repeat assets if there's no other choice
         TimedRepeatFilter(),
         // skip blocked assets and users
         BlockedAssetsFilter(),
-        // all the tags on an asset must be in our list of tags to listen for
-        AnyTagsFilter(),
-        // if any track-level tag filters exist, apply them
-        TrackTagsFilter(),
-    ], sortBy: [
+    ]), sortBy: [
         SortRandomly(),
         SortByLikes(),
     ])

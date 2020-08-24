@@ -93,6 +93,27 @@ struct AllAssetFilters: AssetFilter {
     }
 }
 
+/**
+ Uses the result of the first filter that returns a non-neutral value.
+ */
+struct FirstEagerFilter: AssetFilter {
+    var filters: [AssetFilter]
+    init(_ filters: [AssetFilter]) {
+        self.filters = filters
+    }
+    
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
+        return filters.lazy
+            .map { $0.keep(asset, playlist: playlist, track: track) }
+            .first { $0 != .neutral } ?? .lowest
+    }
+    
+    func onUpdateAssets(playlist: Playlist) -> Promise<Void> {
+        return all(filters.map { $0.onUpdateAssets(playlist: playlist) })
+            .then { _ -> Void in }
+    }
+}
+
 struct AnyTagsFilter: AssetFilter {
     func keep(_ asset: Asset, playlist _: Playlist, track _: AudioTrack) -> AssetPriority {
         // List of tag_ids to listen for.
@@ -382,11 +403,11 @@ class MostRecentCountFilter: AssetFilter {
 
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         // Figure out the most recent X assets.
-        let assets = playlist.filteredAssets[track.id]?.sorted { a, b in
+        let assets = playlist.allAssets.sorted { a, b in
             a.createdDate > b.createdDate
         }[0 ..< maxCount]
         // Only play the given asset if it's one of those.
-        if assets?.contains(where: { $0 === asset }) ?? false {
+        if assets.contains(where: { $0 === asset }) {
             return .normal
         } else {
             return .discard

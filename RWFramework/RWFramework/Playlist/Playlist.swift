@@ -26,7 +26,7 @@ public class Playlist {
     private(set) var startTime = Date()
 
     // assets and filters
-    private var filters: AllAssetFilters
+    private var filters: AssetFilter
     private var sortMethods: [SortMethod]
 
     /// Map asset ID to data like last listen time.
@@ -52,10 +52,10 @@ public class Playlist {
     private let audioEngine = AVAudioEngine()
     private let audioMixer = AVAudioEnvironmentNode()
 
-    init(filters: [AssetFilter], sortBy: [SortMethod]) {
+    init(filters: AssetFilter, sortBy: [SortMethod]) {
         DispatchQueue.promises = .global()
 
-        self.filters = AllAssetFilters(filters)
+        self.filters = filters
         sortMethods = sortBy
 
         // Restart the audio engine upon changing outputs
@@ -381,10 +381,6 @@ extension Playlist {
 
 // Filters functionality
 extension Playlist {
-    public func apply(filter: AssetFilter) {
-        filters.filters.append(filter)
-    }
-
     func updateFilterData() -> Promise<Void> {
         return filters.onUpdateAssets(playlist: self)
             .recover { err in print(err) }
