@@ -26,7 +26,7 @@ public class Playlist {
     private(set) var startTime = Date()
 
     // assets and filters
-    private var filters: AllAssetFilters
+    private var filters: AssetFilter
     private var sortMethods: [SortMethod]
 
     /// Map asset ID to data like last listen time.
@@ -37,6 +37,8 @@ public class Playlist {
      to support loading multiple projects at once.
      */
     private var assetPool: AssetPool?
+
+    var filteredAssets: [Int: [Asset]] = [:]
 
     // audio tracks, background and foreground
     public private(set) var speakers: [Speaker] = []
@@ -50,10 +52,10 @@ public class Playlist {
     private let audioEngine = AVAudioEngine()
     private let audioMixer = AVAudioEnvironmentNode()
 
-    init(filters: [AssetFilter], sortBy: [SortMethod]) {
+    init(filters: AssetFilter, sortBy: [SortMethod]) {
         DispatchQueue.promises = .global()
 
-        self.filters = AllAssetFilters(filters)
+        self.filters = filters
         sortMethods = sortBy
 
         // Restart the audio engine upon changing outputs
@@ -234,6 +236,18 @@ extension Playlist {
         }
     }
 
+    func skip(to assetId: Int, onTrack trackId: Int? = nil) {
+        if let track = tracks.first(where: { $0.id == trackId }) ?? tracks.first,
+            let asset = assetPool?.assets.first(where: { $0.id == assetId }) {
+            // Play the given asset on a particular track.
+            track.playNext(asset: asset)
+            // All other tracks fade to silence.
+            for other in tracks.filter({ $0 !== track }) {
+                other.holdSilence()
+            }
+        }
+    }
+
     func replay() {
         for t in tracks {
             t.replay()
@@ -367,10 +381,6 @@ extension Playlist {
 
 // Filters functionality
 extension Playlist {
-    public func apply(filter: AssetFilter) {
-        filters.filters.append(filter)
-    }
-
     func updateFilterData() -> Promise<Void> {
         return filters.onUpdateAssets(playlist: self)
             .recover { err in print(err) }
@@ -519,15 +529,12 @@ extension Playlist {
             let playsOfA = userAssetData[a.0.id]?.playCount ?? 0
             let playsOfB = userAssetData[b.0.id]?.playCount ?? 0
             return playsOfA < playsOfB
-        }
+        }.map { $0.0 }
+
+        self.filteredAssets[track.id] = sortedAssets
 
         print("\(sortedAssets.count) filtered assets")
-
-        let next = sortedAssets.first?.0
-        if let next = next {
-            print("picking asset: \(next.id)")
-        }
-        return next
+        return sortedAssets.first
     }
 }
 

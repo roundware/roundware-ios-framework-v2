@@ -6,32 +6,31 @@
 //  Copyright (c) 2015 Roundware. All rights reserved.
 //
 
-import Foundation
-import UIKit
+import AVFoundation
 import CoreLocation
 import CoreMotion
-import WebKit
-import AVFoundation
-import SystemConfiguration
+import Foundation
 import Promises
 import Reachability
+import SystemConfiguration
+import UIKit
+import WebKit
 
 private let _RWFrameworkSharedInstance = RWFramework()
 
 open class RWFramework: NSObject {
+    private lazy var __once: () = { () -> Void in
+        self.println("Submitting Listen Tags (timeToSendTheListenTags)")
+        self.submitListenIDsSetAsTags() // self.submitListenTags()
+    }()
 
-private lazy var __once: () = { () -> Void in
-                    self.println("Submitting Listen Tags (timeToSendTheListenTags)")
-                    self.submitListenIDsSetAsTags() //self.submitListenTags()
-                }()
-
-// MARK: Properties
+    // MARK: Properties
 
     /// A list of delegates that conform to RWFrameworkProtocol (see RWFrameworkProtocol.swift)
     open var delegates: NSHashTable<AnyObject> = NSHashTable.weakObjects()
 
     let motionManager = CMMotionManager()
-    
+
     // Location (see RWFrameworkCoreLocation.swift)
     let locationManager: CLLocationManager = CLLocationManager()
     var streamOptions = StreamParams(
@@ -42,8 +41,9 @@ private lazy var __once: () = { () -> Void in
         angularWidth: nil
     )
     var lastRecordedLocation: CLLocation {
-        return self.streamOptions.location
+        return streamOptions.location
     }
+
     var letFrameworkRequestWhenInUseAuthorizationForLocation = true
 
     /** Static project id that can be checked even offline. */
@@ -51,42 +51,50 @@ private lazy var __once: () = { () -> Void in
         return RWFrameworkConfig.getConfigValueAsNumber("project_id").intValue
     }
 
-    public let playlist = Playlist(filters: [
-        // Accept an asset if one of the following conditions is true
-        AnyAssetFilters([
-            // if an asset is scheduled to play right now
-            TimedAssetFilter(),
-            // If an asset has a shape and we AREN'T in it, reject entirely.
-            AssetShapeFilter(),
-            // if it has no shape, consider a fixed distance from it
-            DistanceFixedFilter(),
-            // or a user-specified distance range
-            AllAssetFilters([DistanceRangesFilter(), AngleFilter()]),
+    public let playlist = Playlist(filters: AllAssetFilters([
+        // Use the first filter that definitively accepts or rejects an asset.
+        FirstEagerFilter([
+            // Either we're playing a playlist,
+            // DynamicTagFilter("_ten_most_recent_days", MostRecentFilter(days: 10)),
+            DynamicTagFilter("_ten_most_recent_days", MostRecentCountFilter(count: 20)),
+            // Or we should follow normal playback rules.
+            AllAssetFilters([
+                // all the tags on an asset must be in our list of tags to listen for
+                AnyTagsFilter(),
+                // if any track-level tag filters exist, apply them
+                TrackTagsFilter(),
+                // Accept an asset if it fits one nearness criteria.
+                AnyAssetFilters([
+                    // if an asset is scheduled to play right now
+                    TimedAssetFilter(),
+                    // If an asset has a shape and we AREN'T in it, reject entirely.
+                    AssetShapeFilter(),
+                    // if it has no shape, consider a fixed distance from it
+                    DistanceFixedFilter(),
+                    // or a user-specified distance range
+                    AllAssetFilters([DistanceRangesFilter(), AngleFilter()]),
+                ]),
+            ]),
         ]),
         // only repeat assets if there's no other choice
         TimedRepeatFilter(),
         // skip blocked assets and users
         BlockedAssetsFilter(),
-        // all the tags on an asset must be in our list of tags to listen for
-        AnyTagsFilter(),
-        // if any track-level tag filters exist, apply them
-        TrackTagsFilter(),
-        DynamicTagFilter("_ten_most_recent_days", MostRecentFilter(days: 10))
-    ], sortBy: [
+    ]), sortBy: [
         SortRandomly(),
         SortByLikes(),
     ])
 
     public lazy var recorder = Recorder.load()
-    
+
     public private(set) var reachability: Reachability!
-    
+
     static let decoder: JSONDecoder = {
         let dec = JSONDecoder()
         dec.dateDecodingStrategy = .flexibleISO
         return dec
     }()
-    
+
     static let encoder: JSONEncoder = {
         let enc = JSONEncoder()
         enc.dateEncodingStrategy = .formatted(.iso8601Full)
@@ -97,7 +105,7 @@ private lazy var __once: () = { () -> Void in
     /// RWFrameworkAudioRecorder.swift calls code in RWFrameworkAudioRecorder.m to perform recording when true
     // let useComplexRecordingMechanism = false
 //    public var soundRecorder: AVAudioRecorder? = nil
-    var soundPlayer: AVAudioPlayer? = nil
+    var soundPlayer: AVAudioPlayer?
 
     // Media - Audio/Text/Image/Movie (see RWFrameworkMedia.swift)
     // var mediaArray: Array<Media> = [Media]() {
@@ -119,19 +127,20 @@ private lazy var __once: () = { () -> Void in
             }
         }
     }
+
     var getProjectsIdUIGroupsSucceeded = false
     var getTagCategoriesSucceeded = false
     var getUIConfigSucceeded = false
     var timeToSendTheListenTags = false {
         didSet {
             if timeToSendTheListenTags {
-                _ = self.__once
+                _ = __once
             }
         }
     }
 
     // Timers (see RWFrameworkTimers.swift)
-    var audioTimer: Timer? = nil
+    var audioTimer: Timer?
 
     // Media - Upload (see RWFrameworkMediaUploader.swift)
     var uploaderActive: Bool = true
@@ -140,14 +149,14 @@ private lazy var __once: () = { () -> Void in
     // Misc
     var reverse_domain = "roundware.org" // This will be replaced once the config data is loaded
 
-// MARK: - Main
+    // MARK: - Main
 
     /// Returns the shared instance of the framework
     open class var sharedInstance: RWFramework {
         return _RWFrameworkSharedInstance
     }
 
-    public override init() {
+    override public init() {
         super.init()
 
         #if DEBUG
@@ -156,7 +165,7 @@ private lazy var __once: () = { () -> Void in
 
 //        mediaArray = loadMediaArray()
 //        rwUpdateApplicationIconBadgeNumber(mediaArray.count)
-        
+
         // setup location updates
         locationManager.delegate = self
         locationManager.distanceFilter = kCLDistanceFilterNone // This is updated later once getProjectsIdSuccess is called
@@ -170,17 +179,17 @@ private lazy var __once: () = { () -> Void in
     /// Start kicks everything else off - call this to start the framework running.
     /// - Parameter letFrameworkRequestWhenInUseAuthorizationForLocation: false if the caller would rather call requestWhenInUseAuthorizationForLocation() any time after rwGetProjectsIdSuccess is called.
     open func start(_ letFrameworkRequestWhenInUseAuthorizationForLocation: Bool = true) {
-        if (!compatibleOS()) {
+        if !compatibleOS() {
             println("RWFramework requires iOS 8 or later")
-        } else if (!hostIsReachable()) {
+        } else if !hostIsReachable() {
             println("RWFramework requires network connectivity")
         } else {
             self.letFrameworkRequestWhenInUseAuthorizationForLocation = letFrameworkRequestWhenInUseAuthorizationForLocation
-            
-            self.playlist.start()
-            
+
+            playlist.start()
+
             // Upload any pending recordings if online.
-            self.setupReachability()
+            setupReachability()
         }
     }
 
@@ -189,7 +198,7 @@ private lazy var __once: () = { () -> Void in
         removeAllDelegates()
         println("end")
     }
-    
+
     private func setupReachability() {
         do {
             reachability = try Reachability()
@@ -204,7 +213,7 @@ private lazy var __once: () = { () -> Void in
             print("recorder: \(error)")
         }
     }
-    
+
     @objc func reachabilityChanged(_ note: NSNotification) {
         // Update the badge just in case it's out of sync.
         recorder.updateBadge()
@@ -223,15 +232,13 @@ private lazy var __once: () = { () -> Void in
         }
     }
 
-
-
-// MARK: - AVAudioSession
+    // MARK: - AVAudioSession
 
     func addAudioInterruptionNotification() {
         NotificationCenter.default.addObserver(self,
-            selector: #selector(RWFramework.handleAudioInterruption(_:)),
-            name: AVAudioSession.interruptionNotification,
-            object: nil)
+                                               selector: #selector(RWFramework.handleAudioInterruption(_:)),
+                                               name: AVAudioSession.interruptionNotification,
+                                               object: nil)
     }
 
     @objc func handleAudioInterruption(_ notification: Notification) {
@@ -257,7 +264,7 @@ private lazy var __once: () = { () -> Void in
         }
     }
 
-// MARK: - Utilities
+    // MARK: - Utilities
 
     /// Returns true if the framework is running on a compatible OS
     func compatibleOS() -> Bool {
@@ -309,7 +316,7 @@ private lazy var __once: () = { () -> Void in
 
     /// Log to server
     open func logToServer(_ event_type: String, data: String? = "") {
-        apiPostEvents(event_type, data: data).then { data in
+        apiPostEvents(event_type, data: data).then { _ in
             self.println("LOGGED TO SERVER: \(event_type)")
         }.catch { error in
             self.println("ERROR LOGGING TO SERVER \(error)")
@@ -317,9 +324,9 @@ private lazy var __once: () = { () -> Void in
     }
 
     /// Return true if we have a network connection
-    func hostIsReachable(_ ip_address: String = "8.8.8.8") -> Bool {
+    func hostIsReachable(_: String = "8.8.8.8") -> Bool {
         return true
-// TODO: FIX
+        // TODO: FIX
 //        if let host_name = ip_address.cStringUsingEncoding(NSASCIIStringEncoding) {
 //            let reachability  = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, host_name).takeRetainedValue()
 //            var flags: SCNetworkReachabilityFlags = 0
@@ -350,7 +357,7 @@ private lazy var __once: () = { () -> Void in
 
         return s
     }
-    
+
     /// Block a specific asset from being played again.
     /// Only works in practice if a `BlockedAssetFilter` is applied.
     public func block(assetId: Int) -> Promise<Void> {
@@ -361,7 +368,7 @@ private lazy var __once: () = { () -> Void in
             self.playlist.updateFilterData()
         }
     }
-    
+
     public func blockUser(assetId: Int) -> Promise<Void> {
         return apiPostAssetsIdVotes(
             assetId.description,
@@ -381,6 +388,7 @@ extension DateFormatter {
         formatter.locale = Locale(identifier: "en_US_POSIX")
         return formatter
     }()
+
     static let iso8601: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"

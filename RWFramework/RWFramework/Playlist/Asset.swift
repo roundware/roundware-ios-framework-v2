@@ -14,9 +14,9 @@ public class Asset: Codable {
     let file: String
     /// Duration of the asset in seconds
     let length: Double?
-    let createdDate: Date
+    public let createdDate: Date
     let weight: Double
-    let description: String
+    public let description: String
     let submitted: Bool?
     let shape: Geometry?
     private let longitude: Double?

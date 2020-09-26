@@ -200,6 +200,8 @@ import Foundation
 
     @objc optional func rwAssetDownloadProgress(_ progress: Double)
     @objc optional func rwAssetDeleteProgress(_ progress: Double)
+    
+    @objc optional func rwPlayingAsset(_ assetId: Int, onTrack track: Int)
 }
 
 /// The framework calls these methods to call thru to the delegate protocol in order to keep the calling code clean of respondsToSelector checks
@@ -763,6 +765,12 @@ extension RWFramework {
     func rwAssetDeleteProgress(_ progress: Double) {
         protocaller { (rwfp, _) -> Void in
             self.dam { rwfp.rwAssetDeleteProgress?(progress) }
+        }
+    }
+    
+    func rwPlayingAsset(_ asset: Asset, onTrack track: Int) {
+        protocaller { (rwfp, _) -> Void in
+            self.dam { rwfp.rwPlayingAsset?(asset.id, onTrack: track) }
         }
     }
 }
