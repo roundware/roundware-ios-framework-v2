@@ -77,22 +77,17 @@ struct AllAssetFilters: AssetFilter {
         if filters.isEmpty {
             return .lowest
         }
-        
-        var backup: AssetPriority? = nil
-        for filter in filters {
-            let rank = filter.keep(asset, playlist: playlist, track: track)
-            // If any filter discards the asset, then this discards.
+
+        let ranks = filters.map { $0.keep(asset, playlist: playlist, track: track) }
+
+        // If any filter discards the asset, then this discards
+        if ranks.contains(where: { $0 == .discard }) {
+            return .discard
+        } else {
             // Otherwise, simply use the first returned priority
             // Ideally the first that isn't .neutral
-            if rank == .discard {
-                return .discard
-            } else if rank != .neutral {
-                return rank
-            } else if backup == nil {
-                backup = rank
-            }
+            return ranks.first { $0 != .neutral } ?? ranks.first!
         }
-        return backup!
     }
 
     func onUpdateAssets(playlist: Playlist) -> Promise<Void> {
