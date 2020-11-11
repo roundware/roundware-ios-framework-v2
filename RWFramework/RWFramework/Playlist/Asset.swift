@@ -11,7 +11,7 @@ public class Asset: Codable {
     public let id: Int
     public let tags: [Int]
     /// URL pointing to the associated media file, relative to the project server
-    let file: String
+    let file: String?
     /// Duration of the asset in seconds
     let length: Double?
     public let createdDate: Date
@@ -55,7 +55,8 @@ extension Asset {
         }
     }
 
-    public var mp3Url: URL {
+    public var mp3Url: URL? {
+        guard let file = self.file else { return nil }
         return URL(string: file)!
             .deletingPathExtension()
             .appendingPathExtension("mp3")

@@ -315,7 +315,7 @@ extension Playlist {
                 // Only download the asset if we don't already have it.
                 if !((try? f.checkResourceIsReachable()) ?? false) {
                     // Download the audio data.
-                    let remoteUrl = asset.mp3Url
+                    let remoteUrl = asset.mp3Url!
                     print("offline: downloading \(remoteUrl)")
                     let data = try Data(contentsOf: remoteUrl)
 
@@ -357,6 +357,7 @@ extension Playlist {
 
     /** Where to save asset data for offline playback. */
     internal func assetDataFile(for asset: Asset) -> URL? {
+        guard let url = asset.mp3Url else { return nil }
         do {
             let fm = FileManager.default
             let parentDir = try fm.url(
@@ -371,7 +372,7 @@ extension Playlist {
             // Make sure it exists.
             _ = try? fm.createDirectory(at: assetsDir, withIntermediateDirectories: true, attributes: nil)
             // Convert the remote URL to a local one.
-            return assetsDir.appendingPathComponent(asset.mp3Url.lastPathComponent)
+            return assetsDir.appendingPathComponent(url.lastPathComponent)
         } catch {
             print(error)
             return nil

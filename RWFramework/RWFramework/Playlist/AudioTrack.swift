@@ -237,8 +237,8 @@ private class LoadingState: TrackState {
         let documentsDir = try FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
         
         // Remove file of last played asset
-        if let prev = track.previousAsset {
-            let fileName = URL(string: prev.file)!
+        if let prev = track.previousAsset, let f = prev.file {
+            let fileName = URL(string: f)!
                 .deletingPathExtension()
                 .appendingPathExtension("mp3")
                 .lastPathComponent
@@ -255,9 +255,7 @@ private class LoadingState: TrackState {
         // If we can't load a local copy, download the asset now.
         if file == nil {
             print("downloading asset")
-            let remoteUrl = URL(string: track.currentAsset!.file)!
-                .deletingPathExtension()
-                .appendingPathExtension("mp3")
+            let remoteUrl = track.currentAsset!.mp3Url!
             let data = try Data(contentsOf: remoteUrl)
             print("asset downloaded as \(remoteUrl.lastPathComponent)")
             // have to write to file...
