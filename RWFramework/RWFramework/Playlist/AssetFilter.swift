@@ -48,10 +48,13 @@ struct AnyAssetFilters: AssetFilter {
         if filters.isEmpty {
             return .lowest
         }
-        let ranks = filters.lazy
-            .map { $0.keep(asset, playlist: playlist, track: track) }
-        return ranks.first { $0 != .discard && $0 != .neutral }
-            ?? .discard
+        for filter in filters {
+            let rank = filter.keep(asset, playlist: playlist, track: track)
+            if rank != .neutral && rank != .discard {
+                return rank
+            }
+        }
+        return .discard
     }
 
     func onUpdateAssets(playlist: Playlist) -> Promise<Void> {
@@ -74,17 +77,22 @@ struct AllAssetFilters: AssetFilter {
         if filters.isEmpty {
             return .lowest
         }
-        let ranks = filters.lazy
-            .map { $0.keep(asset, playlist: playlist, track: track) }
-
-        // If any filter discards the asset, then this discards
-        if ranks.contains(where: { $0 == .discard }) {
-            return .discard
-        } else {
+        
+        var backup: AssetPriority? = nil
+        for filter in filters {
+            let rank = filter.keep(asset, playlist: playlist, track: track)
+            // If any filter discards the asset, then this discards.
             // Otherwise, simply use the first returned priority
             // Ideally the first that isn't .neutral
-            return ranks.first { $0 != .neutral } ?? ranks.first!
+            if rank == .discard {
+                return .discard
+            } else if rank != .neutral {
+                return rank
+            } else if backup == nil {
+                backup = rank
+            }
         }
+        return backup!
     }
 
     func onUpdateAssets(playlist: Playlist) -> Promise<Void> {
@@ -116,15 +124,12 @@ struct FirstEagerFilter: AssetFilter {
 
 struct AnyTagsFilter: AssetFilter {
     func keep(_ asset: Asset, playlist _: Playlist, track _: AudioTrack) -> AssetPriority {
-        // List of tag_ids to listen for.
-        guard let listenTagIDs = RWFramework.sharedInstance.getSubmittableListenTagIDsSet()
-        else { return .lowest }
-
+        let rw = RWFramework.sharedInstance
         let matches = asset.tags.contains { assetTag in
-            listenTagIDs.contains(assetTag)
+            rw.tagIsEnabled(assetTag)
         }
         // matching only by tag should be the least important filter.
-        return matches ? .lowest : .discard
+        return matches ? .lowest : .neutral
     }
 }
 
@@ -354,12 +359,11 @@ struct DynamicTagFilter: AssetFilter {
     }
 
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
+        let rw = RWFramework.sharedInstance
         // see if there are any tags using this filter
         if let tagIds = DynamicTagFilter.tags[key],
-            // grab the list of enabled tags
-            let enabledTagIds = RWFramework.sharedInstance.getSubmittableListenTagIDsSet(),
             // if any filter tags are enabled, apply the filter
-            tagIds.contains(where: { enabledTagIds.contains($0) }) {
+            tagIds.contains(where: { rw.tagIsEnabled($0) }) {
             return filter.keep(asset, playlist: playlist, track: track)
         } else {
             return .neutral

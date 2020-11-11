@@ -297,6 +297,23 @@ extension RWFramework {
         }
         return tag_ids
     }
+    
+    public func tagIsEnabled(_ requestedTag: Int) -> Bool {
+        if let array = UserDefaults.standard.object(forKey: "listenIDsSet") as? Array<Int> {
+            return array.contains(requestedTag)
+        } else {
+            if let uiconfig = getUIConfig() {
+                for listen in uiconfig.listen {
+                    for item in listen.display_items {
+                        if item.default_state == true {
+                            return true
+                        }
+                    }
+                }
+            }
+            return false
+        }
+    }
 
     public func getListenIDsSet() -> Set<Int>? {
         if let array = UserDefaults.standard.object(forKey: "listenIDsSet") as? Array<Int> {
