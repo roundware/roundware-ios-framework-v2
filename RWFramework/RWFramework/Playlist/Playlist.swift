@@ -11,26 +11,28 @@ struct UserAssetData {
     let playCount: Int
 }
 
-class StreamParams {
+public class StreamParams {
     let location: CLLocation
     let minDist: Double?
     let maxDist: Double?
     let heading: Double?
     let angularWidth: Double?
+    let tags: [Int]?
     
-    init(location: CLLocation, minDist: Double?, maxDist: Double?, heading: Double?, angularWidth: Double?) {
+    init(location: CLLocation, minDist: Double?, maxDist: Double?, heading: Double?, angularWidth: Double?, tags: [Int]?) {
         self.location = location
         self.minDist = minDist
         self.maxDist = maxDist
         self.heading = heading
         self.angularWidth = angularWidth
+        self.tags = tags
     }
 }
 
 public class Playlist {
     // server communication
     private var updateTimer: Repeater?
-    private(set) var currentParams: StreamParams?
+    public private(set) var currentParams: StreamParams?
     private(set) var startTime = Date()
 
     // assets and filters

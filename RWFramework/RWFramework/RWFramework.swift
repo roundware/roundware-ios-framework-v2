@@ -38,7 +38,8 @@ open class RWFramework: NSObject {
         minDist: nil,
         maxDist: nil,
         heading: nil,
-        angularWidth: nil
+        angularWidth: nil,
+        tags: nil
     )
     var lastRecordedLocation: CLLocation {
         return streamOptions.location

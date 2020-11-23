@@ -86,7 +86,7 @@ struct AllAssetFilters: AssetFilter {
         } else {
             // Otherwise, simply use the first returned priority
             // Ideally the first that isn't .neutral
-            return ranks.first { $0 != .neutral } ?? ranks.first!
+            return ranks.first { $0 != .neutral } ?? .neutral
         }
     }
 
@@ -118,10 +118,13 @@ struct FirstEagerFilter: AssetFilter {
 }
 
 struct AnyTagsFilter: AssetFilter {
-    func keep(_ asset: Asset, playlist _: Playlist, track _: AudioTrack) -> AssetPriority {
-        let rw = RWFramework.sharedInstance
+    func keep(_ asset: Asset, playlist: Playlist, track _: AudioTrack) -> AssetPriority {
+        guard let params = playlist.currentParams,
+              let tags = params.tags
+        else { return .neutral }
+
         let matches = asset.tags.contains { assetTag in
-            rw.tagIsEnabled(assetTag)
+            tags.contains(assetTag)
         }
         // matching only by tag should be the least important filter.
         return matches ? .lowest : .neutral
@@ -129,13 +132,13 @@ struct AnyTagsFilter: AssetFilter {
 }
 
 struct AllTagsFilter: AssetFilter {
-    func keep(_ asset: Asset, playlist _: Playlist, track _: AudioTrack) -> AssetPriority {
-        // List of tag_ids to listen for.
-        guard let listenTagIDs = RWFramework.sharedInstance.getSubmittableListenTagIDsSet()
+    func keep(_ asset: Asset, playlist: Playlist, track _: AudioTrack) -> AssetPriority {
+        guard let params = playlist.currentParams,
+              let tags = params.tags
         else { return .lowest }
 
         let matches = asset.tags.allSatisfy { assetTag in
-            listenTagIDs.contains(assetTag)
+            tags.contains(assetTag)
         }
 
         return matches ? .lowest : .discard
