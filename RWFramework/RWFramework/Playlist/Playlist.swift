@@ -11,12 +11,20 @@ struct UserAssetData {
     let playCount: Int
 }
 
-struct StreamParams {
+class StreamParams {
     let location: CLLocation
     let minDist: Double?
     let maxDist: Double?
     let heading: Double?
     let angularWidth: Double?
+    
+    init(location: CLLocation, minDist: Double?, maxDist: Double?, heading: Double?, angularWidth: Double?) {
+        self.location = location
+        self.minDist = minDist
+        self.maxDist = maxDist
+        self.heading = heading
+        self.angularWidth = angularWidth
+    }
 }
 
 public class Playlist {
@@ -315,7 +323,7 @@ extension Playlist {
                 // Only download the asset if we don't already have it.
                 if !((try? f.checkResourceIsReachable()) ?? false) {
                     // Download the audio data.
-                    let remoteUrl = asset.mp3Url
+                    let remoteUrl = asset.mp3Url!
                     print("offline: downloading \(remoteUrl)")
                     let data = try Data(contentsOf: remoteUrl)
 
@@ -357,6 +365,7 @@ extension Playlist {
 
     /** Where to save asset data for offline playback. */
     internal func assetDataFile(for asset: Asset) -> URL? {
+        guard let url = asset.mp3Url else { return nil }
         do {
             let fm = FileManager.default
             let parentDir = try fm.url(
@@ -371,7 +380,7 @@ extension Playlist {
             // Make sure it exists.
             _ = try? fm.createDirectory(at: assetsDir, withIntermediateDirectories: true, attributes: nil)
             // Convert the remote URL to a local one.
-            return assetsDir.appendingPathComponent(asset.mp3Url.lastPathComponent)
+            return assetsDir.appendingPathComponent(url.lastPathComponent)
         } catch {
             print(error)
             return nil
@@ -514,27 +523,24 @@ extension Playlist {
     /// Picks the next-up asset to play on the given track.
     /// Applies all the playlist-level and track-level filters to make the decision.
     func next(forTrack track: AudioTrack) -> Asset? {
-        let filteredAssets = allAssets.lazy.map { asset in
+        print("finding next asset in \(allAssets.count)...")
+
+        let filteredAssets = allAssets.lazy.filter { asset in
+            // don't pick anything currently playing on another track
+            !self.currentlyPlayingAssets.contains { $0.id == asset.id }
+                && asset.file != nil
+        }.map { asset in
             (asset, self.filters.keep(asset, playlist: self, track: track))
         }.filter { asset, rank in
             rank != .discard
-                // don't pick anything currently playing on another track
-                && !self.currentlyPlayingAssets.contains { $0.id == asset.id }
         }
 
-        let sortedAssets = filteredAssets.sorted { a, b in
-            a.1.rawValue > b.1.rawValue
-        }.sorted { a, b in
+        return filteredAssets.min { a, b in
             // play less played assets first
             let playsOfA = userAssetData[a.0.id]?.playCount ?? 0
             let playsOfB = userAssetData[b.0.id]?.playCount ?? 0
-            return playsOfA < playsOfB
-        }.map { $0.0 }
-
-        self.filteredAssets[track.id] = sortedAssets
-
-        print("\(sortedAssets.count) filtered assets")
-        return sortedAssets.first
+            return playsOfA <= playsOfB && a.1.rawValue > b.1.rawValue
+        }?.0
     }
 }
 
