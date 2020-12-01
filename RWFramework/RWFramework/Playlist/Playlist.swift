@@ -427,7 +427,7 @@ extension Playlist {
     }
 
     public var inSpeakerRange: Bool {
-        if let params = currentParams {
+        if currentParams != nil {
             return distanceToNearestSpeaker <= project.out_of_range_distance
         } else {
             return false
@@ -513,9 +513,9 @@ extension Playlist {
 
     private func updateTrackParams() {
         if let params = currentParams {
-            // update all tracks in parallel, in case they need to load a new track
+            // update all tracks in parallel, in case they need to load a new asset
             for t in tracks {
-                Promise<Void>(on: .global()) {
+                _ = Promise<Void>(on: .global()) {
                     t.updateParams(params)
                 }
             }

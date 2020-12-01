@@ -284,11 +284,9 @@ extension RWFramework {
         return enabledListenTagIDs().contains(tagId)
     }
 
-    internal func enabledListenTagIDs() -> [Int] {
+    public func enabledListenTagIDs() -> [Int] {
         if let tags = playlist.currentParams?.tags, !tags.isEmpty {
             return tags
-        } else if let array = UserDefaults.standard.object(forKey: "listenIDsSet") as? [Int] {
-            return array
         } else if let uiconfig = getUIConfig() {
             var set = [Int]()
             for listen in uiconfig.listen {

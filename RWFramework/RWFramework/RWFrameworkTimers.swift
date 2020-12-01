@@ -20,7 +20,6 @@ extension RWFramework {
             soundRecorder!.updateMeters()
             rwRecordingProgress(percentage, maxDuration: max_recording_length, peakPower: soundRecorder!.peakPower(forChannel: 0), averagePower: soundRecorder!.averagePower(forChannel: 0))
         } else if isPlayingBack() {
-            let soundRecorder = recorder.soundRecorder
             percentage = soundPlayer!.currentTime/soundPlayer!.duration
             soundPlayer!.updateMeters()
             rwPlayingBackProgress(percentage, duration: soundPlayer!.duration, peakPower: soundPlayer!.peakPower(forChannel: 0), averagePower: soundPlayer!.averagePower(forChannel: 0))
