@@ -18,7 +18,7 @@ public class StreamParams {
     let heading: Double?
     let angularWidth: Double?
     let tags: [Int]?
-    
+
     init(location: CLLocation, minDist: Double?, maxDist: Double?, heading: Double?, angularWidth: Double?, tags: [Int]?) {
         self.location = location
         self.minDist = minDist
@@ -533,16 +533,20 @@ extension Playlist {
                 && asset.file != nil
         }.map { asset in
             (asset, self.filters.keep(asset, playlist: self, track: track))
-        }.filter { asset, rank in
+        }.filter { _, rank in
             rank != .discard
         }
 
-        return filteredAssets.min { a, b in
+        let asset = filteredAssets.min { a, b in
             // play less played assets first
             let playsOfA = userAssetData[a.0.id]?.playCount ?? 0
             let playsOfB = userAssetData[b.0.id]?.playCount ?? 0
             return playsOfA <= playsOfB && a.1.rawValue > b.1.rawValue
         }?.0
+
+        print("playing asset with tags \(asset?.tags)")
+
+        return asset
     }
 }
 
@@ -625,6 +629,8 @@ extension Playlist {
     /// Framework should call this when stream parameters are updated.
     func updateParams(_ opts: StreamParams) {
         currentParams = opts
+
+        print("playlist tags: \(currentParams?.tags)")
 
         if let heading = opts.heading {
             audioMixer.listenerAngularOrientation = AVAudio3DAngularOrientation(

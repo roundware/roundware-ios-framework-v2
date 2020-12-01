@@ -50,7 +50,7 @@ struct AnyAssetFilters: AssetFilter {
         }
         for filter in filters {
             let rank = filter.keep(asset, playlist: playlist, track: track)
-            if rank != .neutral && rank != .discard {
+            if rank != .neutral, rank != .discard {
                 return rank
             }
         }
@@ -104,13 +104,13 @@ struct FirstEagerFilter: AssetFilter {
     init(_ filters: [AssetFilter]) {
         self.filters = filters
     }
-    
+
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         return filters.lazy
             .map { $0.keep(asset, playlist: playlist, track: track) }
             .first { $0 != .neutral } ?? .lowest
     }
-    
+
     func onUpdateAssets(playlist: Playlist) -> Promise<Void> {
         return all(filters.map { $0.onUpdateAssets(playlist: playlist) })
             .then { _ -> Void in }
@@ -118,25 +118,21 @@ struct FirstEagerFilter: AssetFilter {
 }
 
 struct AnyTagsFilter: AssetFilter {
-    func keep(_ asset: Asset, playlist: Playlist, track _: AudioTrack) -> AssetPriority {
-        guard let params = playlist.currentParams,
-              let tags = params.tags
-        else { return .neutral }
-
-        let matches = asset.tags.contains { assetTag in
-            tags.contains(assetTag)
+    func keep(_ asset: Asset, playlist _: Playlist, track _: AudioTrack) -> AssetPriority {
+        let rw = RWFramework.sharedInstance
+        let tags = rw.enabledListenTagIDs()
+        let matches = asset.tags.contains {
+            tags.contains($0)
         }
         // matching only by tag should be the least important filter.
-        return matches ? .lowest : .neutral
+        return matches ? .lowest : .discard
     }
 }
 
 struct AllTagsFilter: AssetFilter {
-    func keep(_ asset: Asset, playlist: Playlist, track _: AudioTrack) -> AssetPriority {
-        guard let params = playlist.currentParams,
-              let tags = params.tags
-        else { return .lowest }
-
+    func keep(_ asset: Asset, playlist _: Playlist, track _: AudioTrack) -> AssetPriority {
+        let rw = RWFramework.sharedInstance
+        let tags = rw.enabledListenTagIDs()
         let matches = asset.tags.allSatisfy { assetTag in
             tags.contains(assetTag)
         }
@@ -403,7 +399,7 @@ class MostRecentCountFilter: AssetFilter {
         maxCount = count
     }
 
-    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
+    func keep(_ asset: Asset, playlist: Playlist, track _: AudioTrack) -> AssetPriority {
         // Figure out the most recent X assets.
         let assets = playlist.allAssets.sorted { a, b in
             a.createdDate > b.createdDate
