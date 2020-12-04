@@ -34,14 +34,16 @@ extension RWFramework: CLLocationManagerDelegate {
         location: CLLocation? = nil,
         range: ClosedRange<Double>? = nil,
         headingAngle: Double? = nil,
-        angularWidth: Double? = nil
+        angularWidth: Double? = nil,
+        tags: [Int]? = nil
     ) {
         streamOptions = StreamParams(
             location: location ?? streamOptions.location,
             minDist: range?.lowerBound ?? streamOptions.minDist,
             maxDist: range?.upperBound ?? streamOptions.maxDist,
             heading: headingAngle ?? streamOptions.heading,
-            angularWidth: angularWidth ?? streamOptions.angularWidth
+            angularWidth: angularWidth ?? streamOptions.angularWidth,
+            tags: tags ?? streamOptions.tags
         )
         playlist.updateParams(streamOptions)
     }

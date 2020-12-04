@@ -11,26 +11,28 @@ struct UserAssetData {
     let playCount: Int
 }
 
-class StreamParams {
+public class StreamParams {
     let location: CLLocation
     let minDist: Double?
     let maxDist: Double?
     let heading: Double?
     let angularWidth: Double?
-    
-    init(location: CLLocation, minDist: Double?, maxDist: Double?, heading: Double?, angularWidth: Double?) {
+    let tags: [Int]?
+
+    init(location: CLLocation, minDist: Double?, maxDist: Double?, heading: Double?, angularWidth: Double?, tags: [Int]?) {
         self.location = location
         self.minDist = minDist
         self.maxDist = maxDist
         self.heading = heading
         self.angularWidth = angularWidth
+        self.tags = tags
     }
 }
 
 public class Playlist {
     // server communication
     private var updateTimer: Repeater?
-    private(set) var currentParams: StreamParams?
+    public private(set) var currentParams: StreamParams?
     private(set) var startTime = Date()
 
     // assets and filters
@@ -425,7 +427,7 @@ extension Playlist {
     }
 
     public var inSpeakerRange: Bool {
-        if let params = currentParams {
+        if currentParams != nil {
             return distanceToNearestSpeaker <= project.out_of_range_distance
         } else {
             return false
@@ -511,9 +513,9 @@ extension Playlist {
 
     private func updateTrackParams() {
         if let params = currentParams {
-            // update all tracks in parallel, in case they need to load a new track
+            // update all tracks in parallel, in case they need to load a new asset
             for t in tracks {
-                Promise<Void>(on: .global()) {
+                _ = Promise<Void>(on: .global()) {
                     t.updateParams(params)
                 }
             }
@@ -531,16 +533,20 @@ extension Playlist {
                 && asset.file != nil
         }.map { asset in
             (asset, self.filters.keep(asset, playlist: self, track: track))
-        }.filter { asset, rank in
+        }.filter { _, rank in
             rank != .discard
         }
 
-        return filteredAssets.min { a, b in
+        let asset = filteredAssets.min { a, b in
             // play less played assets first
             let playsOfA = userAssetData[a.0.id]?.playCount ?? 0
             let playsOfB = userAssetData[b.0.id]?.playCount ?? 0
             return playsOfA <= playsOfB && a.1.rawValue > b.1.rawValue
         }?.0
+
+        print("playing asset with tags \(asset?.tags)")
+
+        return asset
     }
 }
 
@@ -623,6 +629,8 @@ extension Playlist {
     /// Framework should call this when stream parameters are updated.
     func updateParams(_ opts: StreamParams) {
         currentParams = opts
+
+        print("playlist tags: \(currentParams?.tags)")
 
         if let heading = opts.heading {
             audioMixer.listenerAngularOrientation = AVAudio3DAngularOrientation(

@@ -275,32 +275,30 @@ extension RWFramework {
         return tag_ids
     }
 
-    public func getSubmittableListenTagIDsSet() -> Set<Int>? {
-        var tag_ids: Set<Int> = []
-        if let selectedIDs = getListenIDsSet() {
-            for id in selectedIDs {
-                let tag_id = getListenTagIDFromID(id)
-                tag_ids.insert(tag_id)
-            }
-        }
-        return tag_ids
+    public func getSubmittableListenTagIDsSet() -> Set<Int> {
+        // Return the user selected tag list, or fallback to the default tag selection.
+        return Set(enabledListenTagIDs())
     }
 
-    public func tagIsEnabled(_ requestedTag: Int) -> Bool {
-        if let array = UserDefaults.standard.object(forKey: "listenIDsSet") as? [Int] {
-            return array.contains(requestedTag)
-        } else {
-            if let uiconfig = getUIConfig() {
-                for listen in uiconfig.listen {
-                    for item in listen.display_items {
-                        if item.default_state == true, item.tag_id == requestedTag {
-                            return true
-                        }
+    internal func tagIsEnabled(_ tagId: Int) -> Bool {
+        return enabledListenTagIDs().contains(tagId)
+    }
+
+    public func enabledListenTagIDs() -> [Int] {
+        if let tags = playlist.currentParams?.tags, !tags.isEmpty {
+            return tags
+        } else if let uiconfig = getUIConfig() {
+            var set = [Int]()
+            for listen in uiconfig.listen {
+                for item in listen.display_items {
+                    if item.default_state == true {
+                        set.append(item.tag_id)
                     }
                 }
             }
-            return false
+            return set
         }
+        return []
     }
 
     public func getListenIDsSet() -> Set<Int>? {
