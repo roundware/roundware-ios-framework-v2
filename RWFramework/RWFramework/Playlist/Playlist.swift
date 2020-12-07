@@ -212,6 +212,7 @@ extension Playlist {
 
         all(speakerUpdate, trackUpdate, assetsUpdate).always {
             RWFramework.sharedInstance.rwStartedSuccessfully()
+            self.pause()
         }
 
         updateTimer = .every(.seconds(project.asset_refresh_interval)) { _ in
@@ -220,22 +221,19 @@ extension Playlist {
     }
 
     func pause() {
-        if isPlaying {
-            for s in speakers { s.pause() }
-            for t in tracks { t.pause() }
-            if demoLooper != nil {
-                demoStream?.pause()
-            }
+        for s in speakers { s.pause() }
+        for t in tracks { t.pause() }
+        if demoLooper != nil {
+            demoStream?.pause()
         }
     }
 
     func resume() {
-        if !isPlaying {
-            for s in speakers { s.resume() }
-            for t in tracks { t.resume() }
-            if demoLooper != nil {
-                demoStream?.play()
-            }
+        print("tracks? \(tracks.count)")
+        for s in speakers { s.resume() }
+        for t in tracks { t.resume() }
+        if demoLooper != nil {
+            demoStream?.play()
         }
     }
 
