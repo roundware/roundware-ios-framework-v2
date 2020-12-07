@@ -104,13 +104,13 @@ struct FirstEagerFilter: AssetFilter {
     init(_ filters: [AssetFilter]) {
         self.filters = filters
     }
-
+    
     func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         return filters.lazy
             .map { $0.keep(asset, playlist: playlist, track: track) }
             .first { $0 != .neutral } ?? .lowest
     }
-
+    
     func onUpdateAssets(playlist: Playlist) -> Promise<Void> {
         return all(filters.map { $0.onUpdateAssets(playlist: playlist) })
             .then { _ -> Void in }
@@ -399,11 +399,12 @@ class MostRecentCountFilter: AssetFilter {
         maxCount = count
     }
 
-    func keep(_ asset: Asset, playlist: Playlist, track _: AudioTrack) -> AssetPriority {
+    func keep(_ asset: Asset, playlist: Playlist, track: AudioTrack) -> AssetPriority {
         // Figure out the most recent X assets.
-        let assets = playlist.allAssets.sorted { a, b in
+	// FIXME Maybe use allAssets?
+        let assets = (playlist.filteredAssets[track.id] ?? playlist.allAssets).sorted { a, b in
             a.createdDate > b.createdDate
-        }[0 ..< maxCount]
+        }.prefix(maxCount)
         // Only play the given asset if it's one of those.
         if assets.contains(where: { $0 === asset }) {
             return .normal

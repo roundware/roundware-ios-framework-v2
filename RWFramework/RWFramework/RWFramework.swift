@@ -53,6 +53,10 @@ open class RWFramework: NSObject {
     }
 
     public let playlist = Playlist(filters: AllAssetFilters([
+        // only repeat assets if there's no other choice
+        TimedRepeatFilter(),
+        // skip blocked assets and users
+        BlockedAssetsFilter(),
         // Use the first filter that definitively accepts or rejects an asset.
         FirstEagerFilter([
             // Either we're playing a playlist,
@@ -77,10 +81,6 @@ open class RWFramework: NSObject {
                 ]),
             ]),
         ]),
-        // only repeat assets if there's no other choice
-        TimedRepeatFilter(),
-        // skip blocked assets and users
-        BlockedAssetsFilter(),
     ]), sortBy: [
         SortRandomly(),
         SortByLikes(),

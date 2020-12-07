@@ -198,13 +198,21 @@ private class LoadingState: TrackState {
         if let next = self.asset ?? track.playlist?.next(forTrack: track) {
             track.previousAsset = track.currentAsset
             track.currentAsset = next
-
-            let activeRegionLength = Double(next.activeRegion.upperBound - next.activeRegion.lowerBound)
-            let minDuration = min(Double(track.duration.lowerBound), activeRegionLength)
-            let maxDuration = min(Double(track.duration.upperBound), activeRegionLength)
-            let duration = (minDuration...maxDuration).random()
-            let latestStart = Double(next.activeRegion.upperBound) - duration
-            let start = (Double(next.activeRegion.lowerBound)...latestStart).random()
+            
+            let duration, start: Double
+            if Double(track.duration.lowerBound) < next.activeRegion.difference {
+                // We can start anywhere as long as it allows us to play the minimum number of seconds.
+                let latestStart = next.activeRegion.upperBound - Double(track.duration.lowerBound)
+                start = (next.activeRegion.lowerBound...latestStart).random()
+                // We can end anywhere after that minimum number of seconds.
+                let earliestEnd = start + Double(track.duration.lowerBound)
+                // But before the end of the active part of the asset.
+                let end = (earliestEnd...next.activeRegion.upperBound).random()
+                duration = end - start
+            } else {
+                start = next.activeRegion.lowerBound
+                duration = next.activeRegion.upperBound - start
+            }
 
             track.player.stop()
 
