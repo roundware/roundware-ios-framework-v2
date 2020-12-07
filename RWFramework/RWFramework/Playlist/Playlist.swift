@@ -526,18 +526,20 @@ extension Playlist {
     /// Applies all the playlist-level and track-level filters to make the decision.
     func next(forTrack track: AudioTrack) -> Asset? {
         print("finding next asset in \(allAssets.count)...")
-
-        let filteredAssets = allAssets.lazy.filter { asset in
+        
+        let firstPass = allAssets.filter { asset in
             // don't pick anything currently playing on another track
             !self.currentlyPlayingAssets.contains { $0.id == asset.id }
                 && asset.file != nil
-        }.map { asset in
+        }
+        self.filteredAssets[track.id] = firstPass
+
+        let filteredAssets = firstPass.map { asset in
             (asset, self.filters.keep(asset, playlist: self, track: track))
         }.filter { _, rank in
             rank != .discard
         }
 
-        self.filteredAssets[track.id] = filteredAssets
 
         let asset = filteredAssets.min { a, b in
             // play less played assets first
