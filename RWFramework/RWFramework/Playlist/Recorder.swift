@@ -40,12 +40,11 @@ public class Recorder: Codable {
 
     /** Launches a background task to upload any pending recordings. */
     func uploadPending() -> Promise<Void> {
-        // Update the badge just in case it's out of sync.
-        updateBadge()
-        
         let rwf = RWFramework.sharedInstance
         print("recorder: uploading pending, \(pendingEnvelopes.debugDescription)")
         if rwf.reachability.connection == .unavailable {
+            // Update the badge just in case it's out of sync.
+            updateBadge()
             rwf.rwRecordedOffline()
             return Promise(())
         } else if uploaderTask != nil || pendingEnvelopes.count == 0 {
@@ -278,18 +277,13 @@ public class Recorder: Codable {
     }
 
     internal func updateBadge() {
-        // Only need badge permission when we're offline.
-        if RWFramework.sharedInstance.reachability.connection == .unavailable {
-            let assetCount = pendingEnvelopes.reduce(0) { sum, e in sum + e.media.count }
-            RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(assetCount)
-        }
+        let assetCount = pendingEnvelopes.reduce(0) { sum, e in sum + e.media.count }
+        RWFramework.sharedInstance.rwUpdateApplicationIconBadgeNumber(assetCount)
     }
 
     public func submitEnvelopeForUpload( /* _ key: String */ ) {
         print("recorder: submit envelope")
         pendingEnvelopes.append(Envelope( /* key: key, */ media: currentMedia))
-        // Update the badge.
-        updateBadge()
         // Try uploading any pending recordings.
         currentMedia = []
         save()
