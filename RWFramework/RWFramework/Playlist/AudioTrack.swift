@@ -108,6 +108,7 @@ extension AudioTrack {
             if let next = next {
                 nextState = LoadingState(track: self, asset: next)
             }
+            playlist?.recordFinishedPlaying(asset: asset)
             transition(to: FadingOut(
                 track: self,
                 asset: asset,
