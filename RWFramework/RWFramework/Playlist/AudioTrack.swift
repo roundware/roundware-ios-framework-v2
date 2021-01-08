@@ -83,15 +83,19 @@ extension AudioTrack {
     /// Amount of seconds to fade out when skipping an asset
     private static let skipFadeOutTime: Double = 1.0
 
-    fileprivate func setDynamicPan(at assetLoc: CLLocation, _ params: StreamParams) {
-        player.position = assetLoc.toAudioPoint(relativeTo: params.location)
+    fileprivate func setDynamicPan(at assetLoc: CLLocation?, _ params: StreamParams) {
+        if params.panAudioBasedOnLocation, let assetLoc = assetLoc {
+            // Place the audio based on its relative position and distance from the listener.
+            player.position = assetLoc.toAudioPoint(relativeTo: params.location)
+        } else {
+            // Place the audio at the center of the listening space.
+            player.position = AVAudio3DPoint(x: 0.0, y: 0.0, z: 0.0)
+        }
     }
     
     func updateParams(_ params: StreamParams) {
         // Pan the audio based on user location relative to the current asset
-        if let assetLoc = self.currentAsset?.location {
-            self.setDynamicPan(at: assetLoc, params)
-        }
+        self.setDynamicPan(at: self.currentAsset?.location, params)
         // Change in parameters may make more assets available
         if isPlaying && self.state is WaitingForAsset {
             self.fadeInNextAsset()

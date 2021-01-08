@@ -35,6 +35,7 @@ open class RWFramework: NSObject {
     let locationManager: CLLocationManager = CLLocationManager()
     var streamOptions = StreamParams(
         location: CLLocation(),
+        panAudioBasedOnLocation: true,
         minDist: nil,
         maxDist: nil,
         heading: nil,

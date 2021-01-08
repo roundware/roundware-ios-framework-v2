@@ -32,6 +32,7 @@ extension RWFramework: CLLocationManagerDelegate {
     /// Update parameters to future stream requests
     public func updateStreamParams(
         location: CLLocation? = nil,
+        panAudioBasedOnLocation: Bool? = nil,
         range: ClosedRange<Double>? = nil,
         headingAngle: Double? = nil,
         angularWidth: Double? = nil,
@@ -39,6 +40,7 @@ extension RWFramework: CLLocationManagerDelegate {
     ) {
         streamOptions = StreamParams(
             location: location ?? streamOptions.location,
+            panAudioBasedOnLocation: panAudioBasedOnLocation ?? streamOptions.panAudioBasedOnLocation,
             minDist: range?.lowerBound ?? streamOptions.minDist,
             maxDist: range?.upperBound ?? streamOptions.maxDist,
             heading: headingAngle ?? streamOptions.heading,

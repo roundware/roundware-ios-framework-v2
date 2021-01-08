@@ -13,14 +13,16 @@ struct UserAssetData {
 
 public class StreamParams {
     let location: CLLocation
+    let panAudioBasedOnLocation: Bool
     let minDist: Double?
     let maxDist: Double?
     let heading: Double?
     let angularWidth: Double?
     let tags: [Int]?
 
-    init(location: CLLocation, minDist: Double?, maxDist: Double?, heading: Double?, angularWidth: Double?, tags: [Int]?) {
+    init(location: CLLocation, panAudioBasedOnLocation: Bool, minDist: Double?, maxDist: Double?, heading: Double?, angularWidth: Double?, tags: [Int]?) {
         self.location = location
+        self.panAudioBasedOnLocation = panAudioBasedOnLocation
         self.minDist = minDist
         self.maxDist = maxDist
         self.heading = heading
