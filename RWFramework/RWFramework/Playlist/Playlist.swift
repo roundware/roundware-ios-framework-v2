@@ -577,9 +577,8 @@ extension Playlist {
         // Only grab assets added since the last update
         if let date = assetPool?.date {
             let timeZone = RWFrameworkConfig.getConfigValueAsNumber("session_timezone", group: .session).intValue
-
             let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
             dateFormatter.locale = Locale(identifier: "en_US_POSIX")
             dateFormatter.timeZone = TimeZone(secondsFromGMT: timeZone)
             opts["updated__gte"] = dateFormatter.string(from: date)
