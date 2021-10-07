@@ -61,7 +61,7 @@ public class Recorder: Codable {
                         if self.isReachable(envelope: envelope) {
                             // Upload this envelope.
                             do {
-                                _ = try await(self.upload(envelope: envelope))
+                                _ = try awaitPromise(self.upload(envelope: envelope))
                                 // Remove it from the queue.
                                 self.pendingEnvelopes = self.pendingEnvelopes.filter { $0 !== envelope }
                             } catch {
@@ -100,7 +100,7 @@ public class Recorder: Codable {
         return Promise<Void> {
             // If the envelope has no id yet, then create it on the server.
             if envelope.id == nil {
-                envelope.id = try await(rw.apiPostEnvelopes())
+                envelope.id = try awaitPromise(rw.apiPostEnvelopes())
                 for m in envelope.media {
                     m.envelopeID = envelope.id!
                 }
@@ -112,9 +112,9 @@ public class Recorder: Codable {
             RWFrameworkConfig.setConfigValue("sharing_url_current", value: currentSharingUrl as AnyObject, group: RWFrameworkConfig.ConfigGroup.project)
 
             // Upload each media item to the envelope.
-            _ = try await(all(envelope.media.map { m in self.upload(media: m) }))
+            _ = try awaitPromise(all(envelope.media.map { m in self.upload(media: m) }))
             // Refresh the asset pool to pull in this new asset.
-            _ = try await(RWFramework.sharedInstance.playlist.refreshAssetPool())
+            _ = try awaitPromise(RWFramework.sharedInstance.playlist.refreshAssetPool())
         }
     }
 

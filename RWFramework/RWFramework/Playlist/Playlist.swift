@@ -590,7 +590,7 @@ extension Playlist {
         }
 
         // retrieve newly published assets
-        return rw.apiGetAssets(opts).then { updatedAssets in
+        return rw.apiGetAssets(opts).then { (updatedAssets: [Asset]) in
             var assets = self.assetPool?.assets ?? []
             // Remove all old duplicates
             assets.removeAll { a in updatedAssets.contains { b in a.id == b.id } }
@@ -600,7 +600,7 @@ extension Playlist {
             assets.removeAll { $0.submitted == false }
 
             // Ensure all sort methods have necessary data before sorting.
-            _ = try await(all(self.sortMethods.map {
+            _ = try awaitPromise(all(self.sortMethods.map {
                 $0.onRefreshAssets(in: self)
             }))
 

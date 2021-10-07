@@ -37,7 +37,7 @@ Pod::Spec.new do |s|
 
   s.frameworks = 'AVFoundation', 'SceneKit', 'SpriteKit'
 
-  s.dependency "PromisesSwift", "~> 1.2.3"
+  s.dependency "PromisesSwift", "~> 2.0.0"
   s.dependency "GEOSwift", "~> 5.0.0"
   s.dependency "GEOSwiftMapKit", "~> 1.0.0"
   s.dependency "Repeat", "~> 0.5.6"
