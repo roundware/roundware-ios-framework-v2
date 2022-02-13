@@ -131,7 +131,7 @@ extension Speaker {
             let delta: Float = 0.05
             fadeTimer = .every(.seconds(Double(delta))) { timer in
                 let currDiff = vol - player.volume
-                if currDiff.sign != totalDiff.sign || abs(currDiff) < 0.02 {
+                if currDiff.sign != totalDiff.sign || abs(currDiff) < 0.05 {
                     // we went just enough or too far
                     player.volume = vol
                     
