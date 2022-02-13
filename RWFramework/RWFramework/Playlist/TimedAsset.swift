@@ -19,7 +19,7 @@ public class TimedAssetFilter: AssetFilter {
         // keep assets that are slated to start now or in the past few minutes
         //      AND haven't been played before
         // Units: seconds
-        let now = Date().timeIntervalSince(playlist.startTime)
+        let now = playlist.totalPlayedTime
         if timedAssets!.contains(where: { it in
             it.asset_id == asset.id &&
                 it.start <= now &&

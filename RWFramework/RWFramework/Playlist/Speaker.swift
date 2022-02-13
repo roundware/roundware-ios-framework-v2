@@ -27,6 +27,7 @@ public class Speaker: Codable {
     private var player: AVPlayer? = nil
     private var looper: Any? = nil
     private var fadeTimer: Repeater? = nil
+    private var ignoringUpdates: Bool = false
 
 
     enum CodingKeys: String, CodingKey {
@@ -99,6 +100,10 @@ extension Speaker {
     
     @discardableResult
     func updateVolume(_ vol: Float, timeSinceStart: TimeInterval) -> Float {
+        if self.ignoringUpdates {
+            return self.player?.volume ?? vol
+        }
+        
         if vol > 0.05 {
             // definitely want to create the player if it needs volume
             if self.player == nil {
@@ -123,7 +128,7 @@ extension Speaker {
         fadeTimer?.removeAllObservers(thenStop: true)
         if let player = self.player, abs(vol - player.volume) > 0.02 {
             let totalDiff = vol - player.volume
-            let delta: Float = 0.075
+            let delta: Float = 0.05
             fadeTimer = .every(.seconds(Double(delta))) { timer in
                 let currDiff = vol - player.volume
                 if currDiff.sign != totalDiff.sign || abs(currDiff) < 0.02 {
@@ -147,11 +152,34 @@ extension Speaker {
     }
     
     func resume(_ timeSinceStart: TimeInterval) {
+        print("speaker resuming at \(timeSinceStart)")
+        // Resuming a speaker implies coming back from a fully stopped state.
+        // This allows us to easily reset the session.
+        self.ignoringUpdates = false
         syncTime(timeSinceStart)
         player?.play()
     }
     
     func pause() {
         player?.pause()
+    }
+    
+    public func fadeOutAndStop(for fadeDuration: Float) {
+        self.ignoringUpdates = true
+        if let player = self.player {
+            let totalDiff = -player.volume
+            let delta: Float = 0.05
+            fadeTimer = .every(.seconds(Double(delta))) { timer in
+                if player.volume < 0.01 {
+                    // we went just enough or too far
+                    player.volume = 0.0
+                    // we can't hear it anymore, so pause it.
+                    player.pause()
+                    timer.removeAllObservers(thenStop: true)
+                } else {
+                    player.volume += totalDiff * delta / fadeDuration
+                }
+            }
+        }
     }
 }

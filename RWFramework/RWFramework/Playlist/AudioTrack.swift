@@ -137,6 +137,14 @@ extension AudioTrack {
         }
     }
     
+    func fadeOutAndStop(for fadeDuration: TimeInterval) {
+        if let curr = currentAsset {
+            self.transition(to: FadingOut(track: self, asset: curr, duration: fadeDuration, followedBy: PlayingNothing(track: self)))
+        } else {
+            self.transition(to: PlayingNothing(track: self))
+        }
+    }
+    
     func pause() {
         state?.pause()
         isPlaying = false
@@ -278,13 +286,20 @@ private class LoadingState: TrackState {
             try data.write(to: url, options: .atomic)
             file = try? AVAudioFile(forReading: url)
         }
-
-        if let start = start, let duration = duration {
-            let startFrame = Int64(start * file!.processingFormat.sampleRate)
-            let frameCount = UInt32(duration * file!.processingFormat.sampleRate)
-            track.player.scheduleSegment(file!, startingFrame: startFrame, frameCount: frameCount, at: nil)
+        
+        if file == nil {
+            print("failed to download the asset")
         } else {
-            track.player.scheduleFile(file!, at: nil)
+            
+
+            if let start = start, let duration = duration {
+                let startFrame = Int64(start * file!.processingFormat.sampleRate)
+                let frameCount = UInt32(duration * file!.processingFormat.sampleRate)
+                track.player.scheduleSegment(file!, startingFrame: startFrame, frameCount: frameCount, at: nil)
+            } else {
+                track.player.scheduleFile(file!, at: nil)
+            }
+            
         }
 
         if let params = track.playlist?.currentParams, let loc = track.currentAsset?.location {
@@ -596,4 +611,20 @@ private class WaitingForAsset: TimedTrackState {
             self.track.fadeInNextAsset()
         }
     }
+}
+
+/// Play nothing until explicitly transitioned away from.
+private class PlayingNothing: TrackState {
+    var canSkip: Bool { return true }
+    private let track: AudioTrack
+    init(track: AudioTrack) {
+        self.track = track
+    }
+    func start() {
+        self.track.pause()
+    }
+    func finish() {}
+    func pause() {}
+    func resume() {}
+    func onUpdate() {}
 }

@@ -37,7 +37,7 @@ public class Playlist {
     public private(set) var currentParams: StreamParams?
     private(set) var startTime = Date()
     private var lastResumeTime = Date()
-    private var totalPlayedTime: TimeInterval = 0.0
+    private var totalPlayedTimeAtLastPause: TimeInterval = 0.0
 
     // assets and filters
     private var filters: AssetFilter
@@ -201,6 +201,8 @@ extension Playlist {
     private func afterSessionInit() {
         // Mark start of the session
         startTime = Date()
+        lastResumeTime = Date()
+        totalPlayedTimeAtLastPause = 0
 
         // Load cached assets first
         loadAssetPool()
@@ -225,13 +227,23 @@ extension Playlist {
     }
 
     public func resetSessionTime() {
-        self.totalPlayedTime = 0
+        self.totalPlayedTimeAtLastPause = 0
         self.lastResumeTime = Date()
         self.startTime = Date()
+        for s in speakers { s.resume(0) }
+    }
+    
+    public func fadeOutAndStop(overSeconds fadeDuration: TimeInterval) {
+        self.totalPlayedTimeAtLastPause -= lastResumeTime.timeIntervalSinceNow
+        for s in speakers { s.fadeOutAndStop(for: Float(fadeDuration)) }
+        for t in tracks { t.fadeOutAndStop(for: fadeDuration) }
+        if demoLooper != nil {
+            demoStream?.pause()
+        }
     }
 
     func pause() {
-        self.totalPlayedTime -= lastResumeTime.timeIntervalSinceNow
+        self.totalPlayedTimeAtLastPause -= lastResumeTime.timeIntervalSinceNow
         for s in speakers { s.pause() }
         for t in tracks { t.pause() }
         if demoLooper != nil {
@@ -241,11 +253,11 @@ extension Playlist {
 
     func resume() {
         lastResumeTime = Date()
-        print("tracks? \(tracks.count)")
         for s in speakers {
-            s.resume(self.totalPlayedTime)
+            s.resume(self.totalPlayedTimeAtLastPause)
         }
-        for t in tracks { t.resume() }
+        updateSpeakerVolumes()
+        for t in tracks { t.resume(); print("resuming speaker") }
         if demoLooper != nil {
             demoStream?.play()
         }
@@ -424,7 +436,7 @@ extension Playlist {
         ]).then { speakers in
             print("playing \(speakers.count) speakers")
             self.speakers = speakers
-            self.updateSpeakerVolumes()
+            self.updateSpeakerVolumes(0.0)
         }
     }
 
@@ -446,13 +458,21 @@ extension Playlist {
         }
     }
 
+    public var totalPlayedTime: TimeInterval {
+        if self.isPlaying {
+            return self.totalPlayedTimeAtLastPause - self.lastResumeTime.timeIntervalSinceNow
+        } else {
+            return self.totalPlayedTimeAtLastPause
+        }
+    }
+
     /**
       Update the volumes of all speakers depending on our proximity to each one.
       If the distance to the nearest speaker > outOfRangeDistance, then play demo stream.
      */
-    private func updateSpeakerVolumes() {
+    private func updateSpeakerVolumes(_ totalPlayedTime: TimeInterval? = nil) {
         if let params = currentParams, !speakers.isEmpty, isPlaying {
-            let timeSinceStart = self.totalPlayedTime - self.lastResumeTime.timeIntervalSinceNow
+            let timeSinceStart = totalPlayedTime ?? self.totalPlayedTime
             // Only consider playing the demo stream if we're away from all speakers
             let dist = distanceToNearestSpeaker
             if dist > project.out_of_range_distance {
@@ -463,6 +483,7 @@ extension Playlist {
                 }
                 playDemoStream()
             } else {
+                print("updating speakers")
                 // Update all speaker volumes
                 for speaker in speakers {
                     speaker.updateVolume(at: params.location, timeSinceStart: timeSinceStart)
@@ -644,6 +665,7 @@ extension Playlist {
         currentParams = opts
 
         print("playlist tags: \(currentParams?.tags)")
+        print("playlist location: \(currentParams?.location)")
 
         if let heading = opts.heading {
             audioMixer.listenerAngularOrientation = AVAudio3DAngularOrientation(
