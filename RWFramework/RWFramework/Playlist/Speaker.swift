@@ -42,6 +42,10 @@ public class Speaker: Codable {
 }
 
 extension Speaker {
+    private static var shouldSync: Bool {
+        return RWFrameworkConfig.getConfigValueAsBool("sync_speakers")
+    }
+    
     func contains(_ point: CLLocation) -> Bool {
         return try! point.toWaypoint().isWithin(shape)
     }
@@ -80,42 +84,57 @@ extension Speaker {
      - returns: whether we're within range of the speaker
     */
     @discardableResult
-    func updateVolume(at point: CLLocation) -> Float {
+    func updateVolume(at point: CLLocation, timeSinceStart: TimeInterval) -> Float {
         let vol = self.volume(at: point)
-        return self.updateVolume(vol)
+        return self.updateVolume(vol, timeSinceStart: timeSinceStart)
+    }
+
+    func syncTime(_ timeSinceStart: TimeInterval) {
+        if Speaker.shouldSync {
+            let t = abs(timeSinceStart)
+            let timescale = self.player?.currentItem?.asset.duration.timescale ?? 1000
+            self.player?.seek(to: CMTime(seconds: t, preferredTimescale: timescale))
+        }
     }
     
     @discardableResult
-    func updateVolume(_ vol: Float) -> Float {
+    func updateVolume(_ vol: Float, timeSinceStart: TimeInterval) -> Float {
         if vol > 0.05 {
             // definitely want to create the player if it needs volume
             if self.player == nil {
                 player = AVPlayer(url: URL(string: url)!)
-                
-                looper = looper ?? NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player!.currentItem, queue: .main) { [weak self] _ in
-                    self?.player?.seek(to: CMTime.zero)
-                    self?.player?.play()
+
+                // Only loop non-synced speakers
+                if Speaker.shouldSync {
+                    player?.actionAtItemEnd = .none
+                } else {
+                    looper = looper ?? NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player!.currentItem, queue: .main) { [weak self] _ in
+                        self?.player?.seek(to: CMTime.zero)
+                        self?.player?.play()
+                    }
                 }
             }
             // make sure this speaker is playing if it needs to be audible
-            if player!.rate == 0.0 && RWFramework.sharedInstance.isPlaying {
-                player!.play()
+            if player!.rate.isZero && RWFramework.sharedInstance.isPlaying {
+                self.resume(timeSinceStart)
             }
         }
         
         fadeTimer?.removeAllObservers(thenStop: true)
-        if let player = self.player {
+        if let player = self.player, abs(vol - player.volume) > 0.02 {
             let totalDiff = vol - player.volume
             let delta: Float = 0.075
             fadeTimer = .every(.seconds(Double(delta))) { timer in
                 let currDiff = vol - player.volume
-                if currDiff.sign != totalDiff.sign || abs(currDiff) < 0.05 {
+                if currDiff.sign != totalDiff.sign || abs(currDiff) < 0.02 {
                     // we went just enough or too far
                     player.volume = vol
                     
                     if vol < 0.05 {
                         // we can't hear it anymore, so pause it.
                         player.pause()
+                    } else if player.rate.isZero {
+                        self.resume(timeSinceStart)
                     }
                     timer.removeAllObservers(thenStop: true)
                 } else {
@@ -127,7 +146,8 @@ extension Speaker {
         return vol
     }
     
-    func resume() {
+    func resume(_ timeSinceStart: TimeInterval) {
+        syncTime(timeSinceStart)
         player?.play()
     }
     

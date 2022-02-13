@@ -36,6 +36,8 @@ public class Playlist {
     private var updateTimer: Repeater?
     public private(set) var currentParams: StreamParams?
     private(set) var startTime = Date()
+    private var lastResumeTime = Date()
+    private var totalPlayedTime: TimeInterval = 0.0
 
     // assets and filters
     private var filters: AssetFilter
@@ -223,6 +225,7 @@ extension Playlist {
     }
 
     func pause() {
+        self.totalPlayedTime -= lastResumeTime.timeIntervalSinceNow
         for s in speakers { s.pause() }
         for t in tracks { t.pause() }
         if demoLooper != nil {
@@ -231,8 +234,11 @@ extension Playlist {
     }
 
     func resume() {
+        lastResumeTime = Date()
         print("tracks? \(tracks.count)")
-        for s in speakers { s.resume() }
+        for s in speakers {
+            s.resume(self.totalPlayedTime)
+        }
         for t in tracks { t.resume() }
         if demoLooper != nil {
             demoStream?.play()
@@ -440,19 +446,20 @@ extension Playlist {
      */
     private func updateSpeakerVolumes() {
         if let params = currentParams, !speakers.isEmpty, isPlaying {
+            let timeSinceStart = self.totalPlayedTime - self.lastResumeTime.timeIntervalSinceNow
             // Only consider playing the demo stream if we're away from all speakers
             let dist = distanceToNearestSpeaker
             if dist > project.out_of_range_distance {
                 print("dist to nearest speaker: \(dist)")
                 // silence all speakers
                 for speaker in speakers {
-                    speaker.updateVolume(0)
+                    speaker.updateVolume(0, timeSinceStart: timeSinceStart)
                 }
                 playDemoStream()
             } else {
                 // Update all speaker volumes
                 for speaker in speakers {
-                    speaker.updateVolume(at: params.location)
+                    speaker.updateVolume(at: params.location, timeSinceStart: timeSinceStart)
                 }
                 if let ds = demoStream, let looper = demoLooper {
                     ds.pause()
