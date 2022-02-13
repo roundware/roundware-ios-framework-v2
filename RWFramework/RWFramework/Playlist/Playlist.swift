@@ -224,6 +224,12 @@ extension Playlist {
         }
     }
 
+    public func resetSessionTime() {
+        self.totalPlayedTime = 0
+        self.lastResumeTime = Date()
+        self.startTime = Date()
+    }
+
     func pause() {
         self.totalPlayedTime -= lastResumeTime.timeIntervalSinceNow
         for s in speakers { s.pause() }
