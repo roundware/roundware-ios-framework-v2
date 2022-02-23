@@ -436,7 +436,7 @@ extension Playlist {
         ]).then { speakers in
             print("playing \(speakers.count) speakers")
             self.speakers = speakers
-            self.updateSpeakerVolumes(0.0)
+            self.updateSpeakerVolumes()
         }
     }
 

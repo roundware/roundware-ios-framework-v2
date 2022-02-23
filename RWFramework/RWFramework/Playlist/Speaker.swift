@@ -12,6 +12,8 @@ import Repeat
 public class Speaker: Codable {
     private static let fadeDuration: Float = 3.0
     private static let fadeDeltaTime: Float = 0.05
+    private static let syncOverSeconds: Double = 2.5
+    private static let acceptableSyncError: Double = 0.1
     
     let id: Int
     let url: String
@@ -38,6 +40,7 @@ public class Speaker: Codable {
     }()
     private var looper: Any? = nil
     private var fadeTimer: Repeater? = nil
+    private var syncTimer: Repeater? = nil
     private var ignoringUpdates: Bool = false
     private var volumeTarget: Float = 0.0
 
@@ -59,6 +62,15 @@ extension Speaker {
         return RWFrameworkConfig.getConfigValueAsBool("sync_speakers")
     }
     
+    private func isPlayerTimeAround(sessionTime timeSinceStart: TimeInterval) -> Bool {
+        let acceptableRange = (timeSinceStart - Speaker.acceptableSyncError)...(timeSinceStart + Speaker.acceptableSyncError)
+        return acceptableRange.contains(player.currentTime().seconds)
+    }
+    
+    private func isPlayerTimeWayOff(sessionTime timeSinceStart: TimeInterval) -> Bool {
+        return abs(timeSinceStart - player.currentTime().seconds) > Speaker.syncOverSeconds
+    }
+    
     func contains(_ point: CLLocation) -> Bool {
         return try! point.toWaypoint().isWithin(shape)
     }
@@ -78,7 +90,6 @@ extension Speaker {
     
     private func attenuationRatio(at loc: CLLocation) -> Double {
         let distToInnerShape = attenuationBorder.distanceInMeters(to: loc)
-        print("distance to speaker \(id): \(distToInnerShape) m")
         return 1 - (distToInnerShape / attenuationDistance)
     }
     
@@ -104,9 +115,50 @@ extension Speaker {
         let vol = self.volume(at: point)
         return self.updateVolume(vol, timeSinceStart: timeSinceStart)
     }
+    
+    private func setupSyncTimer() {
+        if !Speaker.shouldSync || syncTimer != nil {
+            return
+        }
+        
+        syncTimer = .every(.seconds(Speaker.syncOverSeconds)) { timer in
+            // Don't mess with a paused speaker.
+            if self.player.timeControlStatus == .paused {
+                return
+            }
+            
+            let sessionTime = RWFramework.sharedInstance.playlist.totalPlayedTime
+            let isWayOff = self.isPlayerTimeWayOff(sessionTime: sessionTime)
+            if isWayOff || self.isPlayerTimeAround(sessionTime: sessionTime) {
+                // Reset the play rate to normal.
+                if self.player.rate != 1.0 {
+                    self.player.rate = 1.0
+                }
+                if isWayOff {
+                    self.syncTime(sessionTime)
+                }
+            } else if self.player.rate == 1.0 {
+                // Slightly speed up or slow down the player to bring it into sync.
+                let syncOffset = sessionTime - self.player.currentTime().seconds
+                self.player.rate = Float(1.0 + (syncOffset / Speaker.syncOverSeconds))
+            }
+        }
+    }
+    
+    private func cancelSyncTimer() {
+        if !Speaker.shouldSync || syncTimer == nil {
+            return
+        }
+        
+        syncTimer?.removeAllObservers(thenStop: true)
+        syncTimer = nil
+        if !player.rate.isZero && player.rate != 1.0 {
+            player.rate = 1.0
+        }
+    }
 
-    func syncTime(_ timeSinceStart: TimeInterval) {
-        if Speaker.shouldSync && volumeTarget > 0.0 {
+    private func syncTime(_ timeSinceStart: TimeInterval) {
+        if Speaker.shouldSync {
             let t = abs(timeSinceStart)
             let timescale = self.player.currentItem?.asset.duration.timescale ?? 1000
             self.player.seek(to: CMTime(seconds: t, preferredTimescale: timescale))
@@ -119,7 +171,7 @@ extension Speaker {
             return self.player.volume
         }
         
-        if vol > 0.05 {
+        if vol > 0.001 {
             // Only loop non-synced speakers
             if Speaker.shouldSync {
                 player.actionAtItemEnd = .none
@@ -129,30 +181,31 @@ extension Speaker {
                     self?.player.play()
                 }
             }
-        }
-        
-        // make sure this speaker is playing if it needs to be audible
-        if player.rate.isZero && RWFramework.sharedInstance.isPlaying {
-            self.resume(timeSinceStart)
+            
+            // make sure this speaker is playing if it needs to be audible
+            if player.rate.isZero && RWFramework.sharedInstance.isPlaying {
+                self.resume(timeSinceStart)
+            }
         }
         
         if abs(vol - self.volumeTarget) > 0.02 {
             self.volumeTarget = vol
-            print("speaker \(self.id) target volume = \(vol)")
             if fadeTimer?.state != .running {
                 let totalDiff = self.volumeTarget - player.volume
                 fadeTimer?.removeAllObservers(thenStop: true)
                 fadeTimer = .every(.seconds(Double(Speaker.fadeDeltaTime))) { timer in
+                    if self.player.volume > 0.001 && self.player.rate.isZero && RWFramework.sharedInstance.isPlaying {
+                        self.resume(RWFramework.sharedInstance.playlist.totalPlayedTime)
+                    }
+                    
                     let currDiff = self.volumeTarget - self.player.volume
                     if currDiff.sign != totalDiff.sign || abs(currDiff) < 0.05 {
                         // we went just enough or too far
                         self.player.volume = self.volumeTarget
                         
-                        if self.player.volume < 0.05 {
+                        if self.player.volume < 0.001 {
                             // we can't hear it anymore, so pause it.
                             self.player.pause()
-                        } else if self.player.rate.isZero {
-                            self.resume(timeSinceStart)
                         }
                         timer.removeAllObservers(thenStop: true)
                     } else {
@@ -165,21 +218,24 @@ extension Speaker {
         return vol
     }
     
-    func resume(_ timeSinceStart: TimeInterval) {
+    func resume(_ timeSinceStart: TimeInterval? = nil) {
         // Resuming a speaker implies coming back from a fully stopped state.
         // This allows us to easily reset the session.
-        self.ignoringUpdates = false
+        ignoringUpdates = false
         if volumeTarget > 0.0 && player.rate.isZero {
-            print("speaker resuming at \(timeSinceStart)")
-            syncTime(timeSinceStart)
+            if let t = timeSinceStart {
+                syncTime(t)
+            }
             player.play()
         }
+        setupSyncTimer()
     }
     
     func pause() {
         if volumeTarget > 0.0 {
             player.pause()
         }
+        cancelSyncTimer()
     }
     
     public func fadeOutAndStop(for fadeDuration: Float) {
