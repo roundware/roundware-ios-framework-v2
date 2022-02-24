@@ -227,10 +227,9 @@ extension Playlist {
     }
 
     public func resetSessionTime() {
-        self.totalPlayedTimeAtLastPause = 0
-        self.lastResumeTime = Date()
-        self.startTime = Date()
-        for s in speakers { s.resume(0) }
+        totalPlayedTimeAtLastPause = 0
+        lastResumeTime = Date()
+        startTime = Date()
     }
     
     public func fadeOutAndStop(overSeconds fadeDuration: TimeInterval) {
@@ -256,8 +255,8 @@ extension Playlist {
         for s in speakers {
             s.resume(self.totalPlayedTimeAtLastPause)
         }
+        for t in tracks { t.resume() }
         updateSpeakerVolumes()
-        for t in tracks { t.resume(); print("resuming speaker") }
         if demoLooper != nil {
             demoStream?.play()
         }

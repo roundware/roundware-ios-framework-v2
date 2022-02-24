@@ -40,7 +40,30 @@ public class Speaker: Codable {
     }()
     private var looper: Any? = nil
     private var fadeTimer: Repeater? = nil
-    private var syncTimer: Repeater? = nil
+    private lazy var syncTimer: Repeater = {
+        return .every(.seconds(Speaker.syncOverSeconds)) { timer in
+            // Don't mess with a paused speaker.
+            if self.player.timeControlStatus == .paused {
+                return
+            }
+            
+            let sessionTime = RWFramework.sharedInstance.playlist.totalPlayedTime
+            let isWayOff = self.isPlayerTimeWayOff(sessionTime: sessionTime)
+            if isWayOff || self.isPlayerTimeAround(sessionTime: sessionTime) {
+                // Reset the play rate to normal.
+                if self.player.rate != 1.0 {
+                    self.player.rate = 1.0
+                }
+                if isWayOff {
+                    self.syncTime(sessionTime)
+                }
+            } else {
+                // Slightly speed up or slow down the player to bring it into sync.
+                let syncOffset = sessionTime - self.player.currentTime().seconds
+                self.player.rate = Float(1.0 + (syncOffset / Speaker.syncOverSeconds))
+            }
+        }
+    }()
     private var ignoringUpdates: Bool = false
     private var volumeTarget: Float = 0.0
 
@@ -117,41 +140,17 @@ extension Speaker {
     }
     
     private func setupSyncTimer() {
-        if !Speaker.shouldSync || syncTimer != nil {
-            return
-        }
-        
-        syncTimer = .every(.seconds(Speaker.syncOverSeconds)) { timer in
-            // Don't mess with a paused speaker.
-            if self.player.timeControlStatus == .paused {
-                return
-            }
-            
-            let sessionTime = RWFramework.sharedInstance.playlist.totalPlayedTime
-            let isWayOff = self.isPlayerTimeWayOff(sessionTime: sessionTime)
-            if isWayOff || self.isPlayerTimeAround(sessionTime: sessionTime) {
-                // Reset the play rate to normal.
-                if self.player.rate != 1.0 {
-                    self.player.rate = 1.0
-                }
-                if isWayOff {
-                    self.syncTime(sessionTime)
-                }
-            } else if self.player.rate == 1.0 {
-                // Slightly speed up or slow down the player to bring it into sync.
-                let syncOffset = sessionTime - self.player.currentTime().seconds
-                self.player.rate = Float(1.0 + (syncOffset / Speaker.syncOverSeconds))
-            }
+        if Speaker.shouldSync {
+            syncTimer.start()
         }
     }
     
-    private func cancelSyncTimer() {
-        if !Speaker.shouldSync || syncTimer == nil {
+    private func pauseSyncTimer() {
+        if !Speaker.shouldSync {
             return
         }
         
-        syncTimer?.removeAllObservers(thenStop: true)
-        syncTimer = nil
+        syncTimer.pause()
         if !player.rate.isZero && player.rate != 1.0 {
             player.rate = 1.0
         }
@@ -235,12 +234,13 @@ extension Speaker {
         if volumeTarget > 0.0 {
             player.pause()
         }
-        cancelSyncTimer()
+        pauseSyncTimer()
     }
     
     public func fadeOutAndStop(for fadeDuration: Float) {
         self.ignoringUpdates = true
         if volumeTarget > 0.0 {
+            volumeTarget = 0.0
             let totalDiff = -player.volume
             fadeTimer?.removeAllObservers(thenStop: true)
             fadeTimer = .every(.seconds(Double(Speaker.fadeDeltaTime))) { timer in
@@ -249,7 +249,9 @@ extension Speaker {
                     self.player.volume = 0.0
                     // we can't hear it anymore, so pause it.
                     self.player.pause()
+                    self.pauseSyncTimer()
                     timer.removeAllObservers(thenStop: true)
+                    print("speaker concluded")
                 } else {
                     self.player.volume += totalDiff * Speaker.fadeDeltaTime / fadeDuration
                 }
