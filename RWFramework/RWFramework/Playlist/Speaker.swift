@@ -24,7 +24,7 @@ public class Speaker: Codable {
     private let maxVolume: Float
     var volume: ClosedRange<Float> { return minVolume...maxVolume }
 
-    let shape: Geometry
+    public let shape: MultiPolygon
     let attenuationBorder: Geometry
     
     private var lazyPlayer: AVPlayer? = nil
@@ -114,7 +114,7 @@ extension Speaker {
         if try! pt.isWithin(shape) {
             return 0.0
         } else {
-            return shape.distanceInMeters(to: loc)
+            return shape.geometry.distanceInMeters(to: loc)
         }
     }
     
