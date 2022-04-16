@@ -27,9 +27,16 @@ public class Speaker: Codable {
     let shape: Geometry
     let attenuationBorder: Geometry
     
-    private lazy var player: AVPlayer = {
-        return AVPlayer(url: URL(string: self.url)!)
-    }()
+    private var lazyPlayer: AVPlayer? = nil
+    private var hasPlayer: Bool {
+        return lazyPlayer != nil
+    }
+    private var player: AVPlayer {
+        if lazyPlayer == nil {
+            lazyPlayer = AVPlayer(url: URL(string: url)!)
+        }
+        return lazyPlayer!
+    }
     private lazy var attenuationShape: Geometry = {
         if case let .lineString(x) = attenuationBorder {
             return .polygon(Polygon(exterior: try! Polygon.LinearRing(points: x.points)))
@@ -43,7 +50,7 @@ public class Speaker: Codable {
     private lazy var syncTimer: Repeater = {
         return .every(.seconds(Speaker.syncOverSeconds)) { timer in
             // Don't mess with a paused speaker.
-            if self.player.timeControlStatus == .paused {
+            if !self.hasPlayer || self.player.timeControlStatus == .paused {
                 return
             }
             
@@ -151,7 +158,7 @@ extension Speaker {
         }
         
         syncTimer.pause()
-        if !player.rate.isZero && player.rate != 1.0 {
+        if hasPlayer && !player.rate.isZero && player.rate != 1.0 {
             player.rate = 1.0
         }
     }
@@ -167,7 +174,7 @@ extension Speaker {
     @discardableResult
     func updateVolume(_ vol: Float, timeSinceStart: TimeInterval) -> Float {
         if self.ignoringUpdates {
-            return self.player.volume
+            return self.volumeTarget
         }
         
         if vol > 0.001 {
@@ -231,7 +238,7 @@ extension Speaker {
     }
     
     func pause() {
-        if volumeTarget > 0.0 {
+        if volumeTarget > 0.0 && hasPlayer {
             player.pause()
         }
         pauseSyncTimer()
