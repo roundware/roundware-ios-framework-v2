@@ -12,7 +12,7 @@ import Repeat
 public class Speaker: Codable {
     private static let fadeDuration: Float = 3.0
     private static let fadeDeltaTime: Float = 0.05
-    private static let syncOverSeconds: Double = 2.5
+    private static let syncOverSeconds: Double = 2.0
     private static let acceptableSyncError: Double = 0.1
     
     let id: Int
@@ -98,7 +98,7 @@ extension Speaker {
     }
     
     private func isPlayerTimeWayOff(sessionTime timeSinceStart: TimeInterval) -> Bool {
-        return abs(timeSinceStart - player.currentTime().seconds) > Speaker.syncOverSeconds
+        return abs(timeSinceStart - player.currentTime().seconds) > Speaker.syncOverSeconds / 2
     }
     
     func contains(_ point: CLLocation) -> Bool {
@@ -166,8 +166,10 @@ extension Speaker {
     private func syncTime(_ timeSinceStart: TimeInterval) {
         if Speaker.shouldSync {
             let t = abs(timeSinceStart)
-            let timescale = self.player.currentItem?.asset.duration.timescale ?? 1000
-            self.player.seek(to: CMTime(seconds: t, preferredTimescale: timescale))
+            let timescale = self.player.currentItem?.asset.duration.timescale ?? 100000
+            if t > 0.01 {
+                self.player.seek(to: CMTime(seconds: t, preferredTimescale: timescale))
+            }
         }
     }
     
@@ -228,13 +230,14 @@ extension Speaker {
         // Resuming a speaker implies coming back from a fully stopped state.
         // This allows us to easily reset the session.
         ignoringUpdates = false
+        setupSyncTimer()
         if volumeTarget > 0.0 && player.rate.isZero {
             if let t = timeSinceStart {
                 syncTime(t)
             }
             player.play()
+            RWFramework.sharedInstance.playlist.triggerSessionStart()
         }
-        setupSyncTimer()
     }
     
     func pause() {

@@ -38,6 +38,7 @@ public class Playlist {
     private(set) var startTime = Date()
     private var lastResumeTime = Date()
     private var totalPlayedTimeAtLastPause: TimeInterval = 0.0
+    private var firstSpeakerStarted: Bool = false
 
     // assets and filters
     private var filters: AssetFilter
@@ -202,7 +203,6 @@ extension Playlist {
         // Mark start of the session
         startTime = Date()
         lastResumeTime = Date()
-        totalPlayedTimeAtLastPause = 0
 
         // Load cached assets first
         loadAssetPool()
@@ -219,6 +219,7 @@ extension Playlist {
         all(speakerUpdate, trackUpdate, assetsUpdate).always {
             RWFramework.sharedInstance.rwStartedSuccessfully()
             self.pause()
+            self.resetSessionTime()
         }
 
         updateTimer = .every(.seconds(project.asset_refresh_interval)) { _ in
@@ -230,6 +231,15 @@ extension Playlist {
         totalPlayedTimeAtLastPause = 0
         lastResumeTime = Date()
         startTime = Date()
+    }
+    
+    internal func triggerSessionStart() {
+        if !firstSpeakerStarted {
+            print("session at triggered")
+            lastResumeTime = Date()
+            totalPlayedTimeAtLastPause = 0
+            firstSpeakerStarted = true
+        }
     }
     
     public func fadeOutAndStop(overSeconds fadeDuration: TimeInterval) {
@@ -435,7 +445,7 @@ extension Playlist {
         ]).then { speakers in
             print("playing \(speakers.count) speakers")
             self.speakers = speakers
-            self.updateSpeakerVolumes()
+            self.updateSpeakerVolumes(0)
         }
     }
 
