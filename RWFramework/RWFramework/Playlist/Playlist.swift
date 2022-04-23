@@ -233,11 +233,11 @@ extension Playlist {
         startTime = Date()
     }
     
-    internal func triggerSessionStart() {
+    internal func triggerSessionStart(at speakerTime: Double) {
         if !firstSpeakerStarted {
             print("session at triggered")
             lastResumeTime = Date()
-            totalPlayedTimeAtLastPause = 0
+            totalPlayedTimeAtLastPause = speakerTime
             firstSpeakerStarted = true
         }
     }
@@ -468,7 +468,9 @@ extension Playlist {
     }
 
     public var totalPlayedTime: TimeInterval {
-        if self.isPlaying {
+        if !self.firstSpeakerStarted {
+            return 0.0
+        } else if self.isPlaying {
             return self.totalPlayedTimeAtLastPause - self.lastResumeTime.timeIntervalSinceNow
         } else {
             return self.totalPlayedTimeAtLastPause

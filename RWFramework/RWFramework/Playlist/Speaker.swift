@@ -12,7 +12,11 @@ import Repeat
 public class Speaker: Codable {
     private static let fadeDuration: Float = 3.0
     private static let fadeDeltaTime: Float = 0.05
-    private static let syncOverSeconds: Double = 2.0
+    /** Number of seconds to gradually sync over, and how many seconds between in-sync checks */
+    private static let syncOverSeconds: Double = 2.5
+    /** Max number of seconds off to speed up or slow down the track instead of seeking */
+    private static let maxGradualSyncDiff: Double = 0.75
+    /** Max number of seconds off to allow the track to be, without trying to bring it closer in sync */
     private static let acceptableSyncError: Double = 0.1
     
     let id: Int
@@ -54,15 +58,21 @@ public class Speaker: Codable {
                 return
             }
             
+            if self.player.reasonForWaitingToPlay == nil {
+                RWFramework.sharedInstance.playlist.triggerSessionStart(at: self.player.currentTime().seconds)
+            }
+            
             let sessionTime = RWFramework.sharedInstance.playlist.totalPlayedTime
-            let isWayOff = self.isPlayerTimeWayOff(sessionTime: sessionTime)
-            if isWayOff || self.isPlayerTimeAround(sessionTime: sessionTime) {
+            if self.isPlayerTimeWayOff(sessionTime: sessionTime) {
                 // Reset the play rate to normal.
                 if self.player.rate != 1.0 {
                     self.player.rate = 1.0
                 }
-                if isWayOff {
-                    self.syncTime(sessionTime)
+                self.syncTime(sessionTime)
+            } else if self.isPlayerTimeAround(sessionTime: sessionTime) {
+                // Reset the play rate to normal.
+                if self.player.rate != 1.0 {
+                    self.player.rate = 1.0
                 }
             } else {
                 // Slightly speed up or slow down the player to bring it into sync.
@@ -98,7 +108,15 @@ extension Speaker {
     }
     
     private func isPlayerTimeWayOff(sessionTime timeSinceStart: TimeInterval) -> Bool {
-        return abs(timeSinceStart - player.currentTime().seconds) > Speaker.syncOverSeconds / 2
+        return abs(timeSinceStart - player.currentTime().seconds) > Speaker.maxGradualSyncDiff
+    }
+    
+    internal var currentPlayerTime: Double? {
+        if hasPlayer {
+            return player.currentTime().seconds
+        } else {
+            return nil
+        }
     }
     
     func contains(_ point: CLLocation) -> Bool {
@@ -236,7 +254,6 @@ extension Speaker {
                 syncTime(t)
             }
             player.play()
-            RWFramework.sharedInstance.playlist.triggerSessionStart()
         }
     }
     
