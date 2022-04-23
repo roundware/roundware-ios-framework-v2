@@ -38,6 +38,7 @@ public class Speaker: Codable {
     private var player: AVPlayer {
         if lazyPlayer == nil {
             lazyPlayer = AVPlayer(url: URL(string: url)!)
+            lazyPlayer?.volume = 0.0
         }
         return lazyPlayer!
     }

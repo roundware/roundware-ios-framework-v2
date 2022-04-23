@@ -231,6 +231,9 @@ extension Playlist {
         totalPlayedTimeAtLastPause = 0
         lastResumeTime = Date()
         startTime = Date()
+        for speaker in speakers {
+            speaker.resume(0.0)
+        }
     }
     
     internal func triggerSessionStart(at speakerTime: Double) {
