@@ -235,10 +235,9 @@ extension Playlist {
     
     internal func triggerSessionStart(at speakerTime: Double) {
         if !firstSpeakerStarted {
-            print("session at triggered")
+            firstSpeakerStarted = true
             lastResumeTime = Date()
             totalPlayedTimeAtLastPause = speakerTime
-            firstSpeakerStarted = true
         }
     }
     

@@ -184,8 +184,8 @@ extension Speaker {
     private func syncTime(_ timeSinceStart: TimeInterval) {
         if Speaker.shouldSync {
             let t = abs(timeSinceStart)
-            let timescale = self.player.currentItem?.asset.duration.timescale ?? 100000
-            if t > 0.01 {
+            let timescale = self.player.currentItem?.asset.duration.timescale ?? 1000
+            if t > 0.01 && !isPlayerTimeAround(sessionTime: timeSinceStart) {
                 self.player.seek(to: CMTime(seconds: t, preferredTimescale: timescale))
             }
         }
